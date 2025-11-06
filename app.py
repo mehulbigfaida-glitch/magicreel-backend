@@ -6,9 +6,9 @@ from replicate import Client
 app = Flask(__name__)
 CORS(app)
 
-# Load token and model name from environment
+# Load environment variables from Render environment
 REPLICATE_API_TOKEN = os.getenv("REPLICATE_API_TOKEN")
-REPLICATE_MODEL = os.getenv("REPLICATE_MODEL")  # <-- must be: black-forest-labs/face-to-video
+REPLICATE_MODEL = os.getenv("REPLICATE_MODEL")  # Example: "black-forest-labs/face-to-video"
 
 client = Client(api_token=REPLICATE_API_TOKEN)
 
@@ -25,36 +25,29 @@ def health():
 @app.route("/upload", methods=["POST"])
 def upload_image():
     try:
-        # Ensure a file was uploaded
         if "image" not in request.files:
             return jsonify({"error": "No image uploaded"}), 400
 
         image_file = request.files["image"]
 
-        # ✅ Upload the incoming image to Replicate's temporary storage
-        uploaded = client.files.create(image_file)
-
-        # ✅ Correct input format for black-forest-labs/face-to-video model
-        model_input = {
-            "image": uploaded,
-            "motion_strength": 0.55,
-            "style": "cinematic"
-        }
-
-        # ✅ Get model + latest version
+        # Get model + latest version
         model = client.models.get(REPLICATE_MODEL)
         version = model.versions.list()[0]
 
-        # ✅ Create prediction
+        # Run model (Replicate will handle file upload internally)
         prediction = client.predictions.create(
             version=version.id,
-            input=model_input
+            input={
+                "image": image_file,        # ✅ Pass file directly
+                "motion_strength": 0.55,
+                "style": "cinematic"
+            }
         )
 
-        # ✅ Wait until generation completes
+        # Wait until done
         prediction = client.predictions.wait(prediction)
 
-        # ✅ Extract final video URL
+        # Get final output (video URL)
         output = prediction.output
 
         return jsonify({"output": output})
