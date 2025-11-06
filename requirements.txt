@@ -1,0 +1,4 @@
+flask
+flask-cors
+gunicorn
+replicate==1.0.7
