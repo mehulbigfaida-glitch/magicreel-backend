@@ -32,7 +32,7 @@ def upload_image():
         image_file = request.files["image"]
 
         # ✅ Upload the incoming image to Replicate's temporary storage
-        uploaded = client.files.upload(image_file)
+        uploaded = client.upload(image_file)
 
         # ✅ Correct input format for black-forest-labs/face-to-video model
         model_input = {
