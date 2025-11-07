@@ -2,7 +2,7 @@ import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from replicate import Client
-from replicate import files   # ✅ correct upload helper
+from replicate.files import upload  # ✅ correct upload import
 
 app = Flask(__name__)
 CORS(app)
@@ -26,36 +26,34 @@ def health():
 @app.route("/upload", methods=["POST"])
 def upload_image():
     try:
-        # ✅ Validate file
+        # ✅ Validate upload
         if "image" not in request.files:
             return jsonify({"error": "No image uploaded"}), 400
 
         image_file = request.files["image"]
 
-        # ✅ Upload to Replicate temporary storage
-        uploaded_url = files.upload(image_file)
+        # ✅ Upload to Replicate temp storage (correct method)
+        uploaded_url = upload(image_file)
 
-        # ✅ Get model + latest version
+        # ✅ Load model
         model = client.models.get(REPLICATE_MODEL)
         version = model.versions.list()[0]
 
-        # ✅ Create AI animation
+        # ✅ Run animation model
         prediction = client.predictions.create(
             version=version.id,
             input={
                 "image": uploaded_url,
-                "fps": 12,
-                "duration": 3
+                "fps": 12,      # animation frames per second
+                "duration": 3   # seconds
             }
         )
 
-        # ✅ Wait for completion
+        # ✅ Wait until finished
         prediction = client.predictions.wait(prediction)
 
-        # ✅ Extract final output
-        output = prediction.output
-
-        return jsonify({"output": output})
+        # ✅ Return final output (video link)
+        return jsonify({"output": prediction.output})
 
     except Exception as e:
         print("Replicate call failed:", e)
