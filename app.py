@@ -34,21 +34,18 @@ def upload_image():
         model = client.models.get(REPLICATE_MODEL)
         version = model.versions.list()[0]
 
-        # Run model (Replicate will handle file upload internally)
+        # Create prediction (Replicate uploads file internally)
         prediction = client.predictions.create(
-    version=version.id,
-    input={
-        "image": image_file,   # pass uploaded file directly
-        "fps": 12,
-        "duration": 3
-    }
-)
+            version=version.id,
+            input={
+                "image": image_file,   # pass uploaded file directly
+                "fps": 12,            # smooth animation
+                "duration": 3         # seconds
+            }
+        )
 
-        # Wait until done
-        prediction = client.predictions.create(
-    version=version.id,
-    input=model_input
-)
+        # Wait for model to finish
+        prediction = client.predictions.wait(prediction)
 
         # Get final output (video URL)
         output = prediction.output
@@ -58,7 +55,6 @@ def upload_image():
     except Exception as e:
         print("Replicate call failed:", e)
         return jsonify({"error": str(e)}), 500
-
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
