@@ -36,16 +36,19 @@ def upload_image():
 
         # Run model (Replicate will handle file upload internally)
         prediction = client.predictions.create(
-            version=version.id,
-            input={
-                "image": image_file,        # ✅ Pass file directly
-                "motion_strength": 0.55,
-                "style": "cinematic"
-            }
-        )
+    version=version.id,
+    input={
+        "image": image_file,   # pass uploaded file directly
+        "fps": 12,
+        "duration": 3
+    }
+)
 
         # Wait until done
-        prediction = client.predictions.wait(prediction)
+        prediction = client.predictions.create(
+    version=version.id,
+    input=model_input
+)
 
         # Get final output (video URL)
         output = prediction.output
