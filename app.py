@@ -8,7 +8,7 @@ CORS(app)
 
 # Load environment variables from Render environment
 REPLICATE_API_TOKEN = os.getenv("REPLICATE_API_TOKEN")
-REPLICATE_MODEL = os.getenv("REPLICATE_MODEL")  # Example: "black-forest-labs/face-to-video"
+REPLICATE_MODEL = os.getenv("REPLICATE_MODEL")  # should be fofr/animate-photo
 
 client = Client(api_token=REPLICATE_API_TOKEN)
 
@@ -25,36 +25,28 @@ def health():
 @app.route("/upload", methods=["POST"])
 def upload_image():
     try:
+        # Ensure image is included
         if "image" not in request.files:
             return jsonify({"error": "No image uploaded"}), 400
 
         image_file = request.files["image"]
 
-        # Get model + latest version
-        model = client.models.get(REPLICATE_MODEL)
-        version = model.versions.list()[0]
-
-        # Create prediction (Replicate uploads file internally)
-        prediction = client.predictions.create(
-            version=version.id,
+        # ✅ Call model directly (no version lookup needed)
+        output = client.run(
+            REPLICATE_MODEL,
             input={
-                "image": image_file,   # pass uploaded file directly
-                "fps": 12,            # smooth animation
-                "duration": 3         # seconds
+                "image": image_file,
+                "fps": 12,       # smooth animation
+                "duration": 3    # seconds
             }
         )
-
-        # Wait for model to finish
-        prediction = client.predictions.wait(prediction)
-
-        # Get final output (video URL)
-        output = prediction.output
 
         return jsonify({"output": output})
 
     except Exception as e:
         print("Replicate call failed:", e)
         return jsonify({"error": str(e)}), 500
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
