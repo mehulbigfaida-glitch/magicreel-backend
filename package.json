@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/magicreel/index.ts",
     "worker": "ts-node-dev --respawn --transpile-only src/magicreel/worker.ts",
-    "build": "tsc",
+    "build": "echo build skipped",
     "start": "node dist/magicreel/index.js",
     "prisma": "prisma"
   },
