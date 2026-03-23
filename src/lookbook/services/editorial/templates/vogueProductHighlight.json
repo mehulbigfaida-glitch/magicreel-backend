@@ -1,0 +1,45 @@
+{
+  "name": "vogueProductHighlight",
+  "pageType": "product-highlight",
+
+  "background": {
+    "color": "#ffffff"
+  },
+
+  "product": {
+    "width": 1600,
+    "height": 2000,
+    "fit": "contain",
+    "gravity": "center",
+    "position": {
+      "y": 530
+    }
+  },
+
+  "title": {
+    "text": "FEATURED COLLECTION",
+    "fontFamily": "Bodoni Moda",
+    "fontWeight": "bold",
+    "fontSize": 140,
+    "color": "#000000",
+    "tracking": 2,
+    "position": {
+      "x": 0,
+      "y": 230
+    }
+  },
+
+  "description": {
+    "text": "Crafted with precision and elevated by thoughtful details, this season's signature silhouette blends modern minimalism with timeless couture finesse.",
+    "fontFamily": "Cormorant Garamond",
+    "fontWeight": "regular",
+    "fontSize": 52,
+    "color": "#444444",
+    "lineHeight": 1.35,
+    "maxWidth": 1500,
+    "position": {
+      "x": 0,
+      "y": 2900
+    }
+  }
+}

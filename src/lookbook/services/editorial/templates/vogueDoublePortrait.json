@@ -1,0 +1,26 @@
+{
+  "name": "vogueDoublePortrait",
+  "pageType": "double-portrait",
+
+  "background": {
+    "color": "#ffffff"
+  },
+
+  "leftImage": {
+    "width": 1100,
+    "height": 3000,
+    "x": 180,
+    "y": 250,
+    "fit": "cover",
+    "gravity": "center"
+  },
+
+  "rightImage": {
+    "width": 1000,
+    "height": 2500,
+    "x": 1300,
+    "y": 450,
+    "fit": "cover",
+    "gravity": "center"
+  }
+}

@@ -1,0 +1,10 @@
+.env
+node_modules
+uploads
+temp
+tmp
+*.log
+dist
+build
+*.7z
+outputs

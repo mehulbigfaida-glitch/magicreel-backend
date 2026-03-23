@@ -1,0 +1,34 @@
+{
+  "name": "vogueMoodboard",
+  "pageType": "moodboard",
+  "background": {
+    "color": "#faf8f6"
+  },
+
+  "images": [
+    {
+      "width": 1500,
+      "height": 1800,
+      "x": 140,
+      "y": 300,
+      "fit": "cover",
+      "gravity": "center"
+    },
+    {
+      "width": 1100,
+      "height": 1400,
+      "x": 1240,
+      "y": 350,
+      "fit": "cover",
+      "gravity": "center"
+    },
+    {
+      "width": 1100,
+      "height": 1400,
+      "x": 1240,
+      "y": 1800,
+      "fit": "cover",
+      "gravity": "center"
+    }
+  ]
+}

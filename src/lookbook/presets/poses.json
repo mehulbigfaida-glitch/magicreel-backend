@@ -1,0 +1,5 @@
+{
+  "tops": ["front", "side"],
+  "fullbody": ["front", "side", "back"],
+  "ethnic": ["front", "back"]
+}

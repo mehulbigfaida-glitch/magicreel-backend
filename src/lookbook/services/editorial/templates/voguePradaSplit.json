@@ -1,0 +1,34 @@
+{
+  "name": "voguePradaSplit",
+  "pageType": "prada-split",
+  "background": {
+    "color": "#ffffff"
+  },
+
+  "leftImage": {
+    "width": 1300,
+    "height": 3508,
+    "x": 0,
+    "y": 0,
+    "fit": "cover",
+    "gravity": "center"
+  },
+
+  "rightImage": {
+    "width": 1180,
+    "height": 1750,
+    "x": 1300,
+    "y": 0,
+    "fit": "cover",
+    "gravity": "center"
+  },
+
+  "bottomImage": {
+    "width": 1180,
+    "height": 1758,
+    "x": 1300,
+    "y": 1750,
+    "fit": "cover",
+    "gravity": "center"
+  }
+}

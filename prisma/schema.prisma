@@ -1,0 +1,174 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+////////////////////////////////////////////////////////
+// ENUMS
+////////////////////////////////////////////////////////
+
+enum Plan {
+  FREE
+  BASIC
+  PRO
+  ADVANCE
+  ENTERPRISE
+}
+
+enum BillingCycle {
+  MONTHLY
+  ANNUAL
+}
+
+enum TransactionType {
+  DEBIT
+  CREDIT
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+////////////////////////////////////////////////////////
+// USER & BILLING
+////////////////////////////////////////////////////////
+
+model User {
+  id                String   @id @default(uuid())
+  email             String   @unique
+  passwordHash      String
+  plan              Plan     @default(FREE)
+  subscriptionType  BillingCycle?
+  subscriptionStart DateTime?
+  subscriptionEnd   DateTime?
+
+  // ✅ CHANGED TO FLOAT
+  creditsAvailable  Float    @default(0)
+  rolloverCredits   Float    @default(0)
+
+  freeHeroUsed      Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  garments          Garment[]
+  lookbooks         Lookbook[]
+  p2mJobs           ProductToModelJob[]
+  transactions      CreditTransaction[]
+  cinematicLookbooks CinematicLookbook[]
+}
+
+model CreditTransaction {
+  id          String             @id @default(uuid())
+  userId      String
+  feature     String
+  credits     Float
+  type        TransactionType
+  status      TransactionStatus
+  referenceId String?
+  createdAt   DateTime           @default(now())
+
+  user        User               @relation(fields: [userId], references: [id])
+}
+
+////////////////////////////////////////////////////////
+// CORE MAGICREEL MODELS
+////////////////////////////////////////////////////////
+
+model Garment {
+  id            String     @id @default(uuid())
+  userId        String
+  frontImageUrl String
+  backImageUrl  String?
+  category      String
+  validated     Boolean    @default(true)
+  createdAt     DateTime   @default(now())
+
+  user          User       @relation(fields: [userId], references: [id])
+  lookbooks     Lookbook[]
+}
+
+model Lookbook {
+  id        String   @id @default(uuid())
+  userId    String
+  modelId   String
+  presetId  String
+  status    String
+  garmentId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User     @relation(fields: [userId], references: [id])
+  garment   Garment  @relation(fields: [garmentId], references: [id])
+  renders   Render[]
+  edits     LookbookEdit[]
+}
+
+model Render {
+  id              String   @id @default(uuid())
+  pose            String
+  engine          String
+  modelImageUrl   String
+  garmentImageUrl String
+  outputImageUrl  String?
+  status          String
+  lookbookId      String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  lookbook        Lookbook @relation(fields: [lookbookId], references: [id])
+}
+
+model LookbookEdit {
+  id           String   @id @default(uuid())
+  lookbookId   String
+  elementType  String
+  sourceImage  String
+  resultImage  String
+  createdAt    DateTime @default(now())
+
+  lookbook     Lookbook @relation(fields: [lookbookId], references: [id])
+}
+
+model ProductToModelJob {
+  id               String   @id @default(uuid())
+  userId           String
+  productImageUrl  String
+  modelImageUrl    String
+  engine           String
+  engineJobId      String
+  status           String
+  error            String?
+  resultImageUrl   String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  user             User     @relation(fields: [userId], references: [id])
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+////////////////////////////////////////////////////////
+// 🎬 CINEMATIC LOOKBOOK
+////////////////////////////////////////////////////////
+
+model CinematicLookbook {
+  id             String   @id @default(uuid())
+  userId         String
+  heroImageUrl   String
+  theme          String
+  seed           Int
+  worldConfig    Json
+  frames         Json
+  createdAt      DateTime @default(now())
+
+  user           User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}

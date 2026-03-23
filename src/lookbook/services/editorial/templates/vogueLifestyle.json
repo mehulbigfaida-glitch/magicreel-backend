@@ -1,0 +1,36 @@
+{
+  "name": "vogueLifestyle",
+  "pageType": "lifestyle",
+  "background": {
+    "color": "#ffffff"
+  },
+
+  "image": {
+    "width": 2480,
+    "height": 2000,
+    "x": 0,
+    "y": 650,
+    "fit": "cover",
+    "gravity": "center"
+  },
+
+  "title": {
+    "text": "THE LIFESTYLE EDIT",
+    "fontFamily": "Cormorant Garamond",
+    "fontWeight": "bold",
+    "fontSize": 130,
+    "color": "#000000",
+    "tracking": 2,
+    "position": { "x": 0, "y": 250 }
+  },
+
+  "subtitle": {
+    "text": "A Moment In Motion",
+    "fontFamily": "Cormorant Garamond",
+    "fontWeight": "regular",
+    "fontSize": 60,
+    "color": "#555555",
+    "tracking": 1,
+    "position": { "x": 0, "y": 390 }
+  }
+}

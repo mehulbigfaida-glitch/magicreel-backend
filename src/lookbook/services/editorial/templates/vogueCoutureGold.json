@@ -1,0 +1,44 @@
+{
+  "name": "vogueCoutureGold",
+  "pageType": "couture-black-gold",
+
+  "background": {
+    "color": "#000000"
+  },
+
+  "product": {
+    "width": 1500,
+    "height": 2600,
+    "fit": "contain",
+    "gravity": "center",
+    "position": {
+      "y": 450
+    }
+  },
+
+  "title": {
+    "text": "COUTURE",
+    "fontFamily": "Bodoni Moda",
+    "fontWeight": "bold",
+    "fontSize": 180,
+    "color": "#d4af37",
+    "tracking": 4,
+    "position": {
+      "x": "center",
+      "y": 240
+    }
+  },
+
+  "subtitle": {
+    "text": "THE GOLD COLLECTION",
+    "fontFamily": "Cormorant Garamond",
+    "fontWeight": "regular",
+    "fontSize": 70,
+    "color": "#e6c56c",
+    "tracking": 2,
+    "position": {
+      "x": "center",
+      "y": 350
+    }
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "name": "vogueClassicCover",
+  "pageType": "cover",
+  "bleed": true,
+  "title": {
+    "text": "MAGICREEL",
+    "fontFamily": "Bodoni Moda",
+    "fontWeight": "bold",
+    "fontSize": 280,
+    "color": "#ffffff",
+    "tracking": -10,
+    "position": {
+      "x": "center",
+      "y": 250
+    }
+  },
+  "subtitle": {
+    "text": "FW 2025 Editorial",
+    "fontFamily": "Cormorant Garamond",
+    "fontWeight": "regular",
+    "fontSize": 72,
+    "color": "#e8e8e8",
+    "position": {
+      "x": "center",
+      "y": 3300
+    }
+  },
+  "background": {
+    "type": "image-full-bleed",
+    "overlay": {
+      "vignette": true,
+      "grain": true
+    }
+  }
+}

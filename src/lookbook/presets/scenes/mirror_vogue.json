@@ -1,0 +1,18 @@
+{
+  "id": "mirror_vogue",
+  "name": "Mirror Vogue",
+  "description": "High-fashion mirror studio shot with soft light.",
+  "recommendedCategories": ["dress", "saree", "top"],
+  "lighting": {
+    "type": "soft_glam",
+    "intensity": "medium"
+  },
+  "background": {
+    "style": "studio_mirror",
+    "color": "#ffffff"
+  },
+  "camera": {
+    "angle": "eye_level",
+    "lens": "50mm"
+  }
+}

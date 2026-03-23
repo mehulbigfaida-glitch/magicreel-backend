@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "CreditTransaction" ALTER COLUMN "credits" SET DATA TYPE DOUBLE PRECISION;

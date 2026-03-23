@@ -1,0 +1,21 @@
+{
+  "id": "street_neon_runway",
+  "name": "Street Neon Runway",
+  "description": "Urban futuristic neon-lit runway vibe.",
+  "recommendedCategories": ["hoodie", "top", "bottom"],
+  "lighting": {
+    "type": "neon_mix",
+    "intensity": "high"
+  },
+  "background": {
+    "style": "neon_city",
+    "color": "#111111"
+  },
+  "camera": {
+    "angle": "low",
+    "lens": "35mm"
+  },
+  "motion": {
+    "type": "dynamic_pulse"
+  }
+}

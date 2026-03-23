@@ -1,0 +1,18 @@
+{
+  "id": "studio_cyclorama",
+  "name": "Studio Cyclorama",
+  "description": "Clean white cyclorama backdrop with product focus.",
+  "recommendedCategories": ["dress", "saree", "top", "hoodie", "bottom"],
+  "lighting": {
+    "type": "neutral_softbox",
+    "intensity": "high"
+  },
+  "background": {
+    "style": "white_cyclorama",
+    "color": "#f2f2f2"
+  },
+  "camera": {
+    "angle": "eye_level",
+    "lens": "85mm"
+  }
+}

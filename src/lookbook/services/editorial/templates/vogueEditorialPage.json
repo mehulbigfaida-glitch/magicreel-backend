@@ -1,0 +1,45 @@
+{
+  "name": "vogueEditorialPage",
+  "pageType": "editorial",
+  "background": {
+    "type": "solid",
+    "color": "#ffffff"
+  },
+  "title": {
+    "text": "The New Silhouette",
+    "fontFamily": "Bodoni Moda",
+    "fontWeight": "bold",
+    "fontSize": 110,
+    "color": "#000000",
+    "tracking": -4,
+    "position": {
+      "x": "center",
+      "y": 420
+    }
+  },
+  "subtitle": {
+    "text": "A study in modern elegance and wearable art.",
+    "fontFamily": "Cormorant Garamond",
+    "fontWeight": "regular",
+    "fontSize": 54,
+    "color": "#333333",
+    "tracking": 0,
+    "position": {
+      "x": "center",
+      "y": 600
+    }
+  },
+  "paragraph": {
+    "text": "In this collection, form meets fluidity. Silhouettes evolve into softer, bolder shapes that redefine contemporary style. Each look combines structure and movement, reflecting the balance between innovation and timeless design. The refined palette and luxurious textures create a sense of effortless sophistication.",
+    "fontFamily": "Cormorant Garamond",
+    "fontWeight": "regular",
+    "fontSize": 40,
+    "color": "#222222",
+    "lineHeight": 58,
+    "maxWidth": 1600,
+    "position": {
+      "x": "center",
+      "y": 900
+    }
+  }
+}
