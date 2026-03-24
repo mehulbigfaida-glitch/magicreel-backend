@@ -4,7 +4,7 @@ import axios from "axios";
 const REPLICATE_API_TOKEN = process.env.REPLICATE_API_TOKEN as string;
 
 if (!REPLICATE_API_TOKEN) {
-  throw new Error("Missing REPLICATE_API_TOKEN");
+  console.warn("⚠️ REPLICATE_API_TOKEN missing - generation disabled");
 }
 
 const QWEN_URL =
@@ -60,7 +60,28 @@ export async function generateLookbookV2(
   res: Response
 ) {
   try {
-    const { heroImageUrl, backHeroImageUrl } = req.body;
+  const { heroImageUrl, backHeroImageUrl } = req.body;
+
+  if (!heroImageUrl) {
+    return res.status(400).json({
+      error: "heroImageUrl required",
+    });
+  }
+
+  if (!REPLICATE_API_TOKEN) {
+    console.warn("⚠️ REPLICATE_API_TOKEN missing - skipping lookbook");
+
+    return res.json({
+      success: true,
+      poses: [
+        {
+          poseId: "HERO",
+          poseType: "hero",
+          imageUrl: heroImageUrl,
+        },
+      ],
+    });
+  }
 
     if (!heroImageUrl) {
       return res.status(400).json({
