@@ -7,12 +7,14 @@ import predictionsRoutes from "../api/predictions";
 import authRoutes from "../auth/auth.routes";
 import { authenticate } from "../auth/jwt.middleware";
 
-import lookbookRoutes from "./routes/lookbook.routes";
-import exportRoutes from "./routes/exportRoutes";
-import lookbookExportRoutes from "./routes/lookbookExport.routes";
-import tryonRoutesV2 from "./routes/tryonRoutesV2";
-import { garmentRoutes } from "./routes/garment.routes";
-import { tryonRoutes } from "./routes/tryon.routes";
+// ❌ DISABLED (unstable modules for beta)
+// import lookbookRoutes from "./routes/lookbook.routes";
+// import exportRoutes from "./routes/exportRoutes";
+// import lookbookExportRoutes from "./routes/lookbookExport.routes";
+// import tryonRoutesV2 from "./routes/tryonRoutesV2";
+// import { garmentRoutes } from "./routes/garment.routes";
+// import { tryonRoutes } from "./routes/tryon.routes";
+
 import p2mRoutes from "./p2m/p2m.routes";
 
 /* ----------------------------------
@@ -34,7 +36,7 @@ app.use(cors());
 app.use(express.json({ limit: "20mb" }));
 
 /* ----------------------------------
-   🔥 TEST ROUTE (CRITICAL DEBUG)
+   TEST ROUTES
 ---------------------------------- */
 
 app.get("/test-hit", (_req, res) => {
@@ -42,51 +44,40 @@ app.get("/test-hit", (_req, res) => {
   res.json({ ok: true });
 });
 
-/* ----------------------------------
-   🔓 PUBLIC ROUTES
----------------------------------- */
-
-app.use("/api/auth", authRoutes);
-
 app.get("/health", (_req, res) => {
   res.json({ ok: true });
 });
 
 /* ----------------------------------
-   🔎 DEBUG USER ROUTE
+   PUBLIC ROUTES
+---------------------------------- */
+
+app.use("/api/auth", authRoutes);
+
+/* ----------------------------------
+   DEBUG ROUTES (SAFE FOR NOW)
 ---------------------------------- */
 
 app.get("/debug/user", async (_req, res) => {
-  const user = await prisma.user.findUnique({
-    where: { email: "test2@magicreel.com" },
-  });
-  res.json(user);
+  try {
+    const user = await prisma.user.findUnique({
+      where: { email: "test2@magicreel.com" },
+    });
+    res.json(user);
+  } catch (err) {
+    console.error("DEBUG USER ERROR", err);
+    res.status(500).json({ error: "debug failed" });
+  }
 });
 
 /* ----------------------------------
-   🔐 PROTECTED ROUTES
+   CORE WORKING ROUTES ONLY
 ---------------------------------- */
-
-// Lookbook generation routes
-app.use("/api/lookbook", authenticate, lookbookRoutes);
 
 // ⭐ Predictions / Generation History
 app.use("/api/predictions", predictionsRoutes);
 
-// 🔥 ZIP EXPORT ROUTE
-app.use("/api", lookbookExportRoutes);
-
-// Reel export routes
-app.use("/api/export", authenticate, exportRoutes);
-
-app.use("/api/garment", authenticate, garmentRoutes);
-app.use("/api/tryon", authenticate, tryonRoutes);
-app.use("/api/tryon/v2", authenticate, tryonRoutesV2);
-
-/* ----------------------------------
-   🔓 P2M ROUTES (NO AUTH)
----------------------------------- */
-
+// 🔓 P2M ROUTES (NO AUTH)
 app.use("/api/p2m", p2mRoutes);
 
 /* ----------------------------------
