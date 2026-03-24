@@ -6,8 +6,8 @@ const FASHN_RUN_URL = "https://api.fashn.ai/v1/run";
 const FASHN_STATUS_URL = "https://api.fashn.ai/v1/status";
 const FASHN_API_KEY = process.env.FASHN_API_KEY as string;
 
-if (!FASHN_API_KEY) {
-  throw new Error("FASHN_API_KEY is not set");
+if (!process.env.FASHN_API_KEY) {
+  console.warn("⚠️ FASHN_API_KEY is not set - Fashn disabled");
 }
 
 /**
