@@ -20,7 +20,7 @@ export class PoseAngleService {
     this.token = process.env.REPLICATE_API_TOKEN || "";
 
     if (!this.token) {
-      throw new Error("Missing REPLICATE_API_TOKEN");
+      console.warn("⚠️ REPLICATE_API_TOKEN missing - poseAngle disabled");
     }
 
   }

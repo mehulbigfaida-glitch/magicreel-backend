@@ -5,7 +5,7 @@ import crypto from "crypto";
 const REPLICATE_TOKEN = process.env.REPLICATE_API_TOKEN!;
 
 if (!REPLICATE_TOKEN) {
-  throw new Error("Missing REPLICATE_API_TOKEN");
+  console.warn("⚠️ REPLICATE_API_TOKEN missing - cinematic disabled");
 }
 
 function hashSeed(input: string): number {
