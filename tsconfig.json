@@ -2,6 +2,7 @@
   "compilerOptions": {
     "target": "ES2020",
     "module": "commonjs",
+    "moduleResolution": "node",   // 👈 ADD THIS LINE
     "rootDir": "src",
     "outDir": "dist",
     "strict": true,

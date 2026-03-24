@@ -60,7 +60,7 @@ app.use("/api/auth", authRoutes);
 
 app.get("/debug/user", async (_req, res) => {
   try {
-    const user = await prisma.user.findUnique({
+    const user = await prisma?.user.findUnique({
       where: { email: "test2@magicreel.com" },
     });
     res.json(user);

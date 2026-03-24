@@ -1,2 +1,12 @@
 import { PrismaClient } from "@prisma/client";
-export const prisma = new PrismaClient();
+
+let prisma: PrismaClient | null = null;
+
+try {
+  prisma = new PrismaClient();
+  console.log("✅ Prisma initialized");
+} catch (err) {
+  console.warn("⚠️ Prisma failed - DB disabled");
+}
+
+export { prisma };
