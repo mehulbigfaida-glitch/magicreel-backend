@@ -12,6 +12,10 @@ export async function registerUser(email: string, password: string) {
     throw new Error("Email and password are required");
   }
 
+  if (!prisma) {
+    throw new Error("Database not initialized");
+  }
+
   const existingUser = await prisma.user.findUnique({
     where: { email }
   });
@@ -27,7 +31,7 @@ export async function registerUser(email: string, password: string) {
       email,
       passwordHash,
       plan: "FREE",
-      creditsAvailable: 1, // 1 free hero credit
+      creditsAvailable: 1,
       freeHeroUsed: false
     }
   });
@@ -41,6 +45,10 @@ export async function registerUser(email: string, password: string) {
 export async function loginUser(email: string, password: string) {
   if (!email || !password) {
     throw new Error("Email and password are required");
+  }
+
+  if (!prisma) {
+    throw new Error("Database not initialized");
   }
 
   const user = await prisma.user.findUnique({

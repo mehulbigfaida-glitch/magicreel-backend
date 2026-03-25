@@ -24,7 +24,7 @@ export const BillingService = {
           throw new Error("User not found");
         }
 
-        throw new Error("Billing failed");
+        throw new Error(error.message);
       }
 
       console.log(

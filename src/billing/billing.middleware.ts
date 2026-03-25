@@ -44,12 +44,17 @@ export function billingGuard(feature: FeatureType) {
         creditsRequired
       );
 
-      (req as any).user = user;
+      // ✅ FIX: assign safely without TS error
+      (req as any).user = {
+        ...authUser,
+        ...user,
+      };
 
       next();
 
     } catch (error: any) {
       console.error("BILLING ERROR:", error);
+
       return res.status(400).json({
         error: error.message || "Billing failed",
       });
