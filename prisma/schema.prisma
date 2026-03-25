@@ -48,7 +48,6 @@ model User {
   subscriptionStart DateTime?
   subscriptionEnd   DateTime?
 
-  // ✅ CHANGED TO FLOAT
   creditsAvailable  Float    @default(0)
   rolloverCredits   Float    @default(0)
 
@@ -61,6 +60,8 @@ model User {
   p2mJobs           ProductToModelJob[]
   transactions      CreditTransaction[]
   cinematicLookbooks CinematicLookbook[]
+
+  @@map("users")  // 🔥 THIS LINE FIXES EVERYTHING
 }
 
 model CreditTransaction {
