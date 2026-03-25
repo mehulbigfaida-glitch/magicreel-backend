@@ -42,18 +42,18 @@ enum TransactionStatus {
 model User {
   id                String   @id @default(uuid())
   email             String   @unique
-  passwordHash      String
+  passwordHash      String   @map("password_hash")
   plan              Plan     @default(FREE)
-  subscriptionType  BillingCycle?
-  subscriptionStart DateTime?
-  subscriptionEnd   DateTime?
+  subscriptionType  BillingCycle? @map("subscription_type")
+  subscriptionStart DateTime? @map("subscription_start")
+  subscriptionEnd   DateTime? @map("subscription_end")
 
-  creditsAvailable  Float    @default(0)
-  rolloverCredits   Float    @default(0)
+  creditsAvailable  Float    @default(0) @map("credits_available")
+  rolloverCredits   Float    @default(0) @map("rollover_credits")
 
-  freeHeroUsed      Boolean  @default(false)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  freeHeroUsed      Boolean  @default(false) @map("free_hero_used")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
 
   garments          Garment[]
   lookbooks         Lookbook[]
@@ -61,7 +61,7 @@ model User {
   transactions      CreditTransaction[]
   cinematicLookbooks CinematicLookbook[]
 
-  @@map("users")  // 🔥 THIS LINE FIXES EVERYTHING
+  @@map("users")
 }
 
 model CreditTransaction {
