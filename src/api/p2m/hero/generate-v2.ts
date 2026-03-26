@@ -35,7 +35,10 @@ export async function generateHeroV2(
       });
     }
 
-    const user = (req as any).user;
+    // TEMP DEV MODE (no auth yet)
+const user = {
+  id: "58900057-cac7-4b49-8e87-5ad558217cbc"
+};
 
     if (!user) {
       return res.status(401).json({
