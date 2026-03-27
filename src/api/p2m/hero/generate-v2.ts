@@ -10,6 +10,10 @@ export async function generateHeroV2(
   res: Response
 ) {
   try {
+    if (!prisma) {
+      return res.status(500).json({ error: "Prisma not initialized" });
+    }
+
     const {
       categoryKey,
       avatarGender,
@@ -19,10 +23,6 @@ export async function generateHeroV2(
       avatarBackImageUrl,
       garmentBackImageUrl,
     } = req.body;
-
-    /* =========================
-       VALIDATION
-    ========================= */
 
     if (
       !categoryKey ||
@@ -35,12 +35,9 @@ export async function generateHeroV2(
       });
     }
 
-    // TEMP DEV MODE (no auth yet)
-const user = {
-  id: "58900057-cac7-4b49-8e87-5ad558217cbc"
-};
+    const user = (req as any).user;
 
-    if (!user) {
+    if (!user || !user.id) {
       return res.status(401).json({
         error: "Unauthorized",
       });
@@ -91,8 +88,7 @@ const user = {
     });
 
     /* =========================
-       BACK HERO (STRICT RULE)
-       ONLY if BOTH exist
+       BACK HERO
     ========================= */
 
     let backRunId: string | null = null;
@@ -137,16 +133,7 @@ const user = {
           engineJobId: backRunId,
         },
       });
-    } else {
-      // 🔒 Safety log (no silent bugs)
-      console.warn(
-        "Skipping back hero: missing back avatar or back garment"
-      );
     }
-
-    /* =========================
-       RESPONSE
-    ========================= */
 
     return res.json({
       frontRunId,

@@ -1,4 +1,5 @@
-import { supabase } from "../lib/supabase";
+import { prisma } from "../magicreel/db/prisma";
+import { TransactionType, TransactionStatus } from "@prisma/client";
 
 export const BillingService = {
   async deductCreditsAtomic(
@@ -6,36 +7,43 @@ export const BillingService = {
     feature: string,
     credits: number
   ) {
-    try {
-      const { error } = await supabase.rpc("deduct_credits_atomic", {
-        user_id: userId,
-        credit_amount: credits,
+    if (!prisma) {
+      throw new Error("Prisma not initialized");
+    }
+
+    return await prisma.$transaction(async (tx) => {
+      const user = await tx.user.findUnique({
+        where: { id: userId },
       });
 
-      if (error) {
-        console.error("❌ RPC ERROR:", error);
-
-        // Handle specific errors from Postgres
-        if (error.message?.includes("Insufficient credits")) {
-          throw new Error("Insufficient credits");
-        }
-
-        if (error.message?.includes("User not found")) {
-          throw new Error("User not found");
-        }
-
-        throw new Error(error.message);
+      if (!user) {
+        throw new Error("User not found");
       }
 
-      console.log(
-        `✅ Credits deducted: user=${userId}, feature=${feature}, amount=${credits}`
-      );
+      if (user.creditsAvailable < credits) {
+        throw new Error("Insufficient credits");
+      }
+
+      await tx.user.update({
+        where: { id: userId },
+        data: {
+          creditsAvailable: {
+            decrement: credits,
+          },
+        },
+      });
+
+      await tx.creditTransaction.create({
+        data: {
+          userId,
+          feature,
+          credits,
+          type: TransactionType.DEBIT,
+          status: TransactionStatus.COMPLETED,
+        },
+      });
 
       return true;
-
-    } catch (err: any) {
-      console.error("❌ BILLING SERVICE ERROR:", err);
-      throw err;
-    }
+    });
   },
 };

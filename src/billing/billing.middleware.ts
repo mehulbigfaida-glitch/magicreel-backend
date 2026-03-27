@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from "express";
+import { prisma } from "../magicreel/db/prisma";
 import { BillingService } from "./billing.service";
 
 export type FeatureType =
@@ -18,33 +19,46 @@ const featureCredits: Record<FeatureType, number> = {
   CINEMATIC_REEL_20S: 10,
 };
 
-export function billingGuard(feature: FeatureType) {
+const billingGuard = (feature: FeatureType) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
-      // ✅ TEMP FIX: force correct user (bypass auth + prisma mismatch)
-      const user = {
-        id: "58900057-cac7-4b49-8e87-5ad558217cbc",
-      };
+      if (!prisma) {
+        return res.status(500).json({ error: "Prisma not initialized" });
+      }
+
+      const authUser = (req as any).user;
+
+      if (!authUser) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      const user = await prisma.user.findUnique({
+        where: { id: authUser.id },
+      });
+
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
 
       const creditsRequired = featureCredits[feature];
 
-      // ✅ Deduct credits from Supabase
       await BillingService.deductCreditsAtomic(
         user.id,
         feature,
         creditsRequired
       );
 
-      // ✅ Attach user to request
       (req as any).user = user;
 
       next();
+
     } catch (error: any) {
       console.error("BILLING ERROR:", error);
-
       return res.status(400).json({
         error: error.message || "Billing failed",
       });
     }
   };
-}
+};
+
+export { billingGuard };
