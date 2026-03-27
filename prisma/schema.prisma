@@ -65,16 +65,17 @@ model User {
 }
 
 model CreditTransaction {
-  id          String             @id @default(uuid())
-  userId      String
-  feature     String
-  credits     Float
-  type        TransactionType
-  status      TransactionStatus
-  referenceId String?
-  createdAt   DateTime           @default(now())
+  id        String   @id @default(uuid())
+  userId    String
+  feature   String
+  credits   Int
+  type      TransactionType
+  status    TransactionStatus
+  createdAt DateTime @default(now())
 
-  user        User               @relation(fields: [userId], references: [id])
+  user      User @relation(fields: [userId], references: [id])
+
+  @@map("credit_transaction")
 }
 
 ////////////////////////////////////////////////////////
