@@ -1,3 +1,5 @@
+console.log("ENABLE_BILLING:", process.env.ENABLE_BILLING);
+
 import rateLimit from "express-rate-limit";
 import { generateReelV1Controller } from "../../api/p2m/reel/generate-v1";
 import { Router, Request, Response, NextFunction } from "express";
@@ -16,7 +18,7 @@ const ENABLE_BILLING = process.env.ENABLE_BILLING === "true";
    SAFE MIDDLEWARE WRAPPER
 ---------------------------------- */
 
-const optionalBilling = (feature: string) => {
+const optionalBilling = (feature: any) => {
   if (ENABLE_BILLING) {
     return billingGuard(feature);
   }
@@ -67,6 +69,10 @@ router.use("/hero", heroLimiter, heroRoutes);
    📚 LOOKBOOK
 ---------------------------------- */
 
-router.use("/lookbook", lookbookRoutes);
+router.use(
+  "/lookbook",
+  optionalBilling("LOOKBOOK_ECOM"),
+  lookbookRoutes
+);
 
 export default router;
