@@ -19,7 +19,7 @@ const featureCredits: Record<FeatureType, number> = {
   CINEMATIC_REEL_20S: 10,
 };
 
-const DEV_USER_ID = process.env.DEV_USER_ID || "dev-user";
+const DEV_USER_ID = process.env.DEV_USER_ID!;
 
 const billingGuard = (feature: FeatureType) => {
   return async (req: Request, res: Response, next: NextFunction) => {
