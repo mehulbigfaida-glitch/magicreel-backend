@@ -19,6 +19,8 @@ const featureCredits: Record<FeatureType, number> = {
   CINEMATIC_REEL_20S: 10,
 };
 
+const DEV_USER_ID = process.env.DEV_USER_ID || "dev-user";
+
 const billingGuard = (feature: FeatureType) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -26,18 +28,15 @@ const billingGuard = (feature: FeatureType) => {
         return res.status(500).json({ error: "Prisma not initialized" });
       }
 
-      const authUser = (req as any).user;
-
-      if (!authUser) {
-        return res.status(401).json({ error: "Unauthorized" });
-      }
-
+      // ✅ DEV MODE: skip auth, use fixed user
       const user = await prisma.user.findUnique({
-        where: { id: authUser.id },
+        where: { id: DEV_USER_ID },
       });
 
       if (!user) {
-        return res.status(404).json({ error: "User not found" });
+        return res.status(404).json({
+          error: "Dev user not found. Please create user with id = dev-user",
+        });
       }
 
       const creditsRequired = featureCredits[feature];
