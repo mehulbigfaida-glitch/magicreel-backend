@@ -8,7 +8,7 @@ import { authenticate } from "../../../auth/jwt.middleware";
 const router = Router();
 
 /* -------------------------------
-   LOOKBOOK GENERATION (WITH BILLING)
+   LOOKBOOK GENERATION
 -------------------------------- */
 
 router.post(
@@ -29,13 +29,13 @@ router.get(
 );
 
 /* -------------------------------
-   EXPORT
+   EXPORT (SAFE WRAP)
 -------------------------------- */
 
 router.post(
   "/export",
   authenticate,
-  exportLookbook
+  (req, res) => exportLookbook(req, res) // ✅ prevents undefined crash
 );
 
 export default router;
