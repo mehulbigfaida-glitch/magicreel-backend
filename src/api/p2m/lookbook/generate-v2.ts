@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import axios from "axios";
+import { BillingService } from "../../../billing/billing.service"; // ✅ ADDED
 
 const REPLICATE_API_TOKEN = process.env.REPLICATE_API_TOKEN as string;
 
@@ -60,28 +61,28 @@ export async function generateLookbookV2(
   res: Response
 ) {
   try {
-  const { heroImageUrl, backHeroImageUrl } = req.body;
+    const { heroImageUrl, backHeroImageUrl } = req.body;
 
-  if (!heroImageUrl) {
-    return res.status(400).json({
-      error: "heroImageUrl required",
-    });
-  }
+    if (!heroImageUrl) {
+      return res.status(400).json({
+        error: "heroImageUrl required",
+      });
+    }
 
-  if (!REPLICATE_API_TOKEN) {
-    console.warn("⚠️ REPLICATE_API_TOKEN missing - skipping lookbook");
+    if (!REPLICATE_API_TOKEN) {
+      console.warn("⚠️ REPLICATE_API_TOKEN missing - skipping lookbook");
 
-    return res.json({
-      success: true,
-      poses: [
-        {
-          poseId: "HERO",
-          poseType: "hero",
-          imageUrl: heroImageUrl,
-        },
-      ],
-    });
-  }
+      return res.json({
+        success: true,
+        poses: [
+          {
+            poseId: "HERO",
+            poseType: "hero",
+            imageUrl: heroImageUrl,
+          },
+        ],
+      });
+    }
 
     if (!heroImageUrl) {
       return res.status(400).json({
@@ -118,10 +119,8 @@ export async function generateLookbookV2(
     ----------------------------------- */
 
     for (const pose of POSES) {
-
       try {
-
-        const modelImage = heroImageUrl; // ALWAYS FRONT HERO
+        const modelImage = heroImageUrl;
 
         const response = await axios.post(
           QWEN_URL,
@@ -146,15 +145,9 @@ export async function generateLookbookV2(
         const predictionUrl = response.data.urls.get;
 
         let finalUrl = modelImage;
-
         const start = Date.now();
 
-        /* -----------------------------------
-           POLLING
-        ----------------------------------- */
-
         while (true) {
-
           if (Date.now() - start > 90000) {
             console.warn(`Timeout for ${pose.id}`);
             break;
@@ -188,7 +181,6 @@ export async function generateLookbookV2(
         });
 
       } catch (err) {
-
         console.error(`Error on ${pose.id}:`, (err as any)?.message);
 
         poses.push({
@@ -196,9 +188,7 @@ export async function generateLookbookV2(
           poseType: pose.type,
           imageUrl: heroImageUrl,
         });
-
       }
-
     }
 
     /* -----------------------------------
@@ -208,13 +198,29 @@ export async function generateLookbookV2(
     const frontPose = poses.find(p => p.poseId === "P1");
 
     if (frontPose?.imageUrl) {
-
       poses.push({
         poseId: "P5",
         poseType: "cropped",
         imageUrl: getCroppedImage(frontPose.imageUrl),
       });
+    }
 
+    /* -----------------------------------
+       ✅ BILLING (SUCCESS-ONLY)
+    ----------------------------------- */
+
+    const billing = (req as any).billing;
+
+    if (billing) {
+      try {
+        await BillingService.deductCreditsAtomic(
+          billing.userId,
+          billing.feature,
+          billing.creditsRequired
+        );
+      } catch (e) {
+        console.error("Lookbook billing failed:", e);
+      }
     }
 
     /* -----------------------------------
@@ -227,12 +233,10 @@ export async function generateLookbookV2(
     });
 
   } catch (error) {
-
     console.error("Lookbook V2 Error:", error);
 
     return res.status(500).json({
       error: "Lookbook failed",
     });
-
   }
 }
