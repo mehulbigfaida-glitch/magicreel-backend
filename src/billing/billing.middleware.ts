@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from "express";
 import { prisma } from "../magicreel/db/prisma";
-import { BillingService } from "./billing.service";
 
 export type FeatureType =
   | "HERO"
@@ -41,11 +40,19 @@ const billingGuard = (feature: FeatureType) => {
 
       const creditsRequired = featureCredits[feature];
 
-      await BillingService.deductCreditsAtomic(
-        user.id,
+      // ✅ ONLY VALIDATE — DO NOT DEDUCT
+      if (user.creditsAvailable < creditsRequired) {
+        return res.status(400).json({
+          error: "Insufficient credits",
+        });
+      }
+
+      // ✅ PASS BILLING INFO FOR LATER (SUCCESS-ONLY DEDUCTION)
+      (req as any).billing = {
+        userId: user.id,
         feature,
-        creditsRequired
-      );
+        creditsRequired,
+      };
 
       (req as any).user = user;
 
@@ -54,7 +61,7 @@ const billingGuard = (feature: FeatureType) => {
     } catch (error: any) {
       console.error("BILLING ERROR:", error);
       return res.status(400).json({
-        error: error.message || "Billing failed",
+        error: error.message || "Billing validation failed",
       });
     }
   };
