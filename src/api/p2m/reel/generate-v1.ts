@@ -1,30 +1,19 @@
 import { Request, Response } from "express";
 import { prisma } from "../../../magicreel/db/prisma";
-import { v2 as cloudinary } from "cloudinary";
 
-const db = prisma!;
+const db = prisma as any;
 
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME as string,
-  api_key: process.env.CLOUDINARY_API_KEY as string,
-  api_secret: process.env.CLOUDINARY_API_SECRET as string,
-});
-
-export async function generateReelV1(req: Request, res: Response) {
+export async function generateReelV1Controller(req: Request, res: Response) {
   try {
-
     const { jobId, heroPreviewUrl } = req.body;
 
     if (!jobId || !heroPreviewUrl) {
       return res.status(400).json({
-        error: "jobId and heroPreviewUrl required",
+        error: "Missing fields",
       });
     }
 
-    /* =========================
-       CREATE JOB
-    ========================= */
-
+    // create job
     await db.reelJob.create({
       data: {
         id: jobId,
@@ -33,54 +22,21 @@ export async function generateReelV1(req: Request, res: Response) {
       },
     });
 
-    /* =========================
-       ASYNC PROCESS (NON-BLOCKING)
-    ========================= */
-
-    (async () => {
+    // simulate async reel generation (replace with Kling later)
+    setTimeout(async () => {
       try {
-
-        console.log("🎬 Reel job started:", jobId);
-
-        // 🔥 TEMP: simulate reel generation (replace later with Kling)
-        const videoUrl = heroPreviewUrl;
-
-        console.log("Uploading to Cloudinary...");
-
-        const upload = await cloudinary.uploader.upload(videoUrl, {
-          resource_type: "video",
-          folder: `magicreel/${jobId}/reel`,
-        });
-
-        const finalUrl = upload.secure_url;
-
+        // ⚠️ TEMP: use same image as video placeholder
         await db.reelJob.update({
           where: { id: jobId },
           data: {
             status: "completed",
-            reelVideoUrl: finalUrl,
+            reelVideoUrl: heroPreviewUrl, // replace later
           },
         });
-
-        console.log("✅ Reel completed:", finalUrl);
-
       } catch (err) {
-
-        console.error("❌ Reel job failed:", err);
-
-        await db.reelJob.update({
-          where: { id: jobId },
-          data: {
-            status: "failed",
-          },
-        });
-
+        console.error("Reel async error:", err);
       }
-    })();
-
-    /* =========================
-       IMMEDIATE RESPONSE
-    ========================= */
+    }, 60000);
 
     return res.json({
       success: true,
@@ -88,12 +44,10 @@ export async function generateReelV1(req: Request, res: Response) {
     });
 
   } catch (error) {
-
-    console.error("Generate Reel Error:", error);
+    console.error("Reel generation error:", error);
 
     return res.status(500).json({
       error: "Reel generation failed",
     });
-
   }
 }

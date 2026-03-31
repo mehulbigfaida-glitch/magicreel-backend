@@ -1,12 +1,16 @@
 console.log("ENABLE_BILLING:", process.env.ENABLE_BILLING);
 
 import rateLimit from "express-rate-limit";
-import { generateReelV1Controller } from "../../api/p2m/reel/generate-v1";
 import { Router, Request, Response, NextFunction } from "express";
+
 import heroRoutes from "../../api/p2m/hero";
 import lookbookRoutes from "../../api/p2m/lookbook";
-import { billingGuard } from "../../billing/billing.middleware";
 import cinematicRoutes from "./cinematic.routes";
+
+import { billingGuard } from "../../billing/billing.middleware";
+
+import { generateReelV1Controller } from "../../api/p2m/reel/generate-v1";
+import { getReelStatus } from "../../api/p2m/reel/status";
 
 /* ----------------------------------
    CONFIG FLAGS
@@ -37,8 +41,8 @@ const heroLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: {
-    error: "Too many hero generation requests. Please wait a moment."
-  }
+    error: "Too many hero generation requests. Please wait a moment.",
+  },
 });
 
 /* ----------------------------------
@@ -46,6 +50,10 @@ const heroLimiter = rateLimit({
 ---------------------------------- */
 
 const router = Router();
+
+/* ----------------------------------
+   🎬 CINEMATIC
+---------------------------------- */
 
 router.use("/cinematic", cinematicRoutes);
 
@@ -57,6 +65,11 @@ router.post(
   "/reel/generate-v1",
   optionalBilling("REEL"),
   generateReelV1Controller
+);
+
+router.get(
+  "/reel/status/:jobId",
+  getReelStatus
 );
 
 /* ----------------------------------
