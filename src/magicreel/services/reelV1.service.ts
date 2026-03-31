@@ -14,9 +14,9 @@ export const reelV1Service = {
     console.log("🎬 Sending to Kling v2.1:", imageUrl);
 
     const prediction = await replicate.predictions.create({
-      version: "kwaivgi/kling-v2.1", // ✅ FIXED
+      version: "kwaivgi/kling-v2.1",
       input: {
-        start_image: imageUrl, // ✅ FIXED
+        start_image: imageUrl,
         prompt:
           "A fashion model walking naturally towards camera, cinematic lighting, smooth motion",
         duration: 5,
@@ -43,14 +43,18 @@ export const reelV1Service = {
       throw new Error("Kling generation failed");
     }
 
-    // ✅ SAFE OUTPUT EXTRACTION
-    const videoUrl =
-      (result.output && result.output[0]) ||
-      result.urls?.stream ||
-      null;
+    /* ----------------------------------
+       ✅ FINAL FIX — USE DIRECT MP4 ONLY
+    ---------------------------------- */
+
+    let videoUrl: string | null = null;
+
+    if (Array.isArray(result.output) && result.output.length > 0) {
+      videoUrl = result.output[0]; // ✅ CORRECT MP4 URL
+    }
 
     if (!videoUrl) {
-      console.error("❌ No video URL in result:", result);
+      console.error("❌ No valid video URL in result:", result);
       throw new Error("No video URL returned from Kling");
     }
 
