@@ -17,6 +17,8 @@ export async function generateReelV1Controller(
       });
     }
 
+    console.log("🎬 Reel request received:", jobId);
+
     // ✅ CREATE JOB
     await db.reelJob.create({
       data: {
@@ -26,40 +28,26 @@ export async function generateReelV1Controller(
       },
     });
 
-    // ✅ RETURN FAST
-    res.json({ success: true });
+    // 🔥 RUN DIRECTLY (NO BACKGROUND)
+    const result = await reelV1Service.generate({
+      imageUrl: heroPreviewUrl,
+    });
 
-    // 🔥 BACKGROUND TASK
-    (async () => {
-      try {
-        console.log("🎬 Starting Reel:", jobId);
+    await db.reelJob.update({
+      where: { id: jobId },
+      data: {
+        status: "completed",
+        reelVideoUrl: result.reelVideoUrl,
+      },
+    });
 
-        const result = await reelV1Service.generate({
-          imageUrl: heroPreviewUrl,
-        });
-
-        await db.reelJob.update({
-          where: { id: jobId },
-          data: {
-            status: "completed",
-            reelVideoUrl: result.reelVideoUrl,
-          },
-        });
-
-        console.log("✅ Reel Done");
-
-      } catch (err) {
-        console.error("❌ Reel failed:", err);
-
-        await db.reelJob.update({
-          where: { id: jobId },
-          data: { status: "failed" },
-        });
-      }
-    })();
+    return res.json({
+      success: true,
+      reelVideoUrl: result.reelVideoUrl,
+    });
 
   } catch (error) {
-    console.error("Controller error:", error);
+    console.error("❌ Reel generation error:", error);
 
     return res.status(500).json({
       error: "Reel generation failed",
