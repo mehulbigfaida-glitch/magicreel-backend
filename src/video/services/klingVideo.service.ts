@@ -1,5 +1,5 @@
 // src/video/services/klingVideo.service.ts
-// FINAL – KLING 2.1 (DYNAMIC PROMPT + STREAM SAFE)
+// FINAL – KLING 2.1 (URL INPUT + STREAM SAFE)
 
 import fs from "fs";
 import path from "path";
@@ -12,42 +12,39 @@ const replicate = new Replicate({
 
 export class KlingVideoService {
   async generateClip(params: {
-    imagePath: string;
+    imageUrl: string;        // 🔥 URL instead of local path
     outputVideoPath: string;
-    prompt: string;          // 🔥 NEW
-    duration?: number;       // 🔥 NEW
-    negativePrompt?: string; // 🔥 OPTIONAL
+    prompt: string;
+    duration?: number;
+    negativePrompt?: string;
   }): Promise<void> {
 
     const {
-      imagePath,
+      imageUrl,
       outputVideoPath,
       prompt,
       duration = 10,
       negativePrompt,
     } = params;
 
-    if (!fs.existsSync(imagePath)) {
-      throw new Error("Input image not found");
+    if (!imageUrl) {
+      throw new Error("start_image URL is required");
     }
-
-    const imageBuffer = fs.readFileSync(imagePath);
 
     const input: any = {
       mode: "standard",
       duration,
-      start_image: imageBuffer,
+      start_image: imageUrl, // ✅ FIXED (URL, not buffer)
       prompt,
     };
 
-    // ✅ optional negative prompt
     if (negativePrompt) {
       input.negative_prompt = negativePrompt;
     }
 
     console.log("🎬 KLING REQUEST");
+    console.log("Start Image:", imageUrl);
     console.log("Duration:", duration);
-
     console.log("🔑 Replicate token present:", !!process.env.REPLICATE_API_TOKEN);
 
     /* ----------------------------------
@@ -64,7 +61,7 @@ export class KlingVideoService {
     ---------------------------------- */
 
     if (!output || typeof output.getReader !== "function") {
-      console.error("RAW OUTPUT:", output);
+      console.error("❌ RAW OUTPUT:", output);
       throw new Error("Kling output is not a Web ReadableStream");
     }
 

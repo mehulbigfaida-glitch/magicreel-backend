@@ -6,12 +6,17 @@ const replicate = new Replicate({
 
 export const reelV1Service = {
   async generate({ imageUrl }: { imageUrl: string }) {
+
+    if (!imageUrl) {
+      throw new Error("imageUrl is required");
+    }
+
     console.log("🎬 Sending to Kling v2.1:", imageUrl);
 
     const prediction = await replicate.predictions.create({
-      model: "kwaivgi/kling-v2.1",
+      version: "kwaivgi/kling-v2.1", // ✅ FIXED
       input: {
-        image: imageUrl,
+        start_image: imageUrl, // ✅ FIXED
         prompt:
           "A fashion model walking naturally towards camera, cinematic lighting, smooth motion",
         duration: 5,
@@ -34,10 +39,20 @@ export const reelV1Service = {
     }
 
     if (result.status !== "succeeded") {
+      console.error("❌ Kling failed:", result);
       throw new Error("Kling generation failed");
     }
 
-    const videoUrl = result.urls?.stream;
+    // ✅ SAFE OUTPUT EXTRACTION
+    const videoUrl =
+      (result.output && result.output[0]) ||
+      result.urls?.stream ||
+      null;
+
+    if (!videoUrl) {
+      console.error("❌ No video URL in result:", result);
+      throw new Error("No video URL returned from Kling");
+    }
 
     console.log("✅ Video ready:", videoUrl);
 
