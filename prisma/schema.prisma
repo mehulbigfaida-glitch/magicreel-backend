@@ -179,9 +179,9 @@ model CinematicLookbook {
 model ReelJob {
   id            String   @id
   status        String
-  inputImageUrl String
-  reelVideoUrl  String?
-  createdAt     DateTime @default(now())
+  inputImageUrl String   @map("input_image_url")
+  reelVideoUrl  String?  @map("reel_video_url")
+  createdAt     DateTime @default(now()) @map("created_at")
 
   @@map("reel_jobs")
 }
