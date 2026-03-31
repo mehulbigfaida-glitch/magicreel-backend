@@ -175,3 +175,13 @@ model CinematicLookbook {
 
   @@index([userId])
 }
+
+model ReelJob {
+  id            String   @id
+  status        String
+  inputImageUrl String
+  reelVideoUrl  String?
+  createdAt     DateTime @default(now())
+
+  @@map("reel_jobs")
+}
