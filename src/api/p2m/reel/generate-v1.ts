@@ -1,56 +1,81 @@
 import { Request, Response } from "express";
-import { prisma } from "../../../magicreel/db/prisma";
 import { reelV1Service } from "../../../magicreel/services/reelV1.service";
-
-const db = prisma as any;
+import { prisma } from "../../../magicreel/db/prisma";
 
 export async function generateReelV1Controller(
   req: Request,
   res: Response
 ) {
   try {
-    const { jobId, heroPreviewUrl } = req.body;
+    const { imageUrl } = req.body;
 
-    if (!jobId || !heroPreviewUrl) {
+    const billing = (req as any).billing;
+
+    if (!billing) {
       return res.status(400).json({
-        error: "Missing params",
+        success: false,
+        error: "Billing not initialized",
       });
     }
 
-    console.log("🎬 Reel request received:", jobId);
+    if (!imageUrl) {
+      return res.status(400).json({
+        success: false,
+        error: "imageUrl is required",
+      });
+    }
 
-    // ✅ CREATE JOB
-    await db.reelJob.create({
-      data: {
-        id: jobId,
-        status: "processing",
-        inputImageUrl: heroPreviewUrl,
-      },
-    });
+    if (!prisma) {
+      return res.status(500).json({
+        success: false,
+        error: "Prisma not initialized",
+      });
+    }
 
-    // 🔥 RUN DIRECTLY (NO BACKGROUND)
-    const result = await reelV1Service.generate({
-      imageUrl: heroPreviewUrl,
-    });
+    /* ----------------------------------
+       GENERATE REEL
+    ---------------------------------- */
 
-    await db.reelJob.update({
-      where: { id: jobId },
-      data: {
-        status: "completed",
-        reelVideoUrl: result.reelVideoUrl,
-      },
-    });
+    const result = await reelV1Service.generate({ imageUrl });
 
-    return res.json({
+    /* ----------------------------------
+       DEDUCT CREDIT (DYNAMIC)
+    ---------------------------------- */
+
+    await prisma.$transaction([
+      prisma.user.update({
+        where: { id: billing.userId },
+        data: {
+          creditsAvailable: {
+            decrement: billing.creditsRequired,
+          },
+        },
+      }),
+
+      prisma.creditTransaction.create({
+        data: {
+          user: {
+            connect: { id: billing.userId },
+          },
+          feature: billing.feature,
+          credits: billing.creditsRequired,
+          type: "DEBIT",
+          status: "COMPLETED",
+        },
+      }),
+    ]);
+
+    return res.status(200).json({
       success: true,
       reelVideoUrl: result.reelVideoUrl,
     });
 
-  } catch (error) {
-    console.error("❌ Reel generation error:", error);
+  } catch (error: any) {
+    console.error("❌ Reel V1 Error:", error);
 
     return res.status(500).json({
-      error: "Reel generation failed",
+      success: false,
+      error: error.message || "Reel generation failed",
     });
   }
 }
