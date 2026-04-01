@@ -27,7 +27,6 @@ const optionalBilling = (feature: any) => {
     return billingGuard(feature);
   }
 
-  // Dev bypass
   return (_req: Request, _res: Response, next: NextFunction) => next();
 };
 
@@ -58,33 +57,35 @@ const router = Router();
 router.use("/cinematic", cinematicRoutes);
 
 /* ----------------------------------
-   🎬 REEL V1
+   🎬 REEL V1 (3 credits)
 ---------------------------------- */
 
 router.post(
   "/reel/generate-v1",
-  optionalBilling("REEL"),
+  optionalBilling("REEL"), // ✅ 3 credits
   generateReelV1Controller
 );
 
-router.get(
-  "/reel/status/:jobId",
-  getReelStatus
+router.get("/reel/status/:jobId", getReelStatus);
+
+/* ----------------------------------
+   👗 HERO (1 credit)
+---------------------------------- */
+
+router.use(
+  "/hero",
+  heroLimiter,
+  optionalBilling("HERO"), // ✅ FIX ADDED
+  heroRoutes
 );
 
 /* ----------------------------------
-   👗 HERO
----------------------------------- */
-
-router.use("/hero", heroLimiter, heroRoutes);
-
-/* ----------------------------------
-   📚 LOOKBOOK
+   📚 LOOKBOOK (2 credits)
 ---------------------------------- */
 
 router.use(
   "/lookbook",
-  optionalBilling("LOOKBOOK_ECOM"),
+  optionalBilling("LOOKBOOK_ECOM"), // ✅ 2 credits
   lookbookRoutes
 );
 

@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { reelV1Service } from "../../../magicreel/services/reelV1.service";
 import { prisma } from "../../../magicreel/db/prisma";
+import { finalizeBilling } from "../../../billing/billing.middleware"; // ✅ FIX
 
 export async function generateReelV1Controller(
   req: Request,
@@ -8,15 +9,6 @@ export async function generateReelV1Controller(
 ) {
   try {
     const { imageUrl } = req.body;
-
-    const billing = (req as any).billing;
-
-    if (!billing) {
-      return res.status(400).json({
-        success: false,
-        error: "Billing not initialized",
-      });
-    }
 
     if (!imageUrl) {
       return res.status(400).json({
@@ -39,31 +31,15 @@ export async function generateReelV1Controller(
     const result = await reelV1Service.generate({ imageUrl });
 
     /* ----------------------------------
-       DEDUCT CREDIT (DYNAMIC)
+       ✅ BILLING (UNIFIED SYSTEM)
     ---------------------------------- */
 
-    await prisma.$transaction([
-      prisma.user.update({
-        where: { id: billing.userId },
-        data: {
-          creditsAvailable: {
-            decrement: billing.creditsRequired,
-          },
-        },
-      }),
-
-      prisma.creditTransaction.create({
-        data: {
-          user: {
-            connect: { id: billing.userId },
-          },
-          feature: billing.feature,
-          credits: billing.creditsRequired,
-          type: "DEBIT",
-          status: "COMPLETED",
-        },
-      }),
-    ]);
+    try {
+      await finalizeBilling(req); // ✅ SINGLE SOURCE
+    } catch (e) {
+      console.error("Reel billing failed:", e);
+      // do not block response
+    }
 
     return res.status(200).json({
       success: true,

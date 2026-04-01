@@ -2,7 +2,7 @@ import { prisma } from "../../../magicreel/db/prisma";
 import { Request, Response } from "express";
 import { buildHeroPrompt } from "../../../magicreel/prompts/heroPrompt";
 import { FashnService } from "../../../magicreel/services/fashn.service";
-import { BillingService } from "../../../billing/billing.service"; // ✅ ADD
+import { finalizeBilling } from "../../../billing/billing.middleware"; // ✅ USE THIS
 
 const fashn = new FashnService();
 
@@ -37,7 +37,6 @@ export async function generateHeroV2(
     }
 
     const user = (req as any).user;
-    const billing = (req as any).billing; // ✅ GET BILLING
 
     if (!user || !user.id) {
       return res.status(401).json({
@@ -138,20 +137,14 @@ export async function generateHeroV2(
     }
 
     /* =========================
-       ✅ BILLING — SUCCESS ONLY
+       ✅ BILLING — SINGLE SOURCE
     ========================= */
 
-    if (billing) {
-      try {
-        await BillingService.deductCreditsAtomic(
-          billing.userId,
-          billing.feature,
-          billing.creditsRequired
-        );
-      } catch (e) {
-        console.error("Billing failed AFTER success:", e);
-        // ❗ Do NOT fail request — generation already started
-      }
+    try {
+      await finalizeBilling(req); // ✅ ONLY THIS
+    } catch (e) {
+      console.error("Billing failed AFTER success:", e);
+      // do not block response
     }
 
     return res.json({

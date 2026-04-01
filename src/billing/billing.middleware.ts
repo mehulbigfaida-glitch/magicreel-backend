@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction } from "express";
-import { prisma } from "../magicreel/db/prisma";
+import { prisma as prismaClient } from "../magicreel/db/prisma";
+
+const prisma = prismaClient!; // ✅ force non-null (safe in runtime)
 
 export type FeatureType =
   | "HERO"
@@ -20,34 +22,31 @@ const featureCredits: Record<FeatureType, number> = {
 
 const DEV_USER_ID = process.env.DEV_USER_ID!;
 
-const billingGuard = (feature: FeatureType) => {
+/* ----------------------------------
+   BILLING GUARD (VALIDATION ONLY)
+---------------------------------- */
+
+export const billingGuard = (feature: FeatureType) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
-      if (!prisma) {
-        return res.status(500).json({ error: "Prisma not initialized" });
-      }
-
-      // ✅ DEV MODE: skip auth, use fixed user
       const user = await prisma.user.findUnique({
         where: { id: DEV_USER_ID },
       });
 
       if (!user) {
         return res.status(404).json({
-          error: "Dev user not found. Please create user with id = dev-user",
+          error: "Dev user not found",
         });
       }
 
       const creditsRequired = featureCredits[feature];
 
-      // ✅ ONLY VALIDATE — DO NOT DEDUCT
       if (user.creditsAvailable < creditsRequired) {
         return res.status(400).json({
           error: "Insufficient credits",
         });
       }
 
-      // ✅ PASS BILLING INFO FOR LATER (SUCCESS-ONLY DEDUCTION)
       (req as any).billing = {
         userId: user.id,
         feature,
@@ -57,7 +56,6 @@ const billingGuard = (feature: FeatureType) => {
       (req as any).user = user;
 
       next();
-
     } catch (error: any) {
       console.error("BILLING ERROR:", error);
       return res.status(400).json({
@@ -67,4 +65,35 @@ const billingGuard = (feature: FeatureType) => {
   };
 };
 
-export { billingGuard };
+/* ----------------------------------
+   FINALIZE BILLING (SUCCESS ONLY)
+---------------------------------- */
+
+export const finalizeBilling = async (req: Request) => {
+  const billing = (req as any).billing;
+
+  if (!billing) return;
+
+  const { userId, feature, creditsRequired } = billing;
+
+  await prisma.$transaction([
+    prisma.user.update({
+      where: { id: userId },
+      data: {
+        creditsAvailable: {
+          decrement: creditsRequired,
+        },
+      },
+    }),
+
+    prisma.creditTransaction.create({
+      data: {
+        userId,
+        feature,
+        credits: creditsRequired,
+        type: "DEBIT",
+        status: "COMPLETED", // ✅ REQUIRED FIX
+      },
+    }),
+  ]);
+};
