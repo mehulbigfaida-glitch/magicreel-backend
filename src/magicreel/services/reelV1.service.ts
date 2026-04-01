@@ -6,7 +6,6 @@ const replicate = new Replicate({
 
 export const reelV1Service = {
   async generate({ imageUrl }: { imageUrl: string }) {
-
     if (!imageUrl) {
       throw new Error("imageUrl is required");
     }
@@ -26,13 +25,20 @@ export const reelV1Service = {
     console.log("⏳ Waiting for result...");
 
     let result = prediction;
+    let attempts = 0;
+    const MAX_ATTEMPTS = 60;
 
     while (
       result.status !== "succeeded" &&
       result.status !== "failed"
     ) {
-      await new Promise((r) => setTimeout(r, 3000));
+      if (attempts >= MAX_ATTEMPTS) {
+        throw new Error("Kling timeout");
+      }
 
+      attempts++;
+
+      await new Promise((r) => setTimeout(r, 3000));
       result = await replicate.predictions.get(result.id);
 
       console.log("⏳ status:", result.status);
@@ -43,14 +49,12 @@ export const reelV1Service = {
       throw new Error("Kling generation failed");
     }
 
-    /* ----------------------------------
-       ✅ FINAL FIX — USE DIRECT MP4 ONLY
-    ---------------------------------- */
-
     let videoUrl: string | null = null;
 
-    if (Array.isArray(result.output) && result.output.length > 0) {
-      videoUrl = result.output[0]; // ✅ CORRECT MP4 URL
+    if (typeof result.output === "string") {
+      videoUrl = result.output;
+    } else if (Array.isArray(result.output) && result.output.length > 0) {
+      videoUrl = result.output[0];
     }
 
     if (!videoUrl) {
@@ -59,6 +63,7 @@ export const reelV1Service = {
     }
 
     console.log("✅ Video ready:", videoUrl);
+    console.log("🎬 Prediction ID:", result.id);
 
     return { reelVideoUrl: videoUrl };
   },
