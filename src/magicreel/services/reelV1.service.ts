@@ -1,8 +1,36 @@
 import Replicate from "replicate";
+import { v2 as cloudinary } from "cloudinary";
+import fs from "fs";
+import path from "path";
+import https from "https";
 
 const replicate = new Replicate({
   auth: process.env.REPLICATE_API_TOKEN!,
 });
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME!,
+  api_key: process.env.CLOUDINARY_API_KEY!,
+  api_secret: process.env.CLOUDINARY_API_SECRET!,
+});
+
+function downloadFile(url: string, outputPath: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const file = fs.createWriteStream(outputPath);
+
+    https.get(url, (response) => {
+      response.pipe(file);
+
+      file.on("finish", () => {
+        file.close();
+        resolve();
+      });
+    }).on("error", (err) => {
+      fs.unlinkSync(outputPath);
+      reject(err);
+    });
+  });
+}
 
 export const reelV1Service = {
   async generate({ imageUrl }: { imageUrl: string }) {
@@ -58,13 +86,29 @@ export const reelV1Service = {
     }
 
     if (!videoUrl) {
-      console.error("❌ No valid video URL in result:", result);
       throw new Error("No video URL returned from Kling");
     }
 
-    console.log("✅ Video ready:", videoUrl);
-    console.log("🎬 Prediction ID:", result.id);
+    console.log("⬇️ Downloading video...");
 
-    return { reelVideoUrl: videoUrl };
+    const tempDir = path.join(process.cwd(), "storage", "reels");
+    fs.mkdirSync(tempDir, { recursive: true });
+
+    const localPath = path.join(tempDir, `reel-${Date.now()}.mp4`);
+
+    await downloadFile(videoUrl, localPath);
+
+    console.log("☁️ Uploading to Cloudinary...");
+
+    const upload = await cloudinary.uploader.upload(localPath, {
+      resource_type: "video",
+      folder: "magicreel/reels",
+    });
+
+    fs.unlinkSync(localPath);
+
+    console.log("✅ Cloudinary URL:", upload.secure_url);
+
+    return { reelVideoUrl: upload.secure_url };
   },
 };
