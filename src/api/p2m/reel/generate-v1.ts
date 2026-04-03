@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { reelV1Service } from "../../../magicreel/services/reelV1.service";
 import { prisma } from "../../../magicreel/db/prisma";
 import { finalizeBilling } from "../../../billing/billing.middleware"; // ✅ FIX
+import { checkCreditsOrThrow } from "../../../billing/billing.middleware";
 
 export async function generateReelV1Controller(
   req: Request,
@@ -27,7 +28,7 @@ export async function generateReelV1Controller(
     /* ----------------------------------
        GENERATE REEL
     ---------------------------------- */
-
+await checkCreditsOrThrow(req, 3);
     const result = await reelV1Service.generate({ imageUrl });
 
 // 🔥 attach referenceId
@@ -54,9 +55,18 @@ export async function generateReelV1Controller(
   } catch (error: any) {
     console.error("❌ Reel V1 Error:", error);
 
-    return res.status(500).json({
-      success: false,
-      error: error.message || "Reel generation failed",
-    });
+    if (error.code === "INSUFFICIENT_CREDITS") {
+  return res.status(400).json({
+    success: false,
+    error: "INSUFFICIENT_CREDITS",
+    required: error.required,
+    available: error.available,
+  });
+}
+
+return res.status(500).json({
+  success: false,
+  error: error.message || "Reel generation failed",
+});
   }
 }

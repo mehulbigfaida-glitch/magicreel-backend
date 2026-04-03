@@ -97,3 +97,24 @@ export const finalizeBilling = async (req: Request) => {
   }),
 ]);
 };
+
+export async function checkCreditsOrThrow(req: any, required: number) {
+  const user = req.user;
+
+  if (!user) {
+    const err: any = new Error("Unauthorized");
+    err.code = "UNAUTHORIZED";
+    throw err;
+  }
+
+  // ⚠️ TEMP LOGIC (replace later with real credit system)
+  const availableCredits = user.plan === "FREE" ? 0 : 100;
+
+  if (availableCredits < required) {
+    const err: any = new Error("INSUFFICIENT_CREDITS");
+    err.code = "INSUFFICIENT_CREDITS";
+    err.required = required;
+    err.available = availableCredits;
+    throw err;
+  }
+}
