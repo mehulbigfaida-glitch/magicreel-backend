@@ -76,24 +76,24 @@ export const finalizeBilling = async (req: Request) => {
 
   const { userId, feature, creditsRequired } = billing;
 
-  await prisma.$transaction([
-    prisma.user.update({
-      where: { id: userId },
-      data: {
-        creditsAvailable: {
-          decrement: creditsRequired,
-        },
+  await prisma.$transaction([ 
+  prisma.user.update({
+    where: { id: userId },
+    data: {
+      creditsAvailable: {
+        decrement: creditsRequired,
       },
-    }),
+    },
+  }),
 
-    prisma.creditTransaction.create({
-      data: {
-        userId,
-        feature,
-        credits: creditsRequired,
-        type: "DEBIT",
-        status: "COMPLETED", // ✅ REQUIRED FIX
-      },
-    }),
-  ]);
+  prisma.creditTransaction.create({
+    data: {
+      userId,
+      feature,
+      credits: creditsRequired,
+      type: "DEBIT",
+      status: "COMPLETED", // ✅ REQUIRED FIX
+    },
+  }),
+]);
 };

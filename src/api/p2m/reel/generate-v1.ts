@@ -30,6 +30,11 @@ export async function generateReelV1Controller(
 
     const result = await reelV1Service.generate({ imageUrl });
 
+// 🔥 attach referenceId
+(req as any).billingMetadata = {
+  referenceId: result.predictionId || null,
+};
+
     /* ----------------------------------
        ✅ BILLING (UNIFIED SYSTEM)
     ---------------------------------- */

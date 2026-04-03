@@ -109,6 +109,9 @@ export const reelV1Service = {
 
     console.log("✅ Cloudinary URL:", upload.secure_url);
 
-    return { reelVideoUrl: upload.secure_url };
+    return {
+  reelVideoUrl: upload.secure_url,
+  predictionId: result.id, // ✅ add this
+};
   },
 };
