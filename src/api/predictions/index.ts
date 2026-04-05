@@ -1,5 +1,5 @@
 import { Router } from "express";
-import getPredictions from "./getPredictions";
+import { getPredictions } from "./getPredictions";
 
 const router = Router();
 

@@ -3,9 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 ////////////////////////////////////////////////////////
@@ -70,8 +69,8 @@ model CreditTransaction {
   userId       String   @map("user_id")
   feature      String
   credits      Int
-  type         TransactionType
-  status       TransactionStatus
+  type         TransactionType @default(DEBIT)
+  status       TransactionStatus @default(COMPLETED)
   referenceId  String?  @map("reference_id")
   createdAt    DateTime @default(now()) @map("created_at")
 
@@ -122,6 +121,11 @@ model Render {
   outputImageUrl  String?
   status          String
   lookbookId      String
+
+  // ✅ NEW (add below)
+  type            String   @default("HERO") // HERO | REEL
+  reelVideoUrl    String?  // for reel
+
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 

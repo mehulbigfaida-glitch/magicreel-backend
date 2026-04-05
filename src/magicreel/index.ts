@@ -2,7 +2,7 @@ import "dotenv/config";
 
 import express from "express";
 import cors from "cors";
-import { prisma } from "./db/prisma";
+import prisma from "./db/prisma";
 import predictionsRoutes from "../api/predictions";
 import authRoutes from "../auth/auth.routes";
 import { authenticate } from "../auth/jwt.middleware";

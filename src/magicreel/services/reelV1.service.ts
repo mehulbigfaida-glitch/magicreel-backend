@@ -3,6 +3,7 @@ import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
 import path from "path";
 import https from "https";
+import prisma from "../db/prisma"; // ✅ ADD
 
 const replicate = new Replicate({
   auth: process.env.REPLICATE_API_TOKEN!,
@@ -33,7 +34,13 @@ function downloadFile(url: string, outputPath: string): Promise<void> {
 }
 
 export const reelV1Service = {
-  async generate({ imageUrl }: { imageUrl: string }) {
+  async generate({
+    imageUrl,
+    jobId, // ✅ ADD
+  }: {
+    imageUrl: string;
+    jobId?: string; // ✅ ADD
+  }) {
     if (!imageUrl) {
       throw new Error("imageUrl is required");
     }
@@ -109,9 +116,19 @@ export const reelV1Service = {
 
     console.log("✅ Cloudinary URL:", upload.secure_url);
 
+    // ✅ NEW: SAVE TO DB
+    if (jobId) {
+      await prisma.render.update({
+  where: { id: jobId },
+  data: {
+  outputImageUrl: upload.secure_url,
+},
+});
+    }
+
     return {
-  reelVideoUrl: upload.secure_url,
-  predictionId: result.id, // ✅ add this
-};
+      reelVideoUrl: upload.secure_url,
+      predictionId: result.id,
+    };
   },
 };
