@@ -11,12 +11,12 @@ export const getPredictions = async (req: Request, res: Response) => {
     });
 
     return res.json(data);
-  } catch (error) {
-    console.error("❌ Predictions error:", error);
+  } catch (error: any) {
+  console.error("❌ Predictions error:", error);
 
-    return res.status(500).json({
-      success: false,
-      error: "Failed to fetch predictions",
-    });
-  }
+  return res.status(500).json({
+    success: false,
+    error: error?.message || error, // 👈 THIS LINE IS KEY
+  });
+}
 };
