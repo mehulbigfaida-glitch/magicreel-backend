@@ -1,4 +1,4 @@
-import { prisma } from "../../../magicreel/db/prisma";
+import prisma from "../../../magicreel/db/prisma";
 import { Request, Response } from "express";
 import { buildHeroPrompt } from "../../../magicreel/prompts/heroPrompt";
 import { FashnService } from "../../../magicreel/services/fashn.service";
@@ -11,9 +11,6 @@ export async function generateHeroV2(
   res: Response
 ) {
   try {
-    if (!prisma) {
-      return res.status(500).json({ error: "Prisma not initialized" });
-    }
 
     const {
       categoryKey,
