@@ -1,22 +1,32 @@
 import { Request, Response } from "express";
-import prisma from "../../magicreel/db/prisma";
+import { prisma } from "../../magicreel/db/prisma";
 
 export const getPredictions = async (req: Request, res: Response) => {
   try {
-    const data = await prisma.render.findMany({
+
+    const jobs = await prisma.productToModelJob.findMany({
       orderBy: {
         createdAt: "desc",
       },
       take: 50,
     });
 
-    return res.json(data);
-  } catch (error: any) {
-  console.error("❌ Predictions error:", error);
+    return res.json(
+  jobs.map((job) => ({
+    id: job.id,
+    status: job.status,
+    imageUrl: job.resultImageUrl || null, // ✅ FIXED
+    createdAt: job.createdAt,
+    type: "hero",
+  }))
+);
 
-  return res.status(500).json({
-    success: false,
-    error: error?.message || error, // 👈 THIS LINE IS KEY
-  });
-}
+  } catch (error) {
+    console.error("❌ Predictions error:", error);
+
+    return res.status(500).json({
+      success: false,
+      error: "Failed to fetch predictions",
+    });
+  }
 };
