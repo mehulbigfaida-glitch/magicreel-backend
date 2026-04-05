@@ -7,10 +7,7 @@ export const BillingService = {
     feature: string,
     credits: number
   ) {
-    if (!prisma) {
-      throw new Error("Prisma not initialized");
-    }
-
+    
     return await prisma.$transaction(async (tx: any) => {
       const user = await tx.user.findUnique({
         where: { id: userId },

@@ -1,15 +1,12 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import { prisma } from "../magicreel/db/prisma";
+import prisma from "../magicreel/db/prisma";
 
 const JWT_SECRET = process.env.JWT_SECRET || "dev_secret";
 
 export async function authenticate(req: Request, res: Response, next: NextFunction) {
   try {
-    if (!prisma) {
-      return res.status(500).json({ error: "Prisma not initialized" });
-    }
-
+    
     const authHeader = req.headers.authorization;
 
     if (!authHeader) {
