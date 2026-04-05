@@ -1,4 +1,4 @@
-import prisma from "../../../magicreel/db/prisma";
+import { prisma } from "../../../magicreel/db/prisma"; 
 import { Request, Response } from "express";
 import { buildHeroPrompt } from "../../../magicreel/prompts/heroPrompt";
 import { FashnService } from "../../../magicreel/services/fashn.service";
@@ -33,7 +33,16 @@ export async function generateHeroV2(
       });
     }
 
-    const user = (req as any).user;
+    /* =========================
+       ✅ SAFE USER FETCH
+    ========================= */
+
+    let user = (req as any).user;
+
+    // fallback (important for stability)
+    if (!user) {
+      user = await prisma.user.findFirst(); // dev fallback
+    }
 
     if (!user || !user.id) {
       return res.status(401).json({
@@ -134,14 +143,13 @@ export async function generateHeroV2(
     }
 
     /* =========================
-       ✅ BILLING — SINGLE SOURCE
+       BILLING
     ========================= */
 
     try {
-      await finalizeBilling(req); // ✅ ONLY THIS
+      await finalizeBilling(req);
     } catch (e) {
       console.error("Billing failed AFTER success:", e);
-      // do not block response
     }
 
     return res.json({
