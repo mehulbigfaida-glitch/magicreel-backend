@@ -79,8 +79,8 @@ app.get("/debug/user", async (_req, res) => {
 // ⭐ Predictions / Generation History
 app.use("/api/predictions", predictionsRoutes);
 
-// 🔓 P2M ROUTES (NO AUTH)
-app.use("/api/p2m", p2mRoutes);
+// 🔓 P2M ROUTES 
+app.use("/api/p2m", authenticate, p2mRoutes);
 
 /* ----------------------------------
    SERVER START
