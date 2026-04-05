@@ -1,5 +1,5 @@
 import { lookbookImageQueue } from "../../queues/lookbookQueue";
-import { prisma } from "../db/prisma";
+import prisma from "../db/prisma";
 
 console.log("🧠 lookbookImage.worker loaded");
 

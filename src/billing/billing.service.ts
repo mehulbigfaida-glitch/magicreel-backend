@@ -1,5 +1,5 @@
-import { prisma } from "../magicreel/db/prisma";
-import { TransactionType, TransactionStatus } from "@prisma/client";
+import prisma from "../magicreel/db/prisma";
+// temporarily remove enum imports (not needed for now)
 
 export const BillingService = {
   async deductCreditsAtomic(
@@ -11,7 +11,7 @@ export const BillingService = {
       throw new Error("Prisma not initialized");
     }
 
-    return await prisma.$transaction(async (tx) => {
+    return await prisma.$transaction(async (tx: any) => {
       const user = await tx.user.findUnique({
         where: { id: userId },
       });
@@ -38,8 +38,8 @@ export const BillingService = {
           userId,
           feature,
           credits,
-          type: TransactionType.DEBIT,
-          status: TransactionStatus.COMPLETED,
+          type: "DEBIT",
+          status: "SUCCESS"
         },
       });
 
