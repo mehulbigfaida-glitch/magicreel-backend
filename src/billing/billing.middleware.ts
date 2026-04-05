@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import prisma from "../magicreel/db/prisma";
+import { prisma } from "../magicreel/db/prisma";
 
 
 export type FeatureType =
@@ -75,32 +75,50 @@ export const billingGuard = (feature: FeatureType) => {
 ---------------------------------- */
 
 export const finalizeBilling = async (req: Request) => {
-  const billing = (req as any).billing;
+  try {
+    const user = (req as any).user;
 
-  if (!billing) return;
+    if (!user || !user.id) {
+      console.warn("⚠️ finalizeBilling: no user");
+      return;
+    }
 
-  const { userId, feature, creditsRequired } = billing;
+    const billing = (req as any).billing;
 
-  await prisma.$transaction([ 
-  prisma.user.update({
-    where: { id: userId },
-    data: {
-      creditsAvailable: {
-        decrement: creditsRequired,
-      },
-    },
-  }),
+    // 🔥 FALLBACK (CRITICAL FIX)
+    const feature: FeatureType = billing?.feature || "HERO";
+    const creditsRequired =
+      billing?.creditsRequired || featureCredits[feature];
 
-  prisma.creditTransaction.create({
-    data: {
-      userId,
+    console.log("💰 FINAL BILLING:", {
+      userId: user.id,
       feature,
-      credits: creditsRequired,
-      type: "DEBIT",
-      status: "COMPLETED", // ✅ REQUIRED FIX
-    },
-  }),
-]);
+      creditsRequired,
+    });
+
+    await prisma.$transaction([
+      prisma.user.update({
+        where: { id: user.id },
+        data: {
+          creditsAvailable: {
+            decrement: creditsRequired,
+          },
+        },
+      }),
+
+      prisma.creditTransaction.create({
+        data: {
+          userId: user.id,
+          feature,
+          credits: creditsRequired,
+          type: "DEBIT",
+          status: "COMPLETED",
+        },
+      }),
+    ]);
+  } catch (err) {
+    console.error("❌ FINAL BILLING FAILED:", err);
+  }
 };
 
 export async function checkCreditsOrThrow(req: any, required: number) {
