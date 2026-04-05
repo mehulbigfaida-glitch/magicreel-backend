@@ -22,7 +22,7 @@ export async function authenticate(req: Request, res: Response, next: NextFuncti
     const payload: any = jwt.verify(token, JWT_SECRET);
 
     const user = await prisma.user.findUnique({
-      where: { id: payload.id }
+      where: { id: payload.id || payload.userId }
     });
 
     if (!user) {
