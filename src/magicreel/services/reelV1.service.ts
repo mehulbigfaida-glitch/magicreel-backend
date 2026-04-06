@@ -3,7 +3,7 @@ import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
 import path from "path";
 import https from "https";
-import prisma from "../db/prisma"; // ✅ ADD
+import { prisma } from "../db/prisma";
 
 const replicate = new Replicate({
   auth: process.env.REPLICATE_API_TOKEN!,
@@ -117,14 +117,29 @@ export const reelV1Service = {
     console.log("✅ Cloudinary URL:", upload.secure_url);
 
     // ✅ NEW: SAVE TO DB
-    if (jobId) {
-      await prisma.render.update({
-  where: { id: jobId },
-  data: {
-  outputImageUrl: upload.secure_url,
-},
-});
-    }
+    try {
+  await prisma.render.create({
+    data: {
+      outputImageUrl: upload.secure_url,
+      type: "reel",
+      status: "completed",
+
+      pose: "REEL",
+      engine: "KLING_V2",
+      modelImageUrl: imageUrl,
+      garmentImageUrl: imageUrl,
+
+      // ✅ FINAL CORRECT RELATION
+      lookbook: {
+        connect: {
+          id: "lookbook-default-1",
+        },
+      },
+    },
+  });
+} catch (e) {
+  console.error("❌ Reel save failed:", e);
+}
 
     return {
       reelVideoUrl: upload.secure_url,
