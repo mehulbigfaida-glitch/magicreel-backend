@@ -4,16 +4,17 @@ import { prisma } from "../../magicreel/db/prisma";
 export const getPredictions = async (req: Request, res: Response) => {
   try {
 
-    // HERO
+    // HERO (productToModel)
     const heroJobs = await prisma.productToModelJob.findMany({
       orderBy: { createdAt: "desc" },
       take: 30,
     });
 
-    // REEL (stored in render table)
+    // REEL (Render table with type REEL)
     const reelJobs = await prisma.render.findMany({
       where: {
-        outputImageUrl: { not: null },
+        type: "REEL",              // ✅ IMPORTANT
+        reelVideoUrl: { not: null } // ✅ IMPORTANT
       },
       orderBy: { createdAt: "desc" },
       take: 30,
@@ -30,18 +31,18 @@ export const getPredictions = async (req: Request, res: Response) => {
         createdAt: job.createdAt,
       })),
 
-      // REEL
+      // REEL ✅ FIXED
       ...reelJobs.map((job) => ({
         id: job.id,
         type: "reel",
         status: "completed",
-        mediaUrl: job.outputImageUrl,
+        mediaUrl: job.reelVideoUrl, // ✅ CORRECT FIELD
         createdAt: job.createdAt,
       })),
 
     ];
 
-    // Sort latest first
+    // SORT LATEST FIRST
     predictions.sort(
       (a, b) =>
         new Date(b.createdAt).getTime() -
