@@ -3,24 +3,31 @@ import { prisma } from "../../magicreel/db/prisma";
 
 export const getPredictions = async (req: Request, res: Response) => {
   try {
-
-    // HERO (productToModel)
+    // HERO
     const heroJobs = await prisma.productToModelJob.findMany({
       orderBy: { createdAt: "desc" },
       take: 30,
     });
 
-    // REEL (Render table with type REEL)
+    // REEL
     const reelJobs = await prisma.render.findMany({
-  where: {
-    type: "REEL", // ✅ keep type filter only
-  },
-  orderBy: { createdAt: "desc" },
-  take: 30,
-});
+      where: {
+        type: "REEL",
+      },
+      orderBy: { createdAt: "desc" },
+      take: 30,
+    });
+
+    // LOOKBOOK
+    const lookbookJobs = await prisma.lookbook.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 30,
+      include: {
+        renders: true, // assumes relation exists
+      },
+    });
 
     const predictions = [
-
       // HERO
       ...heroJobs.map((job) => ({
         id: job.id,
@@ -30,20 +37,33 @@ export const getPredictions = async (req: Request, res: Response) => {
         createdAt: job.createdAt,
       })),
 
-      // REEL ✅ FIXED
+      // REEL
       ...reelJobs.map((job) => ({
-  id: job.id,
-  type: "reel",
-  status: job.status || "completed", // ✅ use real status
+        id: job.id,
+        type: "reel",
+        status: job.status || "completed",
+        mediaUrl: job.reelVideoUrl ?? null,
+        createdAt: job.createdAt,
+      })),
 
-  mediaUrl: job.reelVideoUrl ?? null, // ✅ allow null for placeholder
+      // LOOKBOOK
+      ...lookbookJobs.map((lb) => {
+        const images =
+          lb.renders
+            ?.filter((r) => r.outputImageUrl)
+            .map((r) => r.outputImageUrl) || [];
 
-  createdAt: job.createdAt,
-})),
-
+        return {
+          id: lb.id,
+          type: "lookbook",
+          status: "completed",
+          mediaUrls: images.length > 0 ? images : [],
+          createdAt: lb.createdAt,
+        };
+      }),
     ];
 
-    // SORT LATEST FIRST
+    // SORT
     predictions.sort(
       (a, b) =>
         new Date(b.createdAt).getTime() -
@@ -51,7 +71,6 @@ export const getPredictions = async (req: Request, res: Response) => {
     );
 
     return res.json(predictions);
-
   } catch (error) {
     console.error("❌ Predictions error:", error);
 
