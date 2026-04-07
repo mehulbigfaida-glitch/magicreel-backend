@@ -4,8 +4,8 @@ export interface PredictionViewModel {
   id: string;
   type: PredictionType;
 
-  heroImageUrl?: string | null;
-  reelUrl?: string | null;
+  heroImageUrl?: string;
+  reelUrl?: string;
   lookbookImages?: string[];
 
   createdAt: string;
@@ -17,30 +17,32 @@ export function mapPrediction(p: any): PredictionViewModel {
     createdAt: p.createdAt,
   };
 
-  // 🔥 PRIORITY 1: LOOKBOOK (STRICT)
+  // 🎥 REEL
+  const isVideo =
+    typeof p.mediaUrl === 'string' &&
+    (p.mediaUrl.endsWith('.mp4') || p.mediaUrl.includes('/video/'));
+
+  if (isVideo) {
+    return {
+      ...base,
+      type: 'reel',
+      reelUrl: p.mediaUrl,
+    };
+  }
+
+  // 📚 LOOKBOOK (🔥 FIXED LOGIC)
   if (p.type === 'lookbook') {
     return {
       ...base,
       type: 'lookbook',
-      lookbookImages: Array.isArray(p.mediaUrls)
-        ? p.mediaUrls
-        : [],
+      lookbookImages: Array.isArray(p.mediaUrls) ? p.mediaUrls : [],
     };
   }
 
-  // 🔥 PRIORITY 2: REEL
-  if (p.type === 'reel') {
-    return {
-      ...base,
-      type: 'reel',
-      reelUrl: p.mediaUrl ?? null,
-    };
-  }
-
-  // 🔥 DEFAULT: HERO
+  // 🖼 HERO (fallback)
   return {
     ...base,
     type: 'hero',
-    heroImageUrl: p.mediaUrl ?? null,
+    heroImageUrl: p.mediaUrl,
   };
 }
