@@ -48,10 +48,10 @@ export const getPredictions = async (req: Request, res: Response) => {
 
       // LOOKBOOK
       ...lookbookJobs.map((lb) => {
-        const images =
-          lb.renders
-            ?.filter((r) => r.outputImageUrl)
-            .map((r) => r.outputImageUrl) || [];
+  const images =
+    (lb.renders || [])
+      .map((r) => r.outputImageUrl)
+      .filter(Boolean);
 
         return {
           id: lb.id,
