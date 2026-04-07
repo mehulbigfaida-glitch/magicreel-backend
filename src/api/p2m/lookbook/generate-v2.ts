@@ -162,6 +162,19 @@ try {
 ========================= */
 
 try {
+  // ✅ INSERTED HERE 👇
+  const lookbookEntry = await prisma.lookbook.create({
+  data: {
+    presetId: "default",
+    status: "completed",
+    garmentId: "garment-default-1",
+
+    // ✅ REQUIRED FIELDS
+    userId: (req as any).user?.id || "dev-user-1",
+    modelId: "model-default-1",
+  },
+});
+
   for (const pose of poses) {
     if (!pose.imageUrl) continue;
 
