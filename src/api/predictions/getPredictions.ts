@@ -18,13 +18,10 @@ export const getPredictions = async (req: Request, res: Response) => {
       take: 30,
     });
 
-    // LOOKBOOK
+    // LOOKBOOK (ONLY BASE)
     const lookbookJobs = await prisma.lookbook.findMany({
       orderBy: { createdAt: "desc" },
       take: 30,
-      include: {
-        renders: true, // assumes relation exists
-      },
     });
 
     const predictions = [
@@ -46,24 +43,32 @@ export const getPredictions = async (req: Request, res: Response) => {
         createdAt: job.createdAt,
       })),
 
-      // LOOKBOOK
-      ...lookbookJobs.map((lb) => {
-  const images =
-    (lb.renders || [])
-      .map((r) => r.outputImageUrl)
-      .filter(Boolean);
+      // LOOKBOOK (🔥 FIXED — DIRECT RENDER FETCH)
+      ...(
+        await Promise.all(
+          lookbookJobs.map(async (lb) => {
+            const renders = await prisma.render.findMany({
+              where: {
+                lookbookId: lb.id,
+                outputImageUrl: { not: null },
+              },
+            });
 
-        return {
-          id: lb.id,
-          type: "lookbook",
-          status: "completed",
-          mediaUrls: images.length > 0 ? images : null,
-          createdAt: lb.createdAt,
-        };
-      }),
+            const images = renders.map((r) => r.outputImageUrl);
+
+            return {
+              id: lb.id,
+              type: "lookbook",
+              status: "completed",
+              mediaUrls: images.length > 0 ? images : null,
+              createdAt: lb.createdAt,
+            };
+          })
+        )
+      ),
     ];
 
-    // SORT
+    // SORT LATEST FIRST
     predictions.sort(
       (a, b) =>
         new Date(b.createdAt).getTime() -
