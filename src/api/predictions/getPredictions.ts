@@ -27,10 +27,10 @@ export const getPredictions = async (req: Request, res: Response) => {
     const lookbookPredictions = await Promise.all(
       lookbookJobs.map(async (lb) => {
         const renders = await prisma.render.findMany({
-          where: {
-            lookbookId: lb.id,
-          },
-        });
+  where: {
+    lookbookId: "lookbook-default-1", // 🔥 TEMP FIX (MATCH YOUR SAVE LOGIC)
+  },
+});
 
         const images = renders
           .map((r) => r.outputImageUrl)
