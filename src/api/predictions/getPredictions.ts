@@ -57,7 +57,7 @@ export const getPredictions = async (req: Request, res: Response) => {
           id: lb.id,
           type: "lookbook",
           status: "completed",
-          mediaUrls: images.length > 0 ? images : [],
+          mediaUrls: images.length > 0 ? images : null,
           createdAt: lb.createdAt,
         };
       }),
