@@ -118,32 +118,37 @@ export const reelV1Service = {
 
     // ✅ NEW: SAVE TO DB
     try {
-  await prisma.render.create({
-    data: {
-      outputImageUrl: upload.secure_url,
-      type: "reel",
-      status: "completed",
+      await prisma.render.create({
+        data: {
+          outputImageUrl: null,
 
-      pose: "REEL",
-      engine: "KLING_V2",
-      modelImageUrl: imageUrl,
-      garmentImageUrl: imageUrl,
+          reelVideoUrl: upload.secure_url,
 
-      // ✅ FINAL CORRECT RELATION
-      lookbook: {
-        connect: {
-          id: "lookbook-default-1",
+          type: "REEL",
+
+          status: "completed",
+
+          pose: "REEL",
+          engine: "KLING_V2",
+          modelImageUrl: imageUrl,
+          garmentImageUrl: imageUrl,
+
+          lookbook: {
+            connect: {
+              id: "lookbook-default-1",
+            },
+          },
         },
-      },
-    },
-  });
-} catch (e) {
-  console.error("❌ Reel save failed:", e);
-}
+      });
+    } catch (e) {
+      console.error("❌ Reel save failed:", e);
+    }
 
+    // ✅ RETURN (KEEP OUTSIDE TRY)
     return {
       reelVideoUrl: upload.secure_url,
       predictionId: result.id,
     };
-  },
-};
+      }, // ✅ CLOSE FUNCTION
+
+}; // ✅ CLOSE OBJECT
