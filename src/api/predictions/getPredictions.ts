@@ -12,13 +12,12 @@ export const getPredictions = async (req: Request, res: Response) => {
 
     // REEL (Render table with type REEL)
     const reelJobs = await prisma.render.findMany({
-      where: {
-        type: "REEL",              // ✅ IMPORTANT
-        reelVideoUrl: { not: null } // ✅ IMPORTANT
-      },
-      orderBy: { createdAt: "desc" },
-      take: 30,
-    });
+  where: {
+    type: "REEL", // ✅ keep type filter only
+  },
+  orderBy: { createdAt: "desc" },
+  take: 30,
+});
 
     const predictions = [
 
@@ -33,12 +32,14 @@ export const getPredictions = async (req: Request, res: Response) => {
 
       // REEL ✅ FIXED
       ...reelJobs.map((job) => ({
-        id: job.id,
-        type: "reel",
-        status: "completed",
-        mediaUrl: job.reelVideoUrl, // ✅ CORRECT FIELD
-        createdAt: job.createdAt,
-      })),
+  id: job.id,
+  type: "reel",
+  status: job.status || "completed", // ✅ use real status
+
+  mediaUrl: job.reelVideoUrl ?? null, // ✅ allow null for placeholder
+
+  createdAt: job.createdAt,
+})),
 
     ];
 
