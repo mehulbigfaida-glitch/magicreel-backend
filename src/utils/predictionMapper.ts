@@ -17,25 +17,27 @@ export function mapPrediction(p: any): PredictionViewModel {
     createdAt: p.createdAt,
   };
 
-  // ✅ LOOKBOOK
-  if (Array.isArray(p.mediaUrls) && p.mediaUrls.length > 1) {
+  // 🔥 PRIORITY 1: LOOKBOOK (STRICT)
+  if (p.type === 'lookbook') {
     return {
       ...base,
       type: 'lookbook',
-      lookbookImages: p.mediaUrls,
+      lookbookImages: Array.isArray(p.mediaUrls)
+        ? p.mediaUrls
+        : [],
     };
   }
 
-  // ✅ REEL (PRIMARY FIX)
-  if (p.type?.toLowerCase() === 'reel') {
+  // 🔥 PRIORITY 2: REEL
+  if (p.type === 'reel') {
     return {
       ...base,
       type: 'reel',
-      reelUrl: p.mediaUrl ?? null, // allows placeholder when null
+      reelUrl: p.mediaUrl ?? null,
     };
   }
 
-  // ✅ HERO DEFAULT
+  // 🔥 DEFAULT: HERO
   return {
     ...base,
     type: 'hero',
