@@ -122,7 +122,7 @@ export const reelV1Service = {
         data: {
           outputImageUrl: null,
 
-          reelVideoUrl: upload.secure_url,
+          reelVideoUrl: upload?.secure_url || upload?.url || null,
 
           type: "REEL",
 
@@ -146,7 +146,7 @@ export const reelV1Service = {
 
     // ✅ RETURN (KEEP OUTSIDE TRY)
     return {
-      reelVideoUrl: upload.secure_url,
+      reelVideoUrl: upload?.secure_url || upload?.url || null,
       predictionId: result.id,
     };
       }, // ✅ CLOSE FUNCTION
