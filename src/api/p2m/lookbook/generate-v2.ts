@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import axios from "axios";
 import { finalizeBilling } from "../../../billing/billing.middleware"; // ✅ FIX
+import { prisma } from "../../../magicreel/db/prisma";
 
 const REPLICATE_API_TOKEN = process.env.REPLICATE_API_TOKEN as string;
 
@@ -146,26 +147,61 @@ export async function generateLookbookV2(
       });
     }
 
-    /* =========================
-       ✅ BILLING (UNIFIED)
-    ========================= */
+   /* =========================
+   ✅ BILLING (UNIFIED)
+========================= */
 
-    try {
-      await finalizeBilling(req); // ✅ ONLY THIS
-    } catch (e) {
-      console.error("Lookbook billing failed:", e);
-    }
+try {
+  await finalizeBilling(req); // ✅ ONLY THIS
+} catch (e) {
+  console.error("Lookbook billing failed:", e);
+}
 
-    return res.json({
-      success: true,
-      poses,
-    });
+/* =========================
+   ✅ SAVE LOOKBOOK TO DB
+========================= */
 
-  } catch (error) {
-    console.error("Lookbook V2 Error:", error);
+try {
+  for (const pose of poses) {
+    if (!pose.imageUrl) continue;
 
-    return res.status(500).json({
-      error: "Lookbook failed",
+    await prisma.render.create({
+      data: {
+        outputImageUrl: pose.imageUrl,
+
+        type: "LOOKBOOK",
+        status: "completed",
+
+        pose: pose.poseType,
+        engine: "QWEN",
+
+        modelImageUrl: heroImageUrl,
+        garmentImageUrl: heroImageUrl,
+
+        lookbook: {
+          connect: {
+            id: "lookbook-default-1",
+          },
+        },
+      },
     });
   }
+
+  console.log("✅ Lookbook saved to DB:", poses.length);
+
+} catch (e) {
+  console.error("❌ Lookbook DB save failed:", e);
 }
+
+return res.json({
+  success: true,
+  poses,
+});
+
+} catch (error) {
+  console.error("Lookbook V2 Error:", error);
+
+  return res.status(500).json({
+    error: "Lookbook failed",
+  });
+}}
