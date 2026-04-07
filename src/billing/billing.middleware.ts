@@ -130,8 +130,13 @@ export async function checkCreditsOrThrow(req: any, required: number) {
     throw err;
   }
 
-  // ⚠️ TEMP LOGIC (replace later with real credit system)
-  const availableCredits = user.plan === "FREE" ? 0 : 100;
+  const availableCredits = user.creditsAvailable ?? 0;
+
+  console.log("CREDITS DEBUG:", {
+    userId: user.id,
+    availableCredits,
+    required
+  });
 
   if (availableCredits < required) {
     const err: any = new Error("INSUFFICIENT_CREDITS");

@@ -1,4 +1,4 @@
-import { prisma } from "../src/magicreel/db/prisma";
+import prisma from "../src/magicreel/db/prisma";
 
 async function main() {
   try {

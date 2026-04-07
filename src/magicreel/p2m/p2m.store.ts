@@ -1,4 +1,4 @@
-import { prisma } from "../db/prisma";
+import prisma from "../db/prisma";
 import { P2MStatus } from "./p2m.types";
 
 export const P2MStore = {

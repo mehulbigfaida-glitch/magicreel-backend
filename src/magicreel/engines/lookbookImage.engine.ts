@@ -1,7 +1,7 @@
 // src/magicreel/engines/lookbookImage.engine.ts
 // 🔒 Lookbook Image Engine — RenderJob CREATION ONLY (v1.0)
 
-import { prisma } from "../db/prisma";
+import prisma from "../db/prisma";
 import { RenderJob, PoseId, MODELS, ModelId } from "../schema/lookbook.schema";
 import { buildP2MPrompt } from "../prompts/promptBuilder";
 

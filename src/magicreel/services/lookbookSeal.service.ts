@@ -1,4 +1,4 @@
-import { prisma } from "../db/prisma";
+import prisma from "../db/prisma";
 
 export async function sealLookbook(lookbookId: string) {
   const lookbook = await prisma.lookbook.findUnique({

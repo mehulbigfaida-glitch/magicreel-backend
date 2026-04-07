@@ -2,7 +2,7 @@ import express from "express";
 import archiver from "archiver";
 import axios from "axios";
 import { authenticate } from "../../auth/jwt.middleware";
-import { prisma } from "../db/prisma";
+import prisma from "../db/prisma";
 
 const router = express.Router();
 

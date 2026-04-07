@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import axios from "axios";
 import crypto from "crypto";
-import { prisma } from "../../../magicreel/db/prisma";
+import prisma from "../../../magicreel/db/prisma";
 import {
   buildWorld,
   CinematicTheme,

@@ -1,4 +1,4 @@
-import { prisma } from "../../../magicreel/db/prisma";
+import prisma from "../../../magicreel/db/prisma";
 import { Request, Response } from "express";
 import { FashnService } from "../../../magicreel/services/fashn.service";
 import { v2 as cloudinary } from "cloudinary";

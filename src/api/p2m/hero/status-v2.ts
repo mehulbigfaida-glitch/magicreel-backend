@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import axios from "axios";
 import fs from "fs";
 import path from "path";
-import { prisma } from "../../../magicreel/db/prisma";
+import prisma from "../../../magicreel/db/prisma";
 import { uploadToCloudinary } from "../../../config/cloudinary";
 
 const FASHN_STATUS_URL = "https://api.fashn.ai/v1/status";

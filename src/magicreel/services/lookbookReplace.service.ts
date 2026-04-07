@@ -1,4 +1,4 @@
-import { prisma } from "../db/prisma";
+import prisma from "../db/prisma";
 import axios from "axios";
 import fs from "fs";
 import path from "path";
