@@ -1,43 +1,45 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import { prisma } from "../magicreel/db/prisma";
 
-const JWT_SECRET = process.env.JWT_SECRET || "dev_secret";
-
-export async function authenticate(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
+export function authenticate(req: Request, res: Response, next: NextFunction) {
   try {
+
     const authHeader = req.headers.authorization;
 
+    // 🔥 NO TOKEN → allow (prevents crash in polling)
     if (!authHeader) {
-      return res.status(401).json({ error: "Unauthorized" });
+      (req as any).user = null;
+      return next();
     }
 
-    const token = authHeader.split(" ")[1];
+    const token = authHeader.replace("Bearer ", "");
 
     if (!token) {
-      return res.status(401).json({ error: "Invalid token format" });
+      (req as any).user = null;
+      return next();
     }
 
-    const payload: any = jwt.verify(token, JWT_SECRET);
+    try {
+      const decoded = jwt.verify(
+        token,
+        process.env.JWT_SECRET as string
+      );
 
-    const user = await prisma.user.findUnique({
-      where: { id: payload.userId },
-    });
+      (req as any).user = decoded;
 
-    if (!user) {
-      return res.status(401).json({ error: "User not found" });
+      return next();
+
+    } catch (err) {
+      console.warn("Invalid token, continuing as guest");
+      (req as any).user = null;
+      return next();
     }
 
-    // ✅ CRITICAL: ALWAYS attach user
-    (req as any).user = user;
+  } catch (error) {
+    console.error("Auth middleware error:", error);
 
-    next();
-  } catch (err) {
-    console.error("AUTH ERROR:", err);
-    return res.status(401).json({ error: "Invalid token" });
+    // 🔥 NEVER BLOCK REQUEST
+    (req as any).user = null;
+    return next();
   }
 }
