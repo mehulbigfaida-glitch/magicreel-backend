@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from "express";
+import jwt from "jsonwebtoken";
 
 export function authenticate(req: Request, res: Response, next: NextFunction) {
 
@@ -6,30 +7,27 @@ export function authenticate(req: Request, res: Response, next: NextFunction) {
 
     const authHeader = req.headers.authorization;
 
-    // 🔥 NO TOKEN → allow (critical for local)
     if (!authHeader) {
-      (req as any).user = null;
-      return next();
+      return res.status(401).json({ error: "No token" });
     }
 
     const token = authHeader.replace("Bearer ", "");
 
-    // 🔥 EMPTY TOKEN → allow
-    if (!token || token === "null" || token === "undefined") {
-      (req as any).user = null;
-      return next();
+    if (!token) {
+      return res.status(401).json({ error: "Invalid token" });
     }
 
-    // 🔥 SKIP VERIFICATION (LOCAL DEBUG MODE)
-    (req as any).user = { id: "dev-user" };
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET as string
+    );
+
+    (req as any).user = decoded;
 
     return next();
 
   } catch (error) {
-
-    console.warn("Auth bypass (dev mode)");
-
-    (req as any).user = { id: "dev-user" };
-    return next();
+    console.error("Auth error:", error);
+    return res.status(401).json({ error: "Unauthorized" });
   }
 }
