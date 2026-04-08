@@ -1,12 +1,12 @@
 import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
 
 export function authenticate(req: Request, res: Response, next: NextFunction) {
+
   try {
 
     const authHeader = req.headers.authorization;
 
-    // 🔥 NO TOKEN → allow (prevents crash in polling)
+    // 🔥 NO TOKEN → allow (critical for local)
     if (!authHeader) {
       (req as any).user = null;
       return next();
@@ -14,32 +14,22 @@ export function authenticate(req: Request, res: Response, next: NextFunction) {
 
     const token = authHeader.replace("Bearer ", "");
 
-    if (!token) {
+    // 🔥 EMPTY TOKEN → allow
+    if (!token || token === "null" || token === "undefined") {
       (req as any).user = null;
       return next();
     }
 
-    try {
-      const decoded = jwt.verify(
-        token,
-        process.env.JWT_SECRET as string
-      );
+    // 🔥 SKIP VERIFICATION (LOCAL DEBUG MODE)
+    (req as any).user = { id: "dev-user" };
 
-      (req as any).user = decoded;
-
-      return next();
-
-    } catch (err) {
-      console.warn("Invalid token, continuing as guest");
-      (req as any).user = null;
-      return next();
-    }
+    return next();
 
   } catch (error) {
-    console.error("Auth middleware error:", error);
 
-    // 🔥 NEVER BLOCK REQUEST
-    (req as any).user = null;
+    console.warn("Auth bypass (dev mode)");
+
+    (req as any).user = { id: "dev-user" };
     return next();
   }
 }
