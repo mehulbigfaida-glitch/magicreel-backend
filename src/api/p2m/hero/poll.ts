@@ -1,4 +1,4 @@
-import prisma from "../../../magicreel/db/prisma";
+import { prisma } from "../../../magicreel/db/prisma";
 import { Request, Response } from "express";
 import { FashnService } from "../../../magicreel/services/fashn.service";
 import { v2 as cloudinary } from "cloudinary";
@@ -16,37 +16,29 @@ export async function pollHeroGeneration(req: Request, res: Response) {
 
     const { runId } = req.params;
 
-    console.log("Polling hero runId:", runId);
-
     if (!runId) {
-      return res.status(400).json({
-        error: "runId missing",
-      });
+      return res.status(400).json({ error: "runId missing" });
     }
 
+    console.log("Polling hero runId:", runId);
+
     /* =========================
-       FIND JOB
+       FIND JOB (SAFE)
     ========================= */
 
-    const job = await prisma.productToModelJob.findFirst({
+    let job = await prisma.productToModelJob.findFirst({
       where: {
         engineJobId: runId,
       },
     });
 
     /* =========================
-       JOB NOT FOUND
+       JOB NOT FOUND → WAIT (NO CRASH)
     ========================= */
 
     if (!job) {
-
-      console.warn("Hero job not found in DB.");
-
-      // allow short delay for DB writes
-      return res.json({
-        status: "processing",
-      });
-
+      console.warn("Hero job not found yet (DB delay)");
+      return res.json({ status: "processing" });
     }
 
     /* =========================
@@ -54,68 +46,66 @@ export async function pollHeroGeneration(req: Request, res: Response) {
     ========================= */
 
     if (job.status === "completed" && job.resultImageUrl) {
-
-      console.log("Hero already completed. Returning cached result.");
-
       return res.json({
         status: "completed",
         imageUrl: job.resultImageUrl,
       });
-
     }
 
     /* =========================
-       CHECK FASHN STATUS
+       CHECK FASHN STATUS (SAFE)
     ========================= */
 
-    const statusResult = await fashn.pollStatus(runId);
+    let statusResult;
 
-    console.log("FASHN status:", statusResult.status);
+    try {
+      statusResult = await fashn.pollStatus(runId);
+    } catch (err) {
+      console.warn("FASHN poll failed, retrying...");
+      return res.json({ status: "processing" });
+    }
 
-    if (
-      statusResult.status === "pending" ||
-      statusResult.status === "running"
-    ) {
-      return res.json({
-        status: "processing",
-      });
+    if (!statusResult || !statusResult.status) {
+      return res.json({ status: "processing" });
+    }
+
+    const status = statusResult.status;
+
+    /* =========================
+       PROCESSING
+    ========================= */
+
+    if (status === "pending" || status === "running") {
+      return res.json({ status: "processing" });
     }
 
     /* =========================
-       HANDLE FAILURE
+       FAILURE
     ========================= */
 
-    if (statusResult.status === "failed") {
-
-      console.log("FASHN job failed");
-
+    if (status === "failed") {
       await prisma.productToModelJob.update({
         where: { id: job.id },
-        data: {
-          status: "failed",
-        },
+        data: { status: "failed" },
       });
 
-      return res.json({
-        status: "failed",
-      });
-
+      return res.json({ status: "failed" });
     }
 
     /* =========================
-       HANDLE COMPLETION
+       COMPLETED (SAFE OUTPUT)
     ========================= */
 
-    if (statusResult.status === "completed") {
+    if (status === "completed" || status === "succeeded") {
 
-      const imageUrl = statusResult.output?.[0];
-
-      console.log("FASHN completed. Output URL:", imageUrl);
+      const imageUrl =
+    Array.isArray(statusResult.output)
+    ? statusResult.output[0]
+    : statusResult.output || null;
 
       if (!imageUrl) {
-        return res.status(500).json({
-          error: "FASHN returned no image",
-        });
+        console.warn("No image returned yet");
+        return res.json({ status: "processing" });
       }
 
       console.log("Uploading to Cloudinary...");
@@ -125,8 +115,6 @@ export async function pollHeroGeneration(req: Request, res: Response) {
       });
 
       const cloudinaryUrl = upload.secure_url;
-
-      console.log("Cloudinary upload successful:", cloudinaryUrl);
 
       await prisma.productToModelJob.update({
         where: { id: job.id },
@@ -140,20 +128,15 @@ export async function pollHeroGeneration(req: Request, res: Response) {
         status: "completed",
         imageUrl: cloudinaryUrl,
       });
-
     }
 
-    return res.json({
-      status: "processing",
-    });
+    return res.json({ status: "processing" });
 
   } catch (error) {
 
     console.error("Hero Poll Error:", error);
 
-    return res.status(500).json({
-      error: "Hero polling failed",
-    });
-
+    // 🔥 NEVER CRASH → ALWAYS SAFE RESPONSE
+    return res.json({ status: "processing" });
   }
 }
