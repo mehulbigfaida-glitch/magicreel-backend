@@ -28,7 +28,11 @@ export const getPredictions = async (req: Request, res: Response) => {
       lookbookJobs.map(async (lb) => {
         const renders = await prisma.render.findMany({
   where: {
-    lookbookId: "lookbook-default-1", // 🔥 TEMP FIX (MATCH YOUR SAVE LOGIC)
+    lookbookId: lb.id,
+    type: "LOOKBOOK", // 🔥 FORCE FILTER
+  },
+  orderBy: {
+    createdAt: "asc",
   },
 });
 
@@ -36,8 +40,9 @@ export const getPredictions = async (req: Request, res: Response) => {
           .map((r) => r.outputImageUrl)
           .filter(Boolean);
 
-        console.log("LOOKBOOK DEBUG:", lb.id, images.length);
-
+            console.log("LOOKBOOK DEBUG:", lb.id, images.length);
+            console.log("LOOKBOOK IMAGES:", lb.id, images);
+        
         return {
           id: lb.id,
           type: "lookbook",
