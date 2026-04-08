@@ -62,7 +62,7 @@ export async function generateHeroV2(
       styling,
     });
 
-    const userId = (req as any).user.id;
+    const userId = (req as any).user?.userId || (req as any).user?.id;
 
 const frontJob = await prisma.productToModelJob.create({
   data: {
@@ -111,7 +111,7 @@ const frontJob = await prisma.productToModelJob.create({
         styling,
       });
 
-      const userId = (req as any).user.id;
+      const userId = (req as any).user?.userId || (req as any).user?.id;
       const backJob = await prisma.productToModelJob.create({
   data: {
     userId: userId,
