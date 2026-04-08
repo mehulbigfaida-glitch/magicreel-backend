@@ -3,57 +3,24 @@ import { prisma } from "../../magicreel/db/prisma";
 
 export const getPredictions = async (req: Request, res: Response) => {
   try {
-    // HERO
+
+    // HERO (productToModel)
     const heroJobs = await prisma.productToModelJob.findMany({
       orderBy: { createdAt: "desc" },
       take: 30,
     });
 
-    // REEL
+    // REEL (Render table with type REEL)
     const reelJobs = await prisma.render.findMany({
-      where: {
-        type: "REEL",
-      },
-      orderBy: { createdAt: "desc" },
-      take: 30,
-    });
-
-    // LOOKBOOK BASE
-    const lookbookJobs = await prisma.lookbook.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 30,
-    });
-
-    const lookbookPredictions = await Promise.all(
-      lookbookJobs.map(async (lb) => {
-        const renders = await prisma.render.findMany({
   where: {
-    lookbookId: lb.id,
-    type: "LOOKBOOK", // 🔥 FORCE FILTER
+    type: "REEL", // ✅ keep type filter only
   },
-  orderBy: {
-    createdAt: "asc",
-  },
+  orderBy: { createdAt: "desc" },
+  take: 30,
 });
 
-        const images = renders
-          .map((r) => r.outputImageUrl)
-          .filter(Boolean);
-
-            console.log("LOOKBOOK DEBUG:", lb.id, images.length);
-            console.log("LOOKBOOK IMAGES:", lb.id, images);
-        
-        return {
-          id: lb.id,
-          type: "lookbook",
-          status: "completed",
-          mediaUrls: images, // ✅ ALWAYS ARRAY (CRITICAL FIX)
-          createdAt: lb.createdAt,
-        };
-      })
-    );
-
     const predictions = [
+
       // HERO
       ...heroJobs.map((job) => ({
         id: job.id,
@@ -63,17 +30,17 @@ export const getPredictions = async (req: Request, res: Response) => {
         createdAt: job.createdAt,
       })),
 
-      // REEL
+      // REEL ✅ FIXED
       ...reelJobs.map((job) => ({
-        id: job.id,
-        type: "reel",
-        status: job.status || "completed",
-        mediaUrl: job.reelVideoUrl ?? null,
-        createdAt: job.createdAt,
-      })),
+  id: job.id,
+  type: "reel",
+  status: job.status || "completed", // ✅ use real status
 
-      // LOOKBOOK
-      ...lookbookPredictions,
+  mediaUrl: job.reelVideoUrl ?? null, // ✅ allow null for placeholder
+
+  createdAt: job.createdAt,
+})),
+
     ];
 
     // SORT LATEST FIRST
@@ -84,6 +51,7 @@ export const getPredictions = async (req: Request, res: Response) => {
     );
 
     return res.json(predictions);
+
   } catch (error) {
     console.error("❌ Predictions error:", error);
 

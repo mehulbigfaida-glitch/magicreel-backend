@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import axios from "axios";
-import { finalizeBilling } from "../../../billing/billing.middleware";
-import { prisma } from "../../../magicreel/db/prisma";
+import { finalizeBilling } from "../../../billing/billing.middleware"; // ✅ FIX
 
 const REPLICATE_API_TOKEN = process.env.REPLICATE_API_TOKEN as string;
 
@@ -12,8 +11,16 @@ if (!REPLICATE_API_TOKEN) {
 const QWEN_URL =
   "https://api.replicate.com/v1/models/qwen/qwen-image-edit-plus/predictions";
 
+/* -----------------------------------
+   LOCKED PROMPT (Face Realism V1)
+----------------------------------- */
+
 const LOCKED_PROMPT =
   "The person in image 2 adopts the full body pose from image 1, maintaining full body visibility from head to toe, preserving exact facial identity with natural skin texture and sharp facial details, face in natural sharp focus";
+
+/* -----------------------------------
+   FINAL POSES
+----------------------------------- */
 
 const POSES = [
   { id: "P1", type: "front", url: "https://res.cloudinary.com/duaqfspwa/image/upload/v1773921649/P1_bte2lx.png" },
@@ -26,12 +33,28 @@ function getCroppedImage(url: string): string {
   return url.replace("/upload/", "/upload/c_fill,g_face,h_900,w_700/");
 }
 
-export async function generateLookbookV2(req: Request, res: Response) {
+export async function generateLookbookV2(
+  req: Request,
+  res: Response
+) {
   try {
     const { heroImageUrl, backHeroImageUrl } = req.body;
 
     if (!heroImageUrl) {
       return res.status(400).json({ error: "heroImageUrl required" });
+    }
+
+    if (!REPLICATE_API_TOKEN) {
+      return res.json({
+        success: true,
+        poses: [
+          {
+            poseId: "HERO",
+            poseType: "hero",
+            imageUrl: heroImageUrl,
+          },
+        ],
+      });
     }
 
     const poses: any[] = [];
@@ -124,53 +147,13 @@ export async function generateLookbookV2(req: Request, res: Response) {
     }
 
     /* =========================
-       ✅ BILLING
+       ✅ BILLING (UNIFIED)
     ========================= */
+
     try {
-      await finalizeBilling(req);
+      await finalizeBilling(req); // ✅ ONLY THIS
     } catch (e) {
       console.error("Lookbook billing failed:", e);
-    }
-
-    /* =========================
-       ✅ SAVE LOOKBOOK + RENDERS
-    ========================= */
-    try {
-      const lookbookEntry = await prisma.lookbook.create({
-        data: {
-          presetId: "default",
-          status: "completed",
-          garmentId: "garment-default-1",
-          userId: (req as any).user?.id || "dev-user-1",
-          modelId: "model-default-1",
-        },
-      });
-
-      for (const pose of poses) {
-        if (!pose.imageUrl) continue;
-
-        await prisma.render.create({
-          data: {
-            outputImageUrl: pose.imageUrl,
-
-            type: "LOOKBOOK",
-            status: "completed",
-
-            pose: pose.poseType,
-            engine: "QWEN",
-
-            modelImageUrl: heroImageUrl,
-            garmentImageUrl: heroImageUrl,
-
-            lookbookId: lookbookEntry.id, // ✅ FIXED
-          },
-        });
-      }
-
-      console.log("✅ Lookbook saved to DB:", poses.length);
-
-    } catch (e) {
-      console.error("❌ Lookbook DB save failed:", e);
     }
 
     return res.json({

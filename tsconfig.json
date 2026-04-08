@@ -10,7 +10,7 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "noEmitOnError": false,
-    "ignoreDeprecations": "6.0"
+    
   },
   "include": ["src/**/*"],
   "exclude": [

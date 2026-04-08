@@ -62,16 +62,18 @@ export async function generateHeroV2(
       styling,
     });
 
-    const frontJob = await prisma.productToModelJob.create({
-      data: {
-        userId: user.id,
-        productImageUrl: garmentFrontImageUrl,
-        modelImageUrl: avatarFaceImageUrl,
-        engine: "fashn",
-        engineJobId: "pending",
-        status: "running",
-      },
-    });
+    const userId = (req as any).user?.id || "dev-user";
+
+const frontJob = await prisma.productToModelJob.create({
+  data: {
+    userId: userId,
+    productImageUrl: garmentFrontImageUrl,
+    modelImageUrl: avatarFaceImageUrl,
+    engine: "fashn",
+    engineJobId: "pending",
+    status: "running",
+  },
+});
 
     const frontRunId = await fashn.runProductToModel({
       jobId: frontJob.id,
@@ -109,16 +111,17 @@ export async function generateHeroV2(
         styling,
       });
 
+      const userId = (req as any).user?.id || "dev-user";
       const backJob = await prisma.productToModelJob.create({
-        data: {
-          userId: user.id,
-          productImageUrl: garmentBackImageUrl,
-          modelImageUrl: avatarBackImageUrl,
-          engine: "fashn",
-          engineJobId: "pending",
-          status: "running",
-        },
-      });
+  data: {
+    userId: userId,
+    productImageUrl: garmentBackImageUrl,
+    modelImageUrl: avatarBackImageUrl,
+    engine: "fashn",
+    engineJobId: "pending",
+    status: "running",
+  },
+});
 
       backRunId = await fashn.runProductToModel({
         jobId: backJob.id,
