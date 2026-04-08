@@ -2,7 +2,32 @@ import { Request, Response } from "express";
 import axios from "axios";
 import { finalizeBilling } from "../../../billing/billing.middleware";
 import { prisma } from "../../../magicreel/db/prisma";
+import cloudinary from "cloudinary";
 
+/* =========================
+   ✅ CLOUDINARY CONFIG
+========================= */
+cloudinary.v2.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME!,
+  api_key: process.env.CLOUDINARY_API_KEY!,
+  api_secret: process.env.CLOUDINARY_API_SECRET!,
+});
+
+async function uploadToCloudinary(imageUrl: string): Promise<string> {
+  try {
+    const res = await cloudinary.v2.uploader.upload(imageUrl, {
+      folder: "magicreel/lookbook",
+    });
+    return res.secure_url;
+  } catch (e) {
+    console.error("Cloudinary upload failed:", e);
+    return imageUrl; // ✅ fallback (no break)
+  }
+}
+
+/* =========================
+   ORIGINAL CONFIG
+========================= */
 const REPLICATE_API_TOKEN = process.env.REPLICATE_API_TOKEN as string;
 
 if (!REPLICATE_API_TOKEN) {
@@ -26,6 +51,9 @@ function getCroppedImage(url: string): string {
   return url.replace("/upload/", "/upload/c_fill,g_face,h_900,w_700/");
 }
 
+/* =========================
+   MAIN FUNCTION
+========================= */
 export async function generateLookbookV2(req: Request, res: Response) {
   try {
     const { heroImageUrl, backHeroImageUrl } = req.body;
@@ -89,7 +117,11 @@ export async function generateLookbookV2(req: Request, res: Response) {
           const status = poll.data.status;
 
           if (status === "succeeded") {
-            finalUrl = poll.data.output[0];
+            const replicateUrl = poll.data.output[0];
+
+            // ✅ SAFE ADDITION (ONLY CHANGE)
+            finalUrl = await uploadToCloudinary(replicateUrl);
+
             break;
           }
 
@@ -124,7 +156,7 @@ export async function generateLookbookV2(req: Request, res: Response) {
     }
 
     /* =========================
-       ✅ BILLING
+       BILLING
     ========================= */
     try {
       await finalizeBilling(req);
@@ -133,7 +165,7 @@ export async function generateLookbookV2(req: Request, res: Response) {
     }
 
     /* =========================
-       ✅ SAVE LOOKBOOK + RENDERS
+       SAVE TO DB
     ========================= */
     try {
       const lookbookEntry = await prisma.lookbook.create({
@@ -152,17 +184,13 @@ export async function generateLookbookV2(req: Request, res: Response) {
         await prisma.render.create({
           data: {
             outputImageUrl: pose.imageUrl,
-
             type: "LOOKBOOK",
             status: "completed",
-
             pose: pose.poseType,
             engine: "QWEN",
-
             modelImageUrl: heroImageUrl,
             garmentImageUrl: heroImageUrl,
-
-            lookbookId: lookbookEntry.id, // ✅ FIXED
+            lookbookId: lookbookEntry.id,
           },
         });
       }
