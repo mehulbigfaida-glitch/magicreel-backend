@@ -25,7 +25,14 @@ const app = express();
 
 app.set("trust proxy", 1);
 
-app.use(cors());
+app.use(
+  cors({
+    origin: "https://magicreel-frontend.vercel.app",
+    credentials: true,
+  })
+);
+
+// 🔥 ADD THIS BACK (CRITICAL)
 app.use(express.json({ limit: "20mb" }));
 
 /* ----------------------------------
