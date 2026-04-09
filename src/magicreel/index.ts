@@ -2,7 +2,7 @@ import "dotenv/config";
 
 import express from "express";
 import cors from "cors";
-import prisma from "./db/prisma";
+import { prisma } from "./db/prisma";
 import predictionsRoutes from "../api/predictions";
 import authRoutes from "../auth/auth.routes";
 import { authenticate } from "../auth/jwt.middleware";
@@ -16,6 +16,10 @@ import { authenticate } from "../auth/jwt.middleware";
 // import { tryonRoutes } from "./routes/tryon.routes";
 
 import p2mRoutes from "./p2m/p2m.routes";
+
+prisma.$connect()
+  .then(() => console.log("✅ Prisma connected"))
+  .catch((err) => console.error("❌ Prisma failed:", err));
 
 /* ----------------------------------
    BOOT CHECK
@@ -95,3 +99,19 @@ const server = app.listen(PORT, "0.0.0.0", () => {
 server.on("error", (err) => {
   console.error("🔴 Server listen error", err);
 });
+
+/* ----------------------------------
+   PROCESS SAFETY (CRITICAL)
+---------------------------------- */
+
+// Prevent silent crashes
+process.on("uncaughtException", (err: any) => {
+  console.error("❌ Uncaught Exception:", err);
+});
+
+process.on("unhandledRejection", (err: any) => {
+  console.error("❌ Unhandled Rejection:", err);
+});
+
+// Keep process alive (Railway fix)
+process.stdin.resume();
