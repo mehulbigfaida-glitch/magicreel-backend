@@ -54,37 +54,32 @@ app.use("/api/predictions", predictionsRoutes);
 app.use("/api/p2m", authenticate, p2mRoutes);
 
 /* ----------------------------------
-   START SERVER
+   START SERVER (FINAL FIX)
 ---------------------------------- */
 
 const PORT = Number(process.env.PORT) || 8080;
 
-async function startServer() {
-  try {
-    // ✅ Ensure DB connection BEFORE server starts
-    await prisma.$connect();
+// Connect Prisma (non-blocking)
+prisma.$connect()
+  .then(() => {
     console.log("✅ Prisma connected");
+  })
+  .catch((err) => {
+    console.error("❌ Prisma failed:", err);
+  });
 
-    app.listen(PORT, "0.0.0.0", () => {
-      console.log(`🟢 MagicReel HTTP server listening on ${PORT}`);
-    });
-
-  } catch (err) {
-    console.error("❌ Failed to start server:", err);
-    process.exit(1); // crash properly if DB fails
-  }
-}
-
-startServer();
+// Start server immediately
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`🟢 MagicReel HTTP server listening on ${PORT}`);
+});
 
 /* ----------------------------------
-   KEEP PROCESS ALIVE (CRITICAL FOR RAILWAY)
+   KEEP PROCESS ALIVE (CRITICAL)
 ---------------------------------- */
 
-// prevents Node from exiting
 setInterval(() => {
-  // keep-alive tick
-}, 1000 * 60);
+  console.log("🔄 keep alive");
+}, 1000 * 30);
 
 /* ----------------------------------
    PROCESS SAFETY
