@@ -1,6 +1,7 @@
+// FILE: src/billing/billing.middleware.ts (FULL REPLACEMENT)
+
 import { Request, Response, NextFunction } from "express";
 import { prisma } from "../magicreel/db/prisma";
-
 
 export type FeatureType =
   | "HERO"
@@ -22,33 +23,36 @@ const featureCredits: Record<FeatureType, number> = {
 const DEV_USER_ID = process.env.DEV_USER_ID!;
 
 /* ----------------------------------
-   BILLING GUARD (VALIDATION ONLY)
+   BILLING GUARD
 ---------------------------------- */
 
 export const billingGuard = (feature: FeatureType) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
-      // ✅ USE AUTH USER IF AVAILABLE
       let user = (req as any).user;
 
-      // 🔁 FALLBACK (DEV MODE ONLY)
       if (!user) {
         user = await prisma.user.findUnique({
           where: { id: DEV_USER_ID },
         });
 
         if (!user) {
-          console.warn("⚠️ Billing skipped: no user found");
-          return next(); // ✅ DO NOT BLOCK
+          return res.status(401).json({ error: "Unauthorized" });
         }
 
-        // attach user so downstream works
         (req as any).user = user;
       }
 
       const creditsRequired = featureCredits[feature];
 
-      if (user.creditsAvailable < creditsRequired) {
+      // 🔥 ALWAYS FETCH FRESH CREDITS FROM DB
+      const freshUser = await prisma.user.findUnique({
+        where: { id: user.id },
+      });
+
+      const availableCredits = freshUser?.creditsAvailable ?? 0;
+
+      if (availableCredits < creditsRequired) {
         return res.status(400).json({
           error: "Insufficient credits",
         });
@@ -63,38 +67,25 @@ export const billingGuard = (feature: FeatureType) => {
       next();
     } catch (error: any) {
       console.error("BILLING ERROR:", error);
-
-      // ✅ DO NOT BREAK FLOW
       return next();
     }
   };
 };
 
 /* ----------------------------------
-   FINALIZE BILLING (SUCCESS ONLY)
+   FINALIZE BILLING
 ---------------------------------- */
 
 export const finalizeBilling = async (req: Request) => {
   try {
     const user = (req as any).user;
-
-    if (!user || !user.id) {
-      console.warn("⚠️ finalizeBilling: no user");
-      return;
-    }
+    if (!user || !user.id) return;
 
     const billing = (req as any).billing;
 
-    // 🔥 FALLBACK (CRITICAL FIX)
-    const feature: FeatureType = billing?.feature || "HERO";
-    const creditsRequired =
-      billing?.creditsRequired || featureCredits[feature];
+    if (!billing) return;
 
-    console.log("💰 FINAL BILLING:", {
-      userId: user.id,
-      feature,
-      creditsRequired,
-    });
+    const { feature, creditsRequired } = billing;
 
     await prisma.$transaction([
       prisma.user.update({
@@ -105,7 +96,6 @@ export const finalizeBilling = async (req: Request) => {
           },
         },
       }),
-
       prisma.creditTransaction.create({
         data: {
           userId: user.id,
@@ -121,21 +111,30 @@ export const finalizeBilling = async (req: Request) => {
   }
 };
 
+/* ----------------------------------
+   STRICT CHECK (USED BY REEL)
+---------------------------------- */
+
 export async function checkCreditsOrThrow(req: any, required: number) {
   const user = req.user;
 
   if (!user) {
-    const err: any = new Error("Unauthorized");
+    const err: any = new Error("UNAUTHORIZED");
     err.code = "UNAUTHORIZED";
     throw err;
   }
 
-  const availableCredits = user.creditsAvailable ?? 0;
+  // 🔥 ALWAYS FETCH FRESH USER
+  const freshUser = await prisma.user.findUnique({
+    where: { id: user.id },
+  });
+
+  const availableCredits = freshUser?.creditsAvailable ?? 0;
 
   console.log("CREDITS DEBUG:", {
     userId: user.id,
     availableCredits,
-    required
+    required,
   });
 
   if (availableCredits < required) {
