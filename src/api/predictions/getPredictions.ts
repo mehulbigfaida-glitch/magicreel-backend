@@ -3,24 +3,62 @@ import { prisma } from "../../magicreel/db/prisma";
 
 export const getPredictions = async (req: Request, res: Response) => {
   try {
-
-    // HERO (productToModel)
+    // HERO
     const heroJobs = await prisma.productToModelJob.findMany({
       orderBy: { createdAt: "desc" },
       take: 30,
     });
 
-    // REEL (Render table with type REEL)
+    // REEL
     const reelJobs = await prisma.render.findMany({
-  where: {
-    type: "REEL", // ✅ keep type filter only
-  },
+      where: {
+        type: "REEL",
+      },
+      orderBy: { createdAt: "desc" },
+      take: 30,
+    });
+
+    
+    // LOOKBOOK BASE
+const lookbookJobs = await prisma.lookbook.findMany({
   orderBy: { createdAt: "desc" },
   take: 30,
 });
 
-    const predictions = [
+const lookbookPredictions = await Promise.all(
+  lookbookJobs.map(async (lb: any) => {
+    const renders = await prisma.render.findMany({
+      where: {
+        lookbookId: lb.id,
+        type: "LOOKBOOK",
+      },
+      orderBy: {
+        createdAt: "asc",
+      },
+    });
 
+    const images = renders
+      .map((r) => r.outputImageUrl)
+      .filter(Boolean);
+
+    console.log("LOOKBOOK DEBUG:", lb.id, images.length);
+    console.log("LOOKBOOK IMAGES:", lb.id, images);
+
+    // 🔥 HERO FALLBACK
+    const heroImage = images.length > 0 ? images[0] : null;
+
+    return {
+      id: lb.id,
+      type: "lookbook",
+      status: "completed",
+      mediaUrls: images,
+      heroImageUrl: heroImage, // ✅ FIX
+      createdAt: lb.createdAt,
+    };
+  })
+);
+
+    const predictions = [
       // HERO
       ...heroJobs.map((job) => ({
         id: job.id,
@@ -30,17 +68,17 @@ export const getPredictions = async (req: Request, res: Response) => {
         createdAt: job.createdAt,
       })),
 
-      // REEL ✅ FIXED
+      // REEL
       ...reelJobs.map((job) => ({
-  id: job.id,
-  type: "reel",
-  status: job.status || "completed", // ✅ use real status
+        id: job.id,
+        type: "reel",
+        status: job.status || "completed",
+        mediaUrl: job.reelVideoUrl ?? null,
+        createdAt: job.createdAt,
+      })),
 
-  mediaUrl: job.reelVideoUrl ?? null, // ✅ allow null for placeholder
-
-  createdAt: job.createdAt,
-})),
-
+      // LOOKBOOK
+      ...lookbookPredictions,
     ];
 
     // SORT LATEST FIRST
@@ -51,7 +89,6 @@ export const getPredictions = async (req: Request, res: Response) => {
     );
 
     return res.json(predictions);
-
   } catch (error) {
     console.error("❌ Predictions error:", error);
 
