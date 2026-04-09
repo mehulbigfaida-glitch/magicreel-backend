@@ -41,6 +41,10 @@ app.set("trust proxy", 1);
 app.use(cors());
 app.use(express.json({ limit: "20mb" }));
 
+app.get("/", (_req, res) => {
+  res.send("MagicReel backend running ✅");
+});
+
 /* ----------------------------------
    TEST ROUTES
 ---------------------------------- */
