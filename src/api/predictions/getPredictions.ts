@@ -45,7 +45,11 @@ const lookbookPredictions = await Promise.all(
     console.log("LOOKBOOK IMAGES:", lb.id, images);
 
     // 🔥 HERO FALLBACK
-    const heroImage = images.length > 0 ? images[0] : null;
+    const heroImage =
+  images.length > 0
+    ? images[0]
+    : lb.inputImageUrl ||
+      "https://via.placeholder.com/300x450?text=Lookbook";
 
     return {
       id: lb.id,
