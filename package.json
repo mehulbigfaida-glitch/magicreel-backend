@@ -4,12 +4,12 @@
   "private": true,
   "main": "dist/magicreel/index.js",
   "scripts": {
-    "dev": "ts-node-dev --respawn --transpile-only src/magicreel/index.ts",
-    "worker": "ts-node-dev --respawn --transpile-only src/magicreel/worker.ts",
-    "build": "tsc || true",
-    "start": "node dist/magicreel/index.js",
-    "prisma": "prisma"
-  },
+  "dev": "ts-node-dev --respawn --transpile-only src/magicreel/index.ts",
+  "worker": "ts-node-dev --respawn --transpile-only src/magicreel/worker.ts",
+  "build": "tsc",
+  "start": "node dist/magicreel/index.js",
+  "prisma": "prisma"
+},
   "dependencies": {
     "@prisma/client": "^6.19.0",
     "@supabase/supabase-js": "^2.100.0",
