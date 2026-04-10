@@ -48,6 +48,11 @@ app.get("/health", (_req, res) => {
   res.status(200).json({ status: "ok" });
 });
 
+// 🔥 ADD THIS HERE
+app.get("/ping", (_req, res) => {
+  res.send("pong");
+});
+
 /* ----------------------------------
    PUBLIC ROUTES
 ---------------------------------- */
