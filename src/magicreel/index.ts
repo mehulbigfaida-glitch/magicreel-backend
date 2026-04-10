@@ -1,4 +1,3 @@
-import "../lib/redis";
 import "dotenv/config";
 
 import express from "express";
@@ -16,15 +15,15 @@ import p2mRoutes from "./p2m/p2m.routes";
 const app = express();
 
 /* ---------------------------------- */
-/* HEALTH ROUTES (TOP PRIORITY) */
+/* 🔥 HEALTH ROUTES (MUST BE FIRST) */
 /* ---------------------------------- */
 
 app.get("/health", (_req, res) => {
-  res.status(200).json({ status: "ok" });
+  return res.status(200).send("ok"); // ⚡ fastest possible
 });
 
 app.get("/ping", (_req, res) => {
-  res.status(200).send("pong");
+  return res.status(200).send("pong");
 });
 
 app.get("/", (_req, res) => {
@@ -53,26 +52,35 @@ app.use("/api/predictions", predictionsRoutes);
 app.use("/api/p2m", authenticate, p2mRoutes);
 
 /* ---------------------------------- */
-/* SERVER START (RAILWAY SAFE) */
+/* 🚀 SERVER START (CRITICAL FIX) */
 /* ---------------------------------- */
 
 const PORT = Number(process.env.PORT) || 8080;
 
-app.listen(PORT, "0.0.0.0", () => {
+app.listen(PORT, "0.0.0.0", async () => {
   console.log(`🟢 Server listening on ${PORT}`);
   console.log("🌐 Server fully initialized and ready");
+
+  /* ---------------------------------- */
+  /* 🔥 CONNECT REDIS AFTER SERVER START */
+  /* ---------------------------------- */
+  try {
+    await import("../lib/redis");
+    console.log("✅ Redis initialized");
+  } catch (err) {
+    console.error("❌ Redis init failed:", err);
+  }
+
+  /* ---------------------------------- */
+  /* 🔥 CONNECT PRISMA (NON-BLOCKING) */
+  /* ---------------------------------- */
+  prisma.$connect()
+    .then(() => console.log("✅ Prisma connected"))
+    .catch((err) => console.error("❌ Prisma failed:", err));
 });
 
 /* ---------------------------------- */
-/* DB CONNECT (NON-BLOCKING) */
-/* ---------------------------------- */
-
-prisma.$connect()
-  .then(() => console.log("✅ Prisma connected"))
-  .catch((err) => console.error("❌ Prisma failed:", err));
-
-/* ---------------------------------- */
-/* KEEP ALIVE */
+/* 🔥 KEEP ALIVE (RAILWAY SAFE) */
 /* ---------------------------------- */
 
 setInterval(() => {
