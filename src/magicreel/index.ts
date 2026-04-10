@@ -33,11 +33,11 @@ app.use(
   })
 );
 
-// 🔥 ADD THIS BACK (CRITICAL)
+// JSON body
 app.use(express.json({ limit: "20mb" }));
 
 /* ----------------------------------
-   ROOT + HEALTH (CRITICAL)
+   ROOT + HEALTH
 ---------------------------------- */
 
 app.get("/", (_req, res) => {
@@ -45,7 +45,7 @@ app.get("/", (_req, res) => {
 });
 
 app.get("/health", (_req, res) => {
-  res.json({ ok: true });
+  res.status(200).json({ status: "ok" });
 });
 
 /* ----------------------------------
@@ -62,13 +62,14 @@ app.use("/api/predictions", predictionsRoutes);
 app.use("/api/p2m", authenticate, p2mRoutes);
 
 /* ----------------------------------
-   START SERVER (FINAL FIX)
+   START SERVER (RAILWAY SAFE)
 ---------------------------------- */
 
 const PORT = process.env.PORT || "8080";
 
 // Connect Prisma (non-blocking)
-prisma.$connect()
+prisma
+  .$connect()
   .then(() => {
     console.log("✅ Prisma connected");
   })
@@ -76,18 +77,11 @@ prisma.$connect()
     console.error("❌ Prisma failed:", err);
   });
 
-// Start server immediately
+// Start server
 app.listen(Number(PORT), "0.0.0.0", () => {
   console.log(`🟢 MagicReel HTTP server listening on ${PORT}`);
+  console.log("🌐 Server fully initialized and ready");
 });
-
-/* ----------------------------------
-   KEEP PROCESS ALIVE (CRITICAL)
----------------------------------- */
-
-setInterval(() => {
-  console.log("🔄 keep alive");
-}, 1000 * 30);
 
 /* ----------------------------------
    PROCESS SAFETY
