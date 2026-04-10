@@ -79,18 +79,32 @@ const frontJob = await prisma.productToModelJob.create({
 // ✅ runId = jobId
 const frontRunId = frontJob.id;
 
-await heroQueue.add("hero-job", {
-  jobId: frontJob.id,
-  type: "front",
-  lookbookId: "hero",
-  pose: "hero",
-  engine: "fashn",
-  prompt: frontPrompt,
-  modelImageUrl: avatarFaceImageUrl,
-  garmentImageUrl: garmentFrontImageUrl,
-  status: "pending",
-  retries: 0,
-});
+await heroQueue.add(
+  "hero-job",
+  {
+    jobId: frontJob.id,
+    type: "front",
+    lookbookId: "hero",
+    pose: "hero",
+    engine: "fashn",
+    prompt: frontPrompt,
+    modelImageUrl: avatarFaceImageUrl,
+    garmentImageUrl: garmentFrontImageUrl,
+    status: "pending",
+    retries: 0,
+  },
+  {
+    attempts: 3, // 🔥 retry up to 3 times
+
+    backoff: {
+      type: "exponential",
+      delay: 5000, // 5s → 10s → 20s
+    },
+
+    removeOnComplete: true,
+    removeOnFail: false,
+  }
+);
 
 await prisma.productToModelJob.update({
   where: { id: frontJob.id },
@@ -130,7 +144,9 @@ if (avatarBackImageUrl && garmentBackImageUrl) {
   // ✅ correct assignment (NO const)
   backRunId = backJob.id;
 
-  await heroQueue.add("hero-job", {
+  await heroQueue.add(
+  "hero-job",
+  {
     jobId: backJob.id,
     type: "back",
     lookbookId: "hero",
@@ -141,7 +157,19 @@ if (avatarBackImageUrl && garmentBackImageUrl) {
     garmentImageUrl: garmentBackImageUrl,
     status: "pending",
     retries: 0,
-  });
+  },
+  {
+    attempts: 3, // 🔥 retry
+
+    backoff: {
+      type: "exponential",
+      delay: 5000,
+    },
+
+    removeOnComplete: true,
+    removeOnFail: false,
+  }
+);
 
   // ✅ update DB (missing earlier)
   await prisma.productToModelJob.update({
