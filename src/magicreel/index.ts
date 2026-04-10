@@ -10,21 +10,21 @@ import { authenticate } from "../auth/jwt.middleware";
 import p2mRoutes from "./p2m/p2m.routes";
 
 /* ---------------------------------- */
-/* 🚀 APP INIT */
+/* APP INIT */
 /* ---------------------------------- */
 
 const app = express();
 
 /* ---------------------------------- */
-/* 🚀 HEALTH FIRST (CRITICAL) */
+/* HEALTH ROUTES (TOP PRIORITY) */
 /* ---------------------------------- */
-
-app.get("/ping", (_req, res) => {
-  res.status(200).send("pong");
-});
 
 app.get("/health", (_req, res) => {
   res.status(200).json({ status: "ok" });
+});
+
+app.get("/ping", (_req, res) => {
+  res.status(200).send("pong");
 });
 
 app.get("/", (_req, res) => {
@@ -53,21 +53,18 @@ app.use("/api/predictions", predictionsRoutes);
 app.use("/api/p2m", authenticate, p2mRoutes);
 
 /* ---------------------------------- */
-/* 🚀 START SERVER IMMEDIATELY */
+/* SERVER START (RAILWAY SAFE) */
 /* ---------------------------------- */
 
 const PORT = Number(process.env.PORT) || 8080;
 
-if (!PORT) {
-  throw new Error("❌ PORT not provided");
-}
-
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`🟢 Server listening on ${PORT}`);
+  console.log("🌐 Server fully initialized and ready");
 });
 
 /* ---------------------------------- */
-/* 🔥 CONNECT DB AFTER START */
+/* DB CONNECT (NON-BLOCKING) */
 /* ---------------------------------- */
 
 prisma.$connect()
@@ -75,13 +72,15 @@ prisma.$connect()
   .catch((err) => console.error("❌ Prisma failed:", err));
 
 /* ---------------------------------- */
-/* 🔥 KEEP ALIVE */
+/* KEEP ALIVE */
 /* ---------------------------------- */
 
 setInterval(() => {
   console.log("🔄 keep alive");
 }, 15000);
 
+/* ---------------------------------- */
+/* SAFETY */
 /* ---------------------------------- */
 
 process.on("uncaughtException", (err: any) => {
