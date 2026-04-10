@@ -65,7 +65,7 @@ app.use("/api/p2m", authenticate, p2mRoutes);
    START SERVER (FINAL FIX)
 ---------------------------------- */
 
-const PORT = Number(process.env.PORT) || 8080;
+const PORT = process.env.PORT || "8080";
 
 // Connect Prisma (non-blocking)
 prisma.$connect()
@@ -77,7 +77,7 @@ prisma.$connect()
   });
 
 // Start server immediately
-app.listen(PORT, "0.0.0.0", () => {
+app.listen(Number(PORT), "0.0.0.0", () => {
   console.log(`🟢 MagicReel HTTP server listening on ${PORT}`);
 });
 
