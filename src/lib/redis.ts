@@ -1,10 +1,13 @@
 import { Redis } from "ioredis";
 
-const redis = new Redis(process.env.REDIS_URL as string, {
+const redisUrl = process.env.REDIS_URL as string;
+
+// ✅ Detect if TLS needed
+const isTLS = redisUrl.startsWith("rediss://");
+
+const redis = new Redis(redisUrl, {
   maxRetriesPerRequest: null,
-  tls: {
-    rejectUnauthorized: false,
-  },
+  ...(isTLS ? { tls: { rejectUnauthorized: false } } : {}), // 🔥 FIX
 });
 
 redis.on("connect", () => {
