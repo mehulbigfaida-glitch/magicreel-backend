@@ -56,7 +56,7 @@ app.use("/api/p2m", authenticate, p2mRoutes);
 /* 🚀 START SERVER IMMEDIATELY */
 /* ---------------------------------- */
 
-const PORT = Number(process.env.PORT);
+const PORT = Number(process.env.PORT) || 8080;
 
 if (!PORT) {
   throw new Error("❌ PORT not provided");
