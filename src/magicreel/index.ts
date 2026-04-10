@@ -1,3 +1,4 @@
+import "../lib/redis";
 import "dotenv/config";
 
 import express from "express";
@@ -9,6 +10,8 @@ import { authenticate } from "../auth/jwt.middleware";
 import p2mRoutes from "./p2m/p2m.routes";
 
 /* ---------------------------------- */
+/* 🚀 APP INIT */
+/* ---------------------------------- */
 
 const app = express();
 
@@ -18,6 +21,14 @@ const app = express();
 
 app.get("/ping", (_req, res) => {
   res.status(200).send("pong");
+});
+
+app.get("/health", (_req, res) => {
+  res.status(200).json({ status: "ok" });
+});
+
+app.get("/", (_req, res) => {
+  res.send("MagicReel backend running ✅");
 });
 
 /* ---------------------------------- */
@@ -34,15 +45,7 @@ app.use(
 app.use(express.json({ limit: "20mb" }));
 
 /* ---------------------------------- */
-
-app.get("/health", (_req, res) => {
-  res.status(200).json({ status: "ok" });
-});
-
-app.get("/", (_req, res) => {
-  res.send("MagicReel backend running ✅");
-});
-
+/* ROUTES */
 /* ---------------------------------- */
 
 app.use("/api/auth", authRoutes);
@@ -50,13 +53,13 @@ app.use("/api/predictions", predictionsRoutes);
 app.use("/api/p2m", authenticate, p2mRoutes);
 
 /* ---------------------------------- */
-/* 🚀 START SERVER FIRST */
+/* 🚀 START SERVER IMMEDIATELY */
 /* ---------------------------------- */
 
 const PORT = Number(process.env.PORT);
 
 if (!PORT) {
-  throw new Error("❌ PORT not provided by Railway");
+  throw new Error("❌ PORT not provided");
 }
 
 app.listen(PORT, "0.0.0.0", () => {
@@ -64,15 +67,7 @@ app.listen(PORT, "0.0.0.0", () => {
 });
 
 /* ---------------------------------- */
-/* 🔥 INIT REDIS AFTER SERVER START */
-/* ---------------------------------- */
-
-import("../lib/redis.js")
-  .then(() => console.log("✅ Redis initialized"))
-  .catch((err) => console.error("❌ Redis failed:", err));
-
-/* ---------------------------------- */
-/* 🔥 CONNECT DB */
+/* 🔥 CONNECT DB AFTER START */
 /* ---------------------------------- */
 
 prisma.$connect()
