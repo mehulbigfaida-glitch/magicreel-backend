@@ -76,3 +76,8 @@ worker.on("failed", (job, err) => {
 });
 
 console.log("🚀 Hero Worker started");
+
+// 🔥 KEEP PROCESS ALIVE (Railway fix)
+setInterval(() => {
+  console.log("🔄 worker heartbeat");
+}, 10000);
