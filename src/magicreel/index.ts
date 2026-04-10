@@ -65,7 +65,7 @@ app.listen(PORT, "0.0.0.0", async () => {
   /* 🔥 CONNECT REDIS AFTER SERVER START */
   /* ---------------------------------- */
   try {
-    await import("../lib/redis");
+    await import("../lib/redis.js");
     console.log("✅ Redis initialized");
   } catch (err) {
     console.error("❌ Redis init failed:", err);
