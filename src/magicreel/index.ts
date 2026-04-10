@@ -19,7 +19,7 @@ const app = express();
 /* ---------------------------------- */
 
 app.get("/health", (_req, res) => {
-  return res.status(200).send("ok"); // ⚡ fastest possible
+  return res.status(200).send("ok"); // ⚡ ultra-fast healthcheck
 });
 
 app.get("/ping", (_req, res) => {
@@ -30,6 +30,8 @@ app.get("/", (_req, res) => {
   res.send("MagicReel backend running ✅");
 });
 
+/* ---------------------------------- */
+/* MIDDLEWARE */
 /* ---------------------------------- */
 
 app.set("trust proxy", 1);
@@ -52,7 +54,7 @@ app.use("/api/predictions", predictionsRoutes);
 app.use("/api/p2m", authenticate, p2mRoutes);
 
 /* ---------------------------------- */
-/* 🚀 SERVER START (CRITICAL FIX) */
+/* 🚀 SERVER START (CRITICAL) */
 /* ---------------------------------- */
 
 const PORT = Number(process.env.PORT) || 8080;
@@ -62,10 +64,10 @@ app.listen(PORT, "0.0.0.0", async () => {
   console.log("🌐 Server fully initialized and ready");
 
   /* ---------------------------------- */
-  /* 🔥 CONNECT REDIS AFTER SERVER START */
+  /* 🔥 CONNECT REDIS (CORRECT PATH FIX) */
   /* ---------------------------------- */
   try {
-    await import("../lib/redis.js");
+    await import("./lib/redis" as any); // ✅ FIXED PATH
     console.log("✅ Redis initialized");
   } catch (err) {
     console.error("❌ Redis init failed:", err);
@@ -74,7 +76,8 @@ app.listen(PORT, "0.0.0.0", async () => {
   /* ---------------------------------- */
   /* 🔥 CONNECT PRISMA (NON-BLOCKING) */
   /* ---------------------------------- */
-  prisma.$connect()
+  prisma
+    .$connect()
     .then(() => console.log("✅ Prisma connected"))
     .catch((err) => console.error("❌ Prisma failed:", err));
 });
