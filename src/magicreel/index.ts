@@ -1,4 +1,3 @@
-import "../lib/redis";
 import "dotenv/config";
 
 import express from "express";
@@ -13,6 +12,16 @@ import p2mRoutes from "./p2m/p2m.routes";
 
 const app = express();
 
+/* ---------------------------------- */
+/* 🚀 HEALTH FIRST (CRITICAL) */
+/* ---------------------------------- */
+
+app.get("/ping", (_req, res) => {
+  res.status(200).send("pong");
+});
+
+/* ---------------------------------- */
+
 app.set("trust proxy", 1);
 
 app.use(
@@ -25,12 +34,6 @@ app.use(
 app.use(express.json({ limit: "20mb" }));
 
 /* ---------------------------------- */
-/* 🚀 HEALTH ROUTES (TOP PRIORITY) */
-/* ---------------------------------- */
-
-app.get("/ping", (_req, res) => {
-  res.status(200).send("pong");
-});
 
 app.get("/health", (_req, res) => {
   res.status(200).json({ status: "ok" });
@@ -47,17 +50,29 @@ app.use("/api/predictions", predictionsRoutes);
 app.use("/api/p2m", authenticate, p2mRoutes);
 
 /* ---------------------------------- */
-/* 🚀 START SERVER IMMEDIATELY */
+/* 🚀 START SERVER FIRST */
 /* ---------------------------------- */
 
-const PORT = process.env.PORT || "8080";
+const PORT = Number(process.env.PORT);
 
-app.listen(Number(PORT), "0.0.0.0", () => {
+if (!PORT) {
+  throw new Error("❌ PORT not provided by Railway");
+}
+
+app.listen(PORT, "0.0.0.0", () => {
   console.log(`🟢 Server listening on ${PORT}`);
 });
 
 /* ---------------------------------- */
-/* 🔥 CONNECT DB AFTER SERVER START */
+/* 🔥 INIT REDIS AFTER SERVER START */
+/* ---------------------------------- */
+
+import("../lib/redis.js")
+  .then(() => console.log("✅ Redis initialized"))
+  .catch((err) => console.error("❌ Redis failed:", err));
+
+/* ---------------------------------- */
+/* 🔥 CONNECT DB */
 /* ---------------------------------- */
 
 prisma.$connect()
