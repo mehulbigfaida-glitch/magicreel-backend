@@ -1,4 +1,3 @@
-import "../lib/redis";
 import "dotenv/config";
 
 import express from "express";
@@ -48,7 +47,7 @@ app.get("/health", (_req, res) => {
   res.status(200).json({ status: "ok" });
 });
 
-// 🔥 ADD THIS HERE
+// Railway healthcheck
 app.get("/ping", (_req, res) => {
   res.send("pong");
 });
@@ -72,20 +71,26 @@ app.use("/api/p2m", authenticate, p2mRoutes);
 
 const PORT = process.env.PORT || "8080";
 
-// Connect Prisma (non-blocking)
-prisma
-  .$connect()
-  .then(() => {
-    console.log("✅ Prisma connected");
-  })
-  .catch((err) => {
-    console.error("❌ Prisma failed:", err);
-  });
-
-// Start server
-app.listen(Number(PORT), "0.0.0.0", () => {
+// Start server FIRST (critical)
+app.listen(Number(PORT), "0.0.0.0", async () => {
   console.log(`🟢 MagicReel HTTP server listening on ${PORT}`);
   console.log("🌐 Server fully initialized and ready");
+
+  // 🔥 INIT REDIS AFTER SERVER START
+  try {
+    await import("../lib/redis.js");
+    console.log("✅ Redis initialized");
+  } catch (err) {
+    console.error("❌ Redis init failed:", err);
+  }
+
+  // 🔥 Connect Prisma AFTER server start
+  try {
+    await prisma.$connect();
+    console.log("✅ Prisma connected");
+  } catch (err) {
+    console.error("❌ Prisma failed:", err);
+  }
 });
 
 /* ----------------------------------
