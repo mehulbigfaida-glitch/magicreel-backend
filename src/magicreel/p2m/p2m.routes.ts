@@ -75,7 +75,6 @@ router.get("/reel/status/:jobId", getReelStatus);
 router.use(
   "/hero",
   heroLimiter,
-  optionalBilling("HERO"), // ✅ FIX ADDED
   heroRoutes
 );
 
