@@ -1,17 +1,14 @@
-import { prisma } from "../../../magicreel/db/prisma"; 
+import { heroQueue } from "../../../queues/hero.queue";
+import { prisma } from "../../../magicreel/db/prisma";
 import { Request, Response } from "express";
 import { buildHeroPrompt } from "../../../magicreel/prompts/heroPrompt";
-import { FashnService } from "../../../magicreel/services/fashn.service";
-import { finalizeBilling } from "../../../billing/billing.middleware"; // ✅ USE THIS
-
-const fashn = new FashnService();
+import { finalizeBilling } from "../../../billing/billing.middleware";
 
 export async function generateHeroV2(
   req: Request,
   res: Response
 ) {
   try {
-
     const {
       categoryKey,
       avatarGender,
@@ -20,37 +17,24 @@ export async function generateHeroV2(
       styling,
       avatarBackImageUrl,
       garmentBackImageUrl,
+      lookbookId,
     } = req.body;
+
+    /* =========================
+       VALIDATION
+    ========================= */
 
     if (
       !categoryKey ||
       !avatarGender ||
       !avatarFaceImageUrl ||
-      !garmentFrontImageUrl
+      !garmentFrontImageUrl ||
+      !lookbookId
     ) {
       return res.status(400).json({
-        error: "Missing required hero inputs",
+        error: "Missing required hero inputs (including lookbookId)",
       });
     }
-
-    /* =========================
-       ✅ SAFE USER FETCH
-    ========================= */
-
-    let user = (req as any).user;
-
-    // fallback (important for stability)
-    if (!user) {
-      user = await prisma.user.findFirst(); // dev fallback
-    }
-
-    if (!user || !user.id) {
-      return res.status(401).json({
-        error: "Unauthorized",
-      });
-    }
-
-    const now = new Date().toISOString();
 
     /* =========================
        FRONT HERO
@@ -62,39 +46,40 @@ export async function generateHeroV2(
       styling,
     });
 
-    const userId = (req as any).user?.userId || (req as any).user?.id;
-
-const frontJob = await prisma.productToModelJob.create({
-  data: {
-    userId: userId,
-    productImageUrl: garmentFrontImageUrl,
-    modelImageUrl: avatarFaceImageUrl,
-    engine: "fashn",
-    engineJobId: "pending",
-    status: "running",
-  },
-});
-
-    const frontRunId = await fashn.runProductToModel({
-      jobId: frontJob.id,
-      lookbookId: "hero",
-      pose: "hero" as any,
-      engine: "fashn",
-      prompt: frontPrompt,
-      modelImageUrl: avatarFaceImageUrl,
-      garmentImageUrl: garmentFrontImageUrl,
-      status: "pending",
-      retries: 0,
-      createdAt: now,
-      updatedAt: now,
-    });
-
-    await prisma.productToModelJob.update({
-      where: { id: frontJob.id },
+    const frontJob = await prisma.render.create({
       data: {
-        engineJobId: frontRunId,
+        pose: "hero",
+        engine: "QWEN",
+        modelImageUrl: avatarFaceImageUrl,
+        garmentImageUrl: garmentFrontImageUrl,
+        outputImageUrl: null,
+        status: "queued",
+        lookbookId: lookbookId,
+        type: "HERO",
       },
     });
+
+    const frontRunId = frontJob.id;
+
+    await heroQueue.add(
+      "hero-job",
+      {
+        jobId: frontRunId,
+        type: "front",
+        prompt: frontPrompt,
+        modelImageUrl: avatarFaceImageUrl,
+        garmentImageUrl: garmentFrontImageUrl,
+      },
+      {
+        attempts: 3,
+        backoff: {
+          type: "exponential",
+          delay: 5000,
+        },
+        removeOnComplete: true,
+        removeOnFail: false,
+      }
+    );
 
     /* =========================
        BACK HERO
@@ -103,46 +88,46 @@ const frontJob = await prisma.productToModelJob.create({
     let backRunId: string | null = null;
 
     if (avatarBackImageUrl && garmentBackImageUrl) {
-      const backCategoryKey = `${categoryKey}_BACK`;
-
       const backPrompt = buildHeroPrompt({
-        categoryKey: backCategoryKey,
+        categoryKey: `${categoryKey}_BACK`,
         avatarGender,
         styling,
       });
 
-      const userId = (req as any).user?.userId || (req as any).user?.id;
-      const backJob = await prisma.productToModelJob.create({
-  data: {
-    userId: userId,
-    productImageUrl: garmentBackImageUrl,
-    modelImageUrl: avatarBackImageUrl,
-    engine: "fashn",
-    engineJobId: "pending",
-    status: "running",
-  },
-});
-
-      backRunId = await fashn.runProductToModel({
-        jobId: backJob.id,
-        lookbookId: "hero",
-        pose: "hero_back" as any,
-        engine: "fashn",
-        prompt: backPrompt,
-        modelImageUrl: avatarBackImageUrl,
-        garmentImageUrl: garmentBackImageUrl,
-        status: "pending",
-        retries: 0,
-        createdAt: now,
-        updatedAt: now,
-      });
-
-      await prisma.productToModelJob.update({
-        where: { id: backJob.id },
+      const backJob = await prisma.render.create({
         data: {
-          engineJobId: backRunId,
+          pose: "hero_back",
+          engine: "QWEN",
+          modelImageUrl: avatarBackImageUrl,
+          garmentImageUrl: garmentBackImageUrl,
+          outputImageUrl: null,
+          status: "queued",
+          lookbookId: lookbookId,
+          type: "HERO",
         },
       });
+
+      backRunId = backJob.id;
+
+      await heroQueue.add(
+        "hero-job",
+        {
+          jobId: backRunId,
+          type: "back",
+          prompt: backPrompt,
+          modelImageUrl: avatarBackImageUrl,
+          garmentImageUrl: garmentBackImageUrl,
+        },
+        {
+          attempts: 3,
+          backoff: {
+            type: "exponential",
+            delay: 5000,
+          },
+          removeOnComplete: true,
+          removeOnFail: false,
+        }
+      );
     }
 
     /* =========================
