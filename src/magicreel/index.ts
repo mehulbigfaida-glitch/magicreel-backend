@@ -67,11 +67,11 @@ app.listen(PORT, "0.0.0.0", async () => {
   /* 🔥 CONNECT REDIS (CORRECT PATH FIX) */
   /* ---------------------------------- */
   try {
-    await import("./lib/redis" as any); // ✅ FIXED PATH
-    console.log("✅ Redis initialized");
-  } catch (err) {
-    console.error("❌ Redis init failed:", err);
-  }
+  await import("./lib/redis");
+  console.log("✅ Redis initialized");
+} catch (err) {
+  console.error("❌ Redis init failed:", err);
+}
 
   /* ---------------------------------- */
   /* 🔥 CONNECT PRISMA (NON-BLOCKING) */
