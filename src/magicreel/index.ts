@@ -3,19 +3,12 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import authRoutes from "../auth/auth.routes";
-
-/* ----------------------------------
-   🚨 CRITICAL BOOT CHECK (DO NOT REMOVE)
----------------------------------- */
+import p2mRoutes from "./p2m/p2m.routes"; // ✅ ADD THIS
 
 console.log("BOOT ENV CHECK", {
   PORT: process.env.PORT,
   PROMPT_ONLY: process.env.PROMPT_ONLY,
 });
-
-/* ----------------------------------
-   APP INIT
----------------------------------- */
 
 const app = express();
 
@@ -28,11 +21,10 @@ app.use(
   })
 );
 
-// ✅ Required for large payloads (images)
 app.use(express.json({ limit: "20mb" }));
 
 /* ----------------------------------
-   🚨 HEALTHCHECK (IMMUTABLE - DO NOT TOUCH)
+   HEALTHCHECK
 ---------------------------------- */
 
 app.get("/", (_req, res) => {
@@ -44,14 +36,16 @@ app.get("/health", (_req, res) => {
 });
 
 /* ----------------------------------
-   ROUTES (SAFE ONLY)
+   ROUTES
 ---------------------------------- */
 
-// ✅ Only auth route (no Redis risk)
 app.use("/api/auth", authRoutes);
 
+// 🔥 ADD THIS LINE (CRITICAL)
+app.use("/api/p2m", p2mRoutes);
+
 /* ----------------------------------
-   🚨 SERVER START (IMMUTABLE)
+   SERVER START
 ---------------------------------- */
 
 const PORT = Number(process.env.PORT) || 8080;
