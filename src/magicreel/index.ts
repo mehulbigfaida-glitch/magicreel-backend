@@ -63,16 +63,7 @@ app.listen(PORT, "0.0.0.0", async () => {
   console.log(`🟢 Server listening on ${PORT}`);
   console.log("🌐 Server fully initialized and ready");
 
-  /* ---------------------------------- */
-  /* 🔥 CONNECT REDIS (CORRECT PATH FIX) */
-  /* ---------------------------------- */
-  try {
-  await import("./lib/redis");
-  console.log("✅ Redis initialized");
-} catch (err) {
-  console.error("❌ Redis init failed:", err);
-}
-
+  
   /* ---------------------------------- */
   /* 🔥 CONNECT PRISMA (NON-BLOCKING) */
   /* ---------------------------------- */
