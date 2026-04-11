@@ -1,0 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const billing_middleware_1 = require("../../billing/billing.middleware");
+const generate_frames_1 = require("../../api/p2m/cinematic/generate-frames");
+const generate_v1_1 = require("../../api/p2m/cinematic/generate-v1");
+const router = (0, express_1.Router)();
+router.post("/generate-frames", (0, billing_middleware_1.billingGuard)("CINEMATIC_LOOKBOOK"), generate_frames_1.generateCinematicFrames);
+router.post("/generate-film", (0, billing_middleware_1.billingGuard)("CINEMATIC_REEL"), generate_v1_1.generateCinematicV1);
+exports.default = router;

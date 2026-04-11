@@ -4,7 +4,7 @@ uploads
 temp
 tmp
 *.log
-dist
+# dist
 build
 *.7z
 outputs
