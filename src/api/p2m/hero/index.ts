@@ -1,26 +1,15 @@
 import { Router } from "express";
 import { generateHeroV2 } from "./generate-v2";
 import { pollHeroGeneration } from "./poll";
-import { authenticate } from "../../../auth/jwt.middleware";
-import { billingGuard } from "../../../billing/billing.middleware";
 
 const router = Router();
 
 /* ================= HERO GENERATION ================= */
 
-router.post(
-  "/generate-v2",
-  authenticate,
-  billingGuard("HERO"),
-  generateHeroV2
-);
+router.post("/generate-v2", generateHeroV2);
 
-/* ================= HERO POLLING ================= */
+/* ================= HERO STATUS ================= */
 
-router.get(
-  "/poll/:runId",
-  authenticate,
-  pollHeroGeneration
-);
+router.get("/status/:runId", pollHeroGeneration);
 
 export default router;
