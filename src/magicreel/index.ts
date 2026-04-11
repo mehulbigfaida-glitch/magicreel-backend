@@ -58,9 +58,7 @@ app.listen(PORT, "0.0.0.0", () => {
    KEEP ALIVE
 ---------------------------------- */
 
-setInterval(() => {
-  console.log("🔄 keep alive");
-}, 1000 * 30);
+
 
 /* ----------------------------------
    PROCESS SAFETY
