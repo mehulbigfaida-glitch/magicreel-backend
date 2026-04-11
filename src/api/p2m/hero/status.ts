@@ -2,7 +2,7 @@
 // 🔒 HERO STATUS + ENHANCEMENT (PRISMA-ALIGNED)
 
 import { Request, Response } from "express";
-import prisma from "../../../magicreel/db/prisma";
+import { prisma } from "../../../magicreel/db/prisma";
 import { FashnService } from "../../../magicreel/services/fashn.service";
 import { enhanceHeroImage } from "../../../magicreel/services/heroEnhance.service";
 
