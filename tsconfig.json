@@ -5,30 +5,18 @@
     "moduleResolution": "Node16",
     "rootDir": "src",
     "outDir": "dist",
-
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-
-    "noEmitOnError": true
+    "noEmitOnError": false
   },
-
   "include": [
-    "src/magicreel/index.ts",
-    "src/api/p2m/**/*",
-    "src/api/predictions/**/*",
-    "src/auth/**/*",
-    "src/magicreel/db/**/*"
+    "src/**/*",
+    "src/magicreel/index.ts"  // 🔥 FORCE INCLUDE ENTRY
   ],
-
   "exclude": [
     "node_modules",
-    "dist",
-
-    "src/lookbook/**/*",
-    "src/video/**/*",
-    "src/tryon/**/*",
-    "src/mediaupload/**/*"
+    "dist"
   ]
 }
