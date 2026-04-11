@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { reelV1Service } from "../../../magicreel/services/reelV1.service";
-import prisma from "../../../magicreel/db/prisma";
+import { prisma } from "../../../magicreel/db/prisma";
 import { finalizeBilling } from "../../../billing/billing.middleware"; // ✅ FIX
 import { checkCreditsOrThrow } from "../../../billing/billing.middleware";
 

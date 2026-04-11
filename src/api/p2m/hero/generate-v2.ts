@@ -1,4 +1,3 @@
-import { heroQueue } from "../../../queues/hero.queue";
 import { prisma } from "../../../magicreel/db/prisma";
 import { Request, Response } from "express";
 import { buildHeroPrompt } from "../../../magicreel/prompts/heroPrompt";
@@ -61,26 +60,7 @@ export async function generateHeroV2(
 
     const frontRunId = frontJob.id;
 
-    await heroQueue.add(
-      "hero-job",
-      {
-        jobId: frontRunId,
-        type: "front",
-        prompt: frontPrompt,
-        modelImageUrl: avatarFaceImageUrl,
-        garmentImageUrl: garmentFrontImageUrl,
-      },
-      {
-        attempts: 3,
-        backoff: {
-          type: "exponential",
-          delay: 5000,
-        },
-        removeOnComplete: true,
-        removeOnFail: false,
-      }
-    );
-
+    
     /* =========================
        BACK HERO
     ========================= */
@@ -109,26 +89,7 @@ export async function generateHeroV2(
 
       backRunId = backJob.id;
 
-      await heroQueue.add(
-        "hero-job",
-        {
-          jobId: backRunId,
-          type: "back",
-          prompt: backPrompt,
-          modelImageUrl: avatarBackImageUrl,
-          garmentImageUrl: garmentBackImageUrl,
-        },
-        {
-          attempts: 3,
-          backoff: {
-            type: "exponential",
-            delay: 5000,
-          },
-          removeOnComplete: true,
-          removeOnFail: false,
-        }
-      );
-    }
+       }
 
     /* =========================
        BILLING
