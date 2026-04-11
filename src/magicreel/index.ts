@@ -2,10 +2,7 @@ import "dotenv/config";
 
 import express from "express";
 import cors from "cors";
-import predictionsRoutes from "../api/predictions";
 import authRoutes from "../auth/auth.routes";
-import { authenticate } from "../auth/jwt.middleware";
-import p2mRoutes from "./p2m/p2m.routes";
 
 /* ----------------------------------
    🚨 CRITICAL BOOT CHECK (DO NOT REMOVE)
@@ -38,26 +35,20 @@ app.use(express.json({ limit: "20mb" }));
    🚨 HEALTHCHECK (IMMUTABLE - DO NOT TOUCH)
 ---------------------------------- */
 
-// Root
 app.get("/", (_req, res) => {
   res.send("MagicReel backend running ✅");
 });
 
-// 🔒 Railway healthcheck (must be FAST + TEXT)
 app.get("/health", (_req, res) => {
   res.status(200).send("OK");
 });
 
 /* ----------------------------------
-   ROUTES
+   ROUTES (SAFE ONLY)
 ---------------------------------- */
 
-// Public
+// ✅ Only auth route (no Redis risk)
 app.use("/api/auth", authRoutes);
-
-// Protected
-app.use("/api/predictions", predictionsRoutes);
-app.use("/api/p2m", authenticate, p2mRoutes);
 
 /* ----------------------------------
    🚨 SERVER START (IMMUTABLE)
@@ -65,13 +56,12 @@ app.use("/api/p2m", authenticate, p2mRoutes);
 
 const PORT = Number(process.env.PORT) || 8080;
 
-// 🔒 Start server IMMEDIATELY (no blocking before this)
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`🟢 MagicReel HTTP server listening on ${PORT}`);
 });
 
 /* ----------------------------------
-   KEEP ALIVE (SAFE)
+   KEEP ALIVE
 ---------------------------------- */
 
 setInterval(() => {
