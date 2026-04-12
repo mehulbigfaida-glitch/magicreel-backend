@@ -5,8 +5,8 @@ import { FashnService } from "../services/fashn.service";
 
 // ✅ FIXED REDIS CONFIG (CRITICAL)
 const connection = new Redis(process.env.REDIS_URL as string, {
-  maxRetriesPerRequest: null,   // 🔥 REQUIRED by BullMQ
-  enableReadyCheck: false,      // 🔥 prevents worker crash
+  maxRetriesPerRequest: null,
+  enableReadyCheck: false,
 });
 
 // ✅ Init service (kept for future use)
@@ -30,7 +30,17 @@ const worker = new Worker(
     console.log("🔥 Processing hero job:", jobId);
 
     try {
-      // 🔒 SAFE MODE — no external API call
+      // ✅ Check if job exists
+      const existing = await prisma.productToModelJob.findUnique({
+        where: { id: jobId },
+      });
+
+      if (!existing) {
+        console.log("⚠️ Job not found in DB, skipping update:", jobId);
+        return;
+      }
+
+      // ✅ Safe update
       await prisma.productToModelJob.update({
         where: { id: jobId },
         data: {
@@ -43,21 +53,31 @@ const worker = new Worker(
     } catch (error: any) {
       console.error("❌ Hero job failed:", jobId, error.message);
 
-      await prisma.productToModelJob.update({
-        where: { id: jobId },
-        data: {
-          status: "failed",
-        },
-      });
+      try {
+        const existing = await prisma.productToModelJob.findUnique({
+          where: { id: jobId },
+        });
 
-      throw error; // enables retry
+        if (existing) {
+          await prisma.productToModelJob.update({
+            where: { id: jobId },
+            data: {
+              status: "failed",
+            },
+          });
+        } else {
+          console.log("⚠️ Skip fail update — job not found:", jobId);
+        }
+      } catch (err: any) {
+        console.error("❌ Failed to mark job as failed:", err.message);
+      }
+
+      throw error; // keep retry logic
     }
   },
   {
     connection,
-
     concurrency: 2,
-
     limiter: {
       max: 4,
       duration: 1000,
