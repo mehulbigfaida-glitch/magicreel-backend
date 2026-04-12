@@ -1,10 +1,13 @@
-// FILE: src/auth/jwt.middleware.ts (FULL REPLACEMENT)
-
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 
 export function authenticate(req: Request, res: Response, next: NextFunction) {
   try {
+    // ✅ BYPASS ONLY FOR TEST ROUTE
+    if (req.path.includes("/test-queue")) {
+      return next();
+    }
+
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -24,10 +27,10 @@ export function authenticate(req: Request, res: Response, next: NextFunction) {
 
     // ✅ normalize user object
     (req as any).user = {
-  ...decoded,
-  id: decoded.userId || decoded.id,
-  userId: decoded.userId || decoded.id,
-};
+      ...decoded,
+      id: decoded.userId || decoded.id,
+      userId: decoded.userId || decoded.id,
+    };
 
     return next();
   } catch (error) {

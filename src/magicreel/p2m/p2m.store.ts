@@ -1,4 +1,4 @@
-import prisma from "../db/prisma";
+import { prisma } from "../db/prisma";
 import { P2MStatus } from "./p2m.types";
 
 export const P2MStore = {
@@ -7,6 +7,7 @@ export const P2MStore = {
     modelImageUrl: string;
     engine: string;
     engineJobId: string;
+    userId: string; // ✅ REQUIRED
   }) => {
     return prisma.productToModelJob.create({
       data: {
@@ -15,6 +16,11 @@ export const P2MStore = {
         engine: data.engine,
         engineJobId: data.engineJobId,
         status: "running",
+
+        // ✅ FIX: attach user
+        user: {
+          connect: { id: data.userId },
+        },
       },
     });
   },
@@ -33,7 +39,7 @@ export const P2MStore = {
     return prisma.productToModelJob.update({
       where: { id },
       data: {
-        status,
+        status: String(status), // ✅ FIX enum → string
         resultImageUrl: payload?.resultImageUrl,
         error: payload?.error,
       },
