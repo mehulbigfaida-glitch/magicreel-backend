@@ -71,24 +71,11 @@ app.use("/api/predictions", predictionsRoutes);
 /* ---------------------------------- */
 
 app.get("/api/test-queue", async (_req, res) => {
-  try {
-    console.log("🧪 TEST QUEUE ROUTE HIT");
+  console.log("🧪 TEST ROUTE HIT");
 
-    const job = await heroQueue.add("test-job", {
-      jobId: "test123",
-    });
-
-    return res.json({
-      message: "Job added",
-      jobId: job.id,
-    });
-  } catch (err: any) {
-    console.error("❌ Queue test failed:", err.message);
-
-    return res.status(500).json({
-      error: "Queue test failed",
-    });
-  }
+  return res.json({
+    message: "route working",
+  });
 });
 
 /* ---------------------------------- */
