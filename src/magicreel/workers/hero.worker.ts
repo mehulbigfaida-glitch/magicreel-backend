@@ -1,9 +1,12 @@
 import { Worker } from "bullmq";
-import redis from "../../lib/redis";
+import Redis from "ioredis";
 import { prisma } from "../db/prisma";
 import { FashnService } from "../services/fashn.service";
 
-// ✅ Init service
+// ✅ INIT REDIS (CRITICAL FIX)
+const connection = new Redis(process.env.REDIS_URL as string);
+
+// ✅ Init service (kept for future use)
 const fashn = new FashnService();
 
 console.log("🟢 Hero Worker running and waiting for jobs...");
@@ -20,25 +23,23 @@ const worker = new Worker(
       engine,
     } = job.data;
 
+    console.log("📦 Worker received hero job:", jobId);
     console.log("🔥 Processing hero job:", jobId);
 
     try {
-  console.log("📦 Worker received hero job (no processing):", jobId);
+      // 🔒 SAFE MODE — no external API call
+      await prisma.productToModelJob.update({
+        where: { id: jobId },
+        data: {
+          status: "queued",
+        },
+      });
 
-  // 🔒 DO NOT process Hero in worker
-  await prisma.productToModelJob.update({
-    where: { id: jobId },
-    data: {
-      status: "queued",
-    },
-  });
-
-      console.log("✅ Hero job completed:", jobId);
+      console.log("✅ Hero job marked as queued:", jobId);
 
     } catch (error: any) {
       console.error("❌ Hero job failed:", jobId, error.message);
 
-      // ❗ Mark failed (retry handled by queue)
       await prisma.productToModelJob.update({
         where: { id: jobId },
         data: {
@@ -46,19 +47,17 @@ const worker = new Worker(
         },
       });
 
-      throw error; // IMPORTANT → enables retry
+      throw error; // enables retry
     }
   },
   {
-    connection: redis,
+    connection, // ✅ CRITICAL FIX
 
-    // 🔥 CONCURRENCY CONTROL
     concurrency: 2,
 
-    // 🔥 RATE LIMITER (ANTI-429 CORE)
     limiter: {
-      max: 4,        // max 4 jobs
-      duration: 1000 // per second
+      max: 4,
+      duration: 1000,
     },
   }
 );
@@ -75,7 +74,7 @@ worker.on("failed", (job, err) => {
 
 console.log("🚀 Hero Worker started");
 
-// 🔥 KEEP PROCESS ALIVE (Railway safe)
+// 🔥 KEEP PROCESS ALIVE
 setInterval(() => {
   console.log("🔄 worker heartbeat");
 }, 10000);
