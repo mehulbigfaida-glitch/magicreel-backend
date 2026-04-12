@@ -23,28 +23,15 @@ const worker = new Worker(
     console.log("🔥 Processing hero job:", jobId);
 
     try {
-      const runId = await fashn.runProductToModel({
-        jobId,
-        lookbookId: "hero",
-        pose,
-        engine,
-        prompt,
-        modelImageUrl,
-        garmentImageUrl,
-        status: "pending",
-        retries: 0,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      });
+  console.log("📦 Worker received hero job (no processing):", jobId);
 
-      // ✅ Update DB on success
-      await prisma.productToModelJob.update({
-        where: { id: jobId },
-        data: {
-          engineJobId: runId,
-          status: "completed",
-        },
-      });
+  // 🔒 DO NOT process Hero in worker
+  await prisma.productToModelJob.update({
+    where: { id: jobId },
+    data: {
+      status: "queued",
+    },
+  });
 
       console.log("✅ Hero job completed:", jobId);
 
