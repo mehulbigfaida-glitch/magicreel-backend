@@ -4,9 +4,9 @@ import jwt from "jsonwebtoken";
 export function authenticate(req: Request, res: Response, next: NextFunction) {
   try {
     // ✅ BYPASS ONLY FOR TEST ROUTE
-    if (req.path.includes("/test-queue")) {
-      return next();
-    }
+    if (req.originalUrl.includes("/test-queue")) {
+  return next();
+}
 
     const authHeader = req.headers.authorization;
 
