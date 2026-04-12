@@ -12,6 +12,7 @@ import { billingGuard } from "../../billing/billing.middleware";
 import { generateReelV1Controller } from "../../api/p2m/reel/generate-v1";
 import { getReelStatus } from "../../api/p2m/reel/status";
 import { heroQueue } from "../queue/hero.queue";
+
 /* ----------------------------------
    CONFIG FLAGS
 ---------------------------------- */
@@ -51,46 +52,7 @@ const heroLimiter = rateLimit({
 const router = Router();
 
 /* ----------------------------------
-   🎬 CINEMATIC
----------------------------------- */
-
-router.use("/cinematic", cinematicRoutes);
-
-/* ----------------------------------
-   🎬 REEL V1 (3 credits)
----------------------------------- */
-
-router.post(
-  "/reel/generate-v1",
-  optionalBilling("REEL"), // ✅ 3 credits
-  generateReelV1Controller
-);
-
-router.get("/reel/status/:jobId", getReelStatus);
-
-/* ----------------------------------
-   👗 HERO (1 credit)
----------------------------------- */
-
-router.use(
-  "/hero",
-  heroLimiter,
-  optionalBilling("HERO"), // ✅ FIX ADDED
-  heroRoutes
-);
-
-/* ----------------------------------
-   📚 LOOKBOOK (2 credits)
----------------------------------- */
-
-router.use(
-  "/lookbook",
-  optionalBilling("LOOKBOOK_ECOM"), // ✅ 2 credits
-  lookbookRoutes
-);
-
-/* ----------------------------------
-   🧪 QUEUE TEST (SAFE)
+   🧪 QUEUE TEST (SAFE - NO AUTH)
 ---------------------------------- */
 
 router.get("/test-queue", async (_req, res) => {
@@ -111,5 +73,44 @@ router.get("/test-queue", async (_req, res) => {
     });
   }
 });
+
+/* ----------------------------------
+   🎬 CINEMATIC
+---------------------------------- */
+
+router.use("/cinematic", cinematicRoutes);
+
+/* ----------------------------------
+   🎬 REEL V1 (3 credits)
+---------------------------------- */
+
+router.post(
+  "/reel/generate-v1",
+  optionalBilling("REEL"),
+  generateReelV1Controller
+);
+
+router.get("/reel/status/:jobId", getReelStatus);
+
+/* ----------------------------------
+   👗 HERO (1 credit)
+---------------------------------- */
+
+router.use(
+  "/hero",
+  heroLimiter,
+  optionalBilling("HERO"),
+  heroRoutes
+);
+
+/* ----------------------------------
+   📚 LOOKBOOK (2 credits)
+---------------------------------- */
+
+router.use(
+  "/lookbook",
+  optionalBilling("LOOKBOOK_ECOM"),
+  lookbookRoutes
+);
 
 export default router;
