@@ -1,25 +1,22 @@
 import Redis from "ioredis";
 
-let redis: Redis | null = null;
+const redisUrl = process.env.REDIS_URL as string;
 
-if (process.env.REDIS_URL) {
-  // ✅ Production (Railway Redis)
-  redis = new Redis(process.env.REDIS_URL, {
-    maxRetriesPerRequest: null,
-    enableReadyCheck: false,
-  });
+const redis = new Redis(redisUrl, {
+  maxRetriesPerRequest: null,
+  enableReadyCheck: false,
+});
 
-  redis.on("connect", () => {
-    console.log("✅ Redis connected (production)");
-  });
+redis.on("connect", () => {
+  console.log("✅ Redis connected");
+});
 
-  redis.on("error", (err) => {
-    console.error("❌ Redis error:", err.message);
-  });
-} else {
-  // ✅ Fallback (NO REDIS — prevents crash)
-  console.warn("⚠️ Redis disabled (no REDIS_URL provided)");
-}
+redis.on("ready", () => {
+  console.log("🚀 Redis ready");
+});
+
+redis.on("error", (err) => {
+  console.error("❌ Redis error:", err.message);
+});
 
 export default redis;
-export { redis };

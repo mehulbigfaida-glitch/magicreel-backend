@@ -3,8 +3,11 @@ import Redis from "ioredis";
 import { prisma } from "../db/prisma";
 import { FashnService } from "../services/fashn.service";
 
-// ✅ INIT REDIS (CRITICAL FIX)
-const connection = new Redis(process.env.REDIS_URL as string);
+// ✅ FIXED REDIS CONFIG (CRITICAL)
+const connection = new Redis(process.env.REDIS_URL as string, {
+  maxRetriesPerRequest: null,   // 🔥 REQUIRED by BullMQ
+  enableReadyCheck: false,      // 🔥 prevents worker crash
+});
 
 // ✅ Init service (kept for future use)
 const fashn = new FashnService();
@@ -51,7 +54,7 @@ const worker = new Worker(
     }
   },
   {
-    connection, // ✅ CRITICAL FIX
+    connection,
 
     concurrency: 2,
 
