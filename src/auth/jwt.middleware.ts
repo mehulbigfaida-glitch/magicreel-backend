@@ -1,12 +1,16 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 
-export function authenticate(req: Request, res: Response, next: NextFunction) {
+export function authenticate(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
   try {
-    // ✅ BYPASS ONLY FOR TEST ROUTE
-    if (req.originalUrl.includes("/test-queue")) {
-  return next();
-}
+    // ✅ BYPASS FOR TEST ROUTE
+    if ((req as any).originalUrl?.includes("/test-queue")) {
+      return next();
+    }
 
     const authHeader = req.headers.authorization;
 
@@ -25,7 +29,7 @@ export function authenticate(req: Request, res: Response, next: NextFunction) {
       process.env.JWT_SECRET as string
     );
 
-    // ✅ normalize user object
+    // ✅ normalize user
     (req as any).user = {
       ...decoded,
       id: decoded.userId || decoded.id,
