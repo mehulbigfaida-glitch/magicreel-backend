@@ -1,6 +1,6 @@
 import { Queue } from "bullmq";
-import { redis } from "./redis";
+import redis from "../lib/redis";
 
-export const heroQueue = new Queue("hero-queue", {
+export const heroQueue = new Queue("hero-generation", {
   connection: redis,
 });
