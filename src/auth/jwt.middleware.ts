@@ -24,10 +24,10 @@ export function authenticate(req: Request, res: Response, next: NextFunction) {
 
     // ✅ normalize user object
     (req as any).user = {
-      id: decoded.userId || decoded.id,
-      userId: decoded.userId || decoded.id,
-      ...decoded,
-    };
+  ...decoded,
+  id: decoded.userId || decoded.id,
+  userId: decoded.userId || decoded.id,
+};
 
     return next();
   } catch (error) {
