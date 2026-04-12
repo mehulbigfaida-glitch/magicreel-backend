@@ -8,9 +8,14 @@ export function authenticate(
 ) {
   try {
     // ✅ BYPASS FOR TEST ROUTE
-    if ((req as any).originalUrl?.includes("/test-queue")) {
-      return next();
-    }
+    const url = (req as any).originalUrl || "";
+
+if (
+  url.includes("/api/test-queue") ||
+  url.includes("/test-queue")
+) {
+  return next();
+}
 
     const authHeader = req.headers.authorization;
 
