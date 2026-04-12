@@ -8,6 +8,7 @@ import authRoutes from "../auth/auth.routes";
 import { authenticate } from "../auth/jwt.middleware";
 import p2mRoutes from "./p2m/p2m.routes";
 import { heroQueue } from "./queue/hero.queue";
+
 /* ---------------------------------- */
 /* APP INIT */
 /* ---------------------------------- */
@@ -19,7 +20,7 @@ const app = express();
 /* ---------------------------------- */
 
 app.get("/health", (_req, res) => {
-  return res.status(200).send("ok"); // ⚡ ultra-fast healthcheck
+  return res.status(200).send("ok");
 });
 
 app.get("/ping", (_req, res) => {
@@ -52,23 +53,37 @@ app.use(express.json({ limit: "20mb" }));
 app.use("/api/auth", authRoutes);
 app.use("/api/predictions", predictionsRoutes);
 
-// ✅ Public test route (no auth)
-app.get("/api/p2m/test-queue", async (_req, res) => {
-  const job = await heroQueue.add("test-job", {
-    jobId: "test123",
-  });
+/* ---------------------------------- */
+/* 🧪 QUEUE TEST (PUBLIC — NO AUTH) */
+/* ---------------------------------- */
 
-  return res.json({
-    message: "Job added",
-    jobId: job.id,
-  });
+app.get("/api/test-queue", async (_req, res) => {
+  try {
+    const job = await heroQueue.add("test-job", {
+      jobId: "test123",
+    });
+
+    return res.json({
+      message: "Job added",
+      jobId: job.id,
+    });
+  } catch (err: any) {
+    console.error("❌ Queue test failed:", err.message);
+
+    return res.status(500).json({
+      error: "Queue test failed",
+    });
+  }
 });
 
-// ✅ Protected routes
+/* ---------------------------------- */
+/* 👗 P2M ROUTES (PROTECTED) */
+/* ---------------------------------- */
+
 app.use("/api/p2m", authenticate, p2mRoutes);
 
 /* ---------------------------------- */
-/* 🚀 SERVER START (CRITICAL) */
+/* 🚀 SERVER START */
 /* ---------------------------------- */
 
 const PORT = Number(process.env.PORT) || 8080;
@@ -77,10 +92,6 @@ app.listen(PORT, "0.0.0.0", async () => {
   console.log(`🟢 Server listening on ${PORT}`);
   console.log("🌐 Server fully initialized and ready");
 
-  
-  /* ---------------------------------- */
-  /* 🔥 CONNECT PRISMA (NON-BLOCKING) */
-  /* ---------------------------------- */
   prisma
     .$connect()
     .then(() => console.log("✅ Prisma connected"))
