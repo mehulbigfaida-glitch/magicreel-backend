@@ -7,7 +7,7 @@ import predictionsRoutes from "../api/predictions";
 import authRoutes from "../auth/auth.routes";
 import { authenticate } from "../auth/jwt.middleware";
 import p2mRoutes from "./p2m/p2m.routes";
-
+import { heroQueue } from "./queue/hero.queue";
 /* ---------------------------------- */
 /* APP INIT */
 /* ---------------------------------- */
@@ -51,6 +51,20 @@ app.use(express.json({ limit: "20mb" }));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/predictions", predictionsRoutes);
+
+// ✅ Public test route (no auth)
+app.get("/api/p2m/test-queue", async (_req, res) => {
+  const job = await heroQueue.add("test-job", {
+    jobId: "test123",
+  });
+
+  return res.json({
+    message: "Job added",
+    jobId: job.id,
+  });
+});
+
+// ✅ Protected routes
 app.use("/api/p2m", authenticate, p2mRoutes);
 
 /* ---------------------------------- */
