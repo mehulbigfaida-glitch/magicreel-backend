@@ -15,6 +15,10 @@ import { heroQueue } from "./queue/hero.queue";
 
 const app = express();
 
+app.get("/__version", (_req, res) => {
+  return res.send("VERSION-TEST-123");
+});
+
 /* ---------------------------------- */
 /* 🔍 DEBUG TRACE (VERY IMPORTANT) */
 /* ---------------------------------- */
