@@ -52,7 +52,7 @@ const heroLimiter = rateLimit({
 const router = Router();
 
 /* ----------------------------------
-   🧪 QUEUE TEST (SAFE - NO AUTH)
+   🧪 QUEUE TEST (PUBLIC - NO AUTH)
 ---------------------------------- */
 
 router.get("/test-queue", async (_req, res) => {
@@ -61,14 +61,14 @@ router.get("/test-queue", async (_req, res) => {
       jobId: "test123",
     });
 
-    res.json({
+    return res.json({
       message: "Job added",
       jobId: job.id,
     });
   } catch (err: any) {
     console.error("❌ Queue test failed:", err.message);
 
-    res.status(500).json({
+    return res.status(500).json({
       error: "Queue test failed",
     });
   }
