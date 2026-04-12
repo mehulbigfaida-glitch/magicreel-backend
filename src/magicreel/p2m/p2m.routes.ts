@@ -11,7 +11,7 @@ import { billingGuard } from "../../billing/billing.middleware";
 
 import { generateReelV1Controller } from "../../api/p2m/reel/generate-v1";
 import { getReelStatus } from "../../api/p2m/reel/status";
-
+import { heroQueue } from "../queue/hero.queue";
 /* ----------------------------------
    CONFIG FLAGS
 ---------------------------------- */
@@ -88,5 +88,28 @@ router.use(
   optionalBilling("LOOKBOOK_ECOM"), // ✅ 2 credits
   lookbookRoutes
 );
+
+/* ----------------------------------
+   🧪 QUEUE TEST (SAFE)
+---------------------------------- */
+
+router.get("/test-queue", async (_req, res) => {
+  try {
+    const job = await heroQueue.add("test-job", {
+      jobId: "test123",
+    });
+
+    res.json({
+      message: "Job added",
+      jobId: job.id,
+    });
+  } catch (err: any) {
+    console.error("❌ Queue test failed:", err.message);
+
+    res.status(500).json({
+      error: "Queue test failed",
+    });
+  }
+});
 
 export default router;
