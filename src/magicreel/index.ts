@@ -15,12 +15,8 @@ import { heroQueue } from "./queue/hero.queue";
 
 const app = express();
 
-app.get("/__version", (_req, res) => {
-  return res.send("VERSION-TEST-123");
-});
-
 /* ---------------------------------- */
-/* 🔍 DEBUG TRACE (VERY IMPORTANT) */
+/* 🔍 DEBUG TRACE */
 /* ---------------------------------- */
 
 app.use((req, _res, next) => {
@@ -67,14 +63,25 @@ app.use("/api/auth", authRoutes);
 app.use("/api/predictions", predictionsRoutes);
 
 /* ---------------------------------- */
-/* 🧪 QUEUE TEST (PUBLIC) */
+/* 🧪 QUEUE TEST (NON-BLOCKING) */
 /* ---------------------------------- */
 
 app.get("/api/test-queue", async (_req, res) => {
-  console.log("🧪 TEST ROUTE HIT");
+  console.log("🧪 TEST QUEUE START");
+
+  heroQueue
+    .add("test-job", {
+      jobId: "test123",
+    })
+    .then(() => {
+      console.log("✅ Job added");
+    })
+    .catch((err) => {
+      console.error("❌ Queue error:", err.message);
+    });
 
   return res.json({
-    message: "route working",
+    message: "queued (non-blocking)",
   });
 });
 
