@@ -16,7 +16,16 @@ import { heroQueue } from "./queue/hero.queue";
 const app = express();
 
 /* ---------------------------------- */
-/* 🔥 HEALTH ROUTES (MUST BE FIRST) */
+/* 🔍 DEBUG TRACE (VERY IMPORTANT) */
+/* ---------------------------------- */
+
+app.use((req, _res, next) => {
+  console.log("🌍 GLOBAL HIT:", req.originalUrl);
+  next();
+});
+
+/* ---------------------------------- */
+/* 🔥 HEALTH ROUTES */
 /* ---------------------------------- */
 
 app.get("/health", (_req, res) => {
@@ -54,11 +63,13 @@ app.use("/api/auth", authRoutes);
 app.use("/api/predictions", predictionsRoutes);
 
 /* ---------------------------------- */
-/* 🧪 QUEUE TEST (PUBLIC — NO AUTH) */
+/* 🧪 QUEUE TEST (PUBLIC) */
 /* ---------------------------------- */
 
 app.get("/api/test-queue", async (_req, res) => {
   try {
+    console.log("🧪 TEST QUEUE ROUTE HIT");
+
     const job = await heroQueue.add("test-job", {
       jobId: "test123",
     });
@@ -99,7 +110,7 @@ app.listen(PORT, "0.0.0.0", async () => {
 });
 
 /* ---------------------------------- */
-/* 🔥 KEEP ALIVE (RAILWAY SAFE) */
+/* 🔥 KEEP ALIVE */
 /* ---------------------------------- */
 
 setInterval(() => {
