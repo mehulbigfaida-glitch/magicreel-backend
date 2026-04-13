@@ -13,7 +13,6 @@ cloudinary.config({
 
 export async function pollHeroGeneration(req: Request, res: Response) {
   try {
-
     const { runId } = req.params;
 
     if (!runId) {
@@ -23,18 +22,12 @@ export async function pollHeroGeneration(req: Request, res: Response) {
     console.log("Polling hero runId:", runId);
 
     /* =========================
-       FIND JOB (SAFE)
+       FIND JOB
     ========================= */
 
-    let job = await prisma.productToModelJob.findFirst({
-      where: {
-        engineJobId: runId,
-      },
+    const job = await prisma.productToModelJob.findFirst({
+      where: { engineJobId: runId },
     });
-
-    /* =========================
-       JOB NOT FOUND → WAIT (NO CRASH)
-    ========================= */
 
     if (!job) {
       console.warn("Hero job not found yet (DB delay)");
@@ -52,17 +45,35 @@ export async function pollHeroGeneration(req: Request, res: Response) {
       });
     }
 
+    if (job.status === "failed") {
+      return res.json({ status: "failed" });
+    }
+
     /* =========================
-       CHECK FASHN STATUS (SAFE)
+       FASHN STATUS
     ========================= */
 
     let statusResult;
 
     try {
       statusResult = await fashn.pollStatus(runId);
-    } catch (err) {
-      console.warn("FASHN poll failed, retrying...");
-      return res.json({ status: "processing" });
+    } catch (err: any) {
+      console.error("❌ FASHN POLL ERROR:", {
+        message: err.message,
+        status: err.response?.status,
+        data: err.response?.data,
+      });
+
+      // 🔴 STOP LOOP — FAIL FAST
+      await prisma.productToModelJob.update({
+        where: { id: job.id },
+        data: { status: "failed" },
+      });
+
+      return res.json({
+        status: "failed",
+        error: "FASHN polling failed",
+      });
     }
 
     if (!statusResult || !statusResult.status) {
@@ -93,18 +104,15 @@ export async function pollHeroGeneration(req: Request, res: Response) {
     }
 
     /* =========================
-       COMPLETED (SAFE OUTPUT)
+       COMPLETED
     ========================= */
 
     if (status === "completed" || status === "succeeded") {
-
-      const imageUrl =
-    Array.isArray(statusResult.output)
-    ? statusResult.output[0]
-    : statusResult.output || null;
+      const imageUrl = Array.isArray(statusResult.output)
+        ? statusResult.output[0]
+        : statusResult.output || null;
 
       if (!imageUrl) {
-        console.warn("No image returned yet");
         return res.json({ status: "processing" });
       }
 
@@ -132,11 +140,12 @@ export async function pollHeroGeneration(req: Request, res: Response) {
 
     return res.json({ status: "processing" });
 
-  } catch (error) {
+  } catch (error: any) {
+    console.error("❌ HERO POLL CRASH:", error.message);
 
-    console.error("Hero Poll Error:", error);
-
-    // 🔥 NEVER CRASH → ALWAYS SAFE RESPONSE
-    return res.json({ status: "processing" });
+    return res.status(500).json({
+      status: "failed",
+      error: "Internal poll error",
+    });
   }
 }
