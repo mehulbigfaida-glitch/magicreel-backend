@@ -1,12 +1,9 @@
 // backend/src/magicreel/p2m/p2m.service.ts
-// ✅ FINAL — Product-to-Model (P2M) Service
-// Purpose: Build prompt → optionally stop → send to FASHN API
+// ✅ FINAL — Product-to-Model (P2M) Service (STABLE)
 
 import axios from "axios";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../db/prisma"; // ✅ use shared prisma
 import { buildP2MPrompt } from "../prompts/promptBuilder";
-
-const prisma = new PrismaClient();
 
 const FASHN_RUN_URL = "https://api.fashn.ai/v1/run";
 const FASHN_API_KEY = process.env.FASHN_API_KEY as string;
@@ -17,20 +14,21 @@ if (!FASHN_API_KEY) {
 
 export class P2MService {
   async run(input: {
+    userId: string; // ✅ FIX: required
     productImageUrl: string;
     modelImageUrl: string;
     avatarGender: "male" | "female";
     category: string;
     attributes?: any;
   }): Promise<any> {
-    // 1️⃣ Build the EXACT prompt (single source of truth)
+    // 1️⃣ Build prompt
     const prompt = buildP2MPrompt({
       category: input.category,
       avatarGender: input.avatarGender,
       attributes: input.attributes,
     });
 
-    // 2️⃣ PROMPT-ONLY MODE (NO FASHN CALL)
+    // 2️⃣ PROMPT-ONLY MODE
     if (process.env.PROMPT_ONLY === "true") {
       console.log("[PROMPT ONLY]", {
         avatarGender: input.avatarGender,
@@ -46,7 +44,7 @@ export class P2MService {
       };
     }
 
-    // 3️⃣ SEND TO FASHN API
+    // 3️⃣ SEND TO FASHN
     console.log("[SENDING TO FASHN]", prompt);
 
     const response = await axios.post(
@@ -69,16 +67,19 @@ export class P2MService {
 
     const engineJobId = response.data.id;
 
-    // 4️⃣ Persist job (optional but correct)
+    // 4️⃣ Persist job (correct schema)
     await prisma.productToModelJob.create({
-      data: {
-        engine: "fashn",
-        engineJobId,
-        productImageUrl: input.productImageUrl,
-        modelImageUrl: input.modelImageUrl,
-        status: "fashn_running",
-      },
-    });
+  data: {
+    user: {
+      connect: { id: input.userId }, // ✅ FIX
+    },
+    engine: "fashn",
+    engineJobId,
+    productImageUrl: input.productImageUrl,
+    modelImageUrl: input.modelImageUrl,
+    status: "running",
+  },
+});
 
     return {
       jobId: engineJobId,

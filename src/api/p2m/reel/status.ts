@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import prisma from "../../../magicreel/db/prisma";
+import { prisma } from "../../../magicreel/db/prisma";
 
 const db = prisma as any;
 

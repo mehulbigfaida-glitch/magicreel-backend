@@ -9,12 +9,29 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "noEmitOnError": false,
-    
+    "noEmitOnError": false
   },
   "include": ["src/**/*"],
   "exclude": [
-    "node_modules",
-    "dist"
-  ]
+  "node_modules",
+  "dist",
+
+  "src/tryon",
+  "src/video",
+  "src/mediaupload",
+  "src/lookbook",
+
+  "src/api/p2m/cinematic",                     // ✅ already needed
+  "src/magicreel/p2m/cinematic.routes.ts",     // ✅ ADD
+  "src/magicreel/services/generateHeroVideoV2.service.ts.ts", // ✅ ADD
+
+  "src/magicreel/magicReelPipeline*",
+  "src/magicreel/controllers/lookbookGenerate.controller.ts",
+  "src/magicreel/services/LookbookServiceV1.ts",
+  "src/magicreel/prompts/lookbookPrompt.ts",
+  "src/magicreel/engines/lookbookImage.engine.ts",
+  "src/magicreel/routes/garment.routes.ts",
+
+  "src/routes/garmentUpload.ts"
+]
 }

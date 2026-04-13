@@ -2,7 +2,9 @@ import { PROMPT_REGISTRY_V1 } from "./promptRegistryV1";
 
 type BuildPromptInput = {
   category: string;
-  styling?: string;
+  avatarGender?: "male" | "female"; // ✅ already added
+  styling?: any;                    // ✅ ADD THIS
+  attributes?: any;
 };
 
 export function buildP2MPrompt({

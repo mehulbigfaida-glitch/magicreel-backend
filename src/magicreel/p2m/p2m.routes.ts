@@ -5,7 +5,6 @@ import { Router, Request, Response, NextFunction } from "express";
 
 import heroRoutes from "../../api/p2m/hero";
 import lookbookRoutes from "../../api/p2m/lookbook";
-import cinematicRoutes from "./cinematic.routes";
 
 import { billingGuard } from "../../billing/billing.middleware";
 
@@ -78,7 +77,7 @@ router.get("/test-queue", async (_req, res) => {
    🎬 CINEMATIC
 ---------------------------------- */
 
-router.use("/cinematic", cinematicRoutes);
+
 
 /* ----------------------------------
    🎬 REEL V1 (3 credits)

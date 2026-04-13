@@ -1,4 +1,4 @@
-import prisma from "../magicreel/db/prisma";
+import { prisma } from "../magicreel/db/prisma";
 // temporarily remove enum imports (not needed for now)
 
 export const BillingService = {
