@@ -43,33 +43,37 @@ export class FashnService {
    * Execute Product-to-Model render
    * Returns runId
    */
-  async runProductToModel(job: RenderJob): Promise<string> {
-    const response = await axios.post(
-      FASHN_RUN_URL,
-      {
-        model_name: "product-to-model",
-        inputs: {
-          product_image: job.garmentImageUrl,
-          model_image: job.modelImageUrl,
-          prompt: job.prompt,
-          output_format: "png",
-          return_base64: false
-        }
+  async runProductToModel(params: {
+  garmentImageUrl: string;
+  modelImageUrl: string;
+  prompt: string;
+}): Promise<string> {
+  const response = await axios.post(
+    FASHN_RUN_URL,
+    {
+      model_name: "product-to-model",
+      inputs: {
+        product_image: params.garmentImageUrl,
+        model_image: params.modelImageUrl,
+        prompt: params.prompt,
+        output_format: "png",
+        return_base64: false,
       },
-      {
-        headers: {
-          Authorization: `Bearer ${FASHN_API_KEY}`,
-          "Content-Type": "application/json"
-        }
-      }
-    );
-
-    if (!response.data?.id) {
-      throw new Error("FASHN did not return runId");
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${FASHN_API_KEY}`,
+        "Content-Type": "application/json",
+      },
     }
+  );
 
-    return response.data.id;
+  if (!response.data?.id) {
+    throw new Error("FASHN did not return runId");
   }
+
+  return response.data.id;
+}
 
   /**
    * Upload image to Cloudinary
