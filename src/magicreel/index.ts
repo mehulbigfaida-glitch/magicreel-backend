@@ -1,5 +1,5 @@
 import "dotenv/config";
-
+import shareRoutes from "../api/share/share.routes";
 import express from "express";
 import cors from "cors";
 import { prisma } from "./db/prisma";
@@ -61,7 +61,7 @@ app.use(express.json({ limit: "20mb" }));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/predictions", predictionsRoutes);
-
+app.use("/api/share", shareRoutes);
 /* ---------------------------------- */
 /* 🧪 QUEUE TEST (NON-BLOCKING) */
 /* ---------------------------------- */
