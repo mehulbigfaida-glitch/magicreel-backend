@@ -23,10 +23,10 @@ const LOCKED_PROMPT =
 ----------------------------------- */
 
 const POSES = [
-  { id: "P1", type: "front", url: "https://res.cloudinary.com/duaqfspwa/image/upload/v1773921649/P1_bte2lx.png" },
-  { id: "P2", type: "walking", url: "https://res.cloudinary.com/duaqfspwa/image/upload/v1773921649/P2_exbtqy.png" },
-  { id: "P3", type: "angle", url: "https://res.cloudinary.com/duaqfspwa/image/upload/v1773921649/P3_hkimui.png" },
-  { id: "P4", type: "dynamic", url: "https://res.cloudinary.com/duaqfspwa/image/upload/v1773921648/p4_gilyuf.png" },
+  { id: "P1", type: "front", url: "https://res.cloudinary.com/duaqfspwa/image/upload/v1776236833/left_angle_natb6a.png" },
+  { id: "P2", type: "walking", url: "https://res.cloudinary.com/duaqfspwa/image/upload/v1776236833/right_angle_zi2unn.png" },
+  { id: "P3", type: "angle", url: "https://res.cloudinary.com/duaqfspwa/image/upload/v1776236833/Front_Walking_c2inmz.png" },
+  { id: "P4", type: "dynamic", url: "https://res.cloudinary.com/duaqfspwa/image/upload/v1776236833/both_hand_on_hip_vga17c.png" },
 ];
 
 function getCroppedImage(url: string): string {
