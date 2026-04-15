@@ -67,9 +67,10 @@ if (render) {
     }
 
     return res.status(200).json({
-      success: true,
-      reelVideoUrl: result.reelVideoUrl,
-    });
+  success: true,
+  runId: render?.id, // 🔥 CRITICAL
+  reelVideoUrl: result.reelVideoUrl,
+});
 
   } catch (error: any) {
     console.error("❌ Reel V1 Error:", error);
