@@ -23,12 +23,37 @@ export async function generateReelV1Controller(
        GENERATE REEL
     ---------------------------------- */
 await checkCreditsOrThrow(req, 3);
-    const result = await reelV1Service.generate({ imageUrl });
+const result = await reelV1Service.generate({ imageUrl });
 
 // 🔥 attach referenceId
 (req as any).billingMetadata = {
   referenceId: result.predictionId || null,
 };
+
+/* ----------------------------------
+   🔥 STEP 1: ATTACH REEL TO RENDER
+---------------------------------- */
+
+// 1. Find latest render row
+const render = await prisma.render.findFirst({
+  where: {
+    modelImageUrl: imageUrl,
+    type: "REEL",
+  },
+  orderBy: {
+    createdAt: "desc",
+  },
+});
+
+// 2. Update reelVideoUrl
+if (render) {
+  await prisma.render.update({
+    where: { id: render.id },
+    data: {
+      reelVideoUrl: result.reelVideoUrl,
+    },
+  });
+}
 
     /* ----------------------------------
        ✅ BILLING (UNIFIED SYSTEM)
