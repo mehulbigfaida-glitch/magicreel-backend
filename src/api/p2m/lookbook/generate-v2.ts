@@ -45,14 +45,18 @@ export async function generateLookbookV2(req: Request, res: Response) {
     ---------------------------------- */
 
     const lookbook = await prisma.lookbook.create({
-      data: {
-        userId,
-        modelId: "default",
-        presetId: "default",
-        status: "completed",
-        garmentId: "garment-default-1",
-      },
-    });
+  data: {
+    user: {
+      connect: { id: userId },
+    },
+    garment: {
+      connect: { id: "garment-default-1" },
+    },
+    modelId: "default",
+    presetId: "default",
+    status: "completed",
+  },
+});
 
     const poses: any[] = [];
 
