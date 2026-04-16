@@ -12,7 +12,7 @@ import { generateReelV1Controller } from "../../api/p2m/reel/generate-v1";
 import { getReelStatus } from "../../api/p2m/reel/status";
 import { heroQueue } from "../queue/hero.queue";
 
-// ✅ IMPORT CONTROLLER DIRECTLY (CRITICAL FIX)
+// ✅ PUBLIC CONTROLLER (NO AUTH)
 import { getLookbookById } from "../../api/p2m/lookbook/get-lookbook";
 
 /* ----------------------------------
@@ -54,7 +54,7 @@ const heroLimiter = rateLimit({
 const router = Router();
 
 /* ----------------------------------
-   🧪 QUEUE TEST (PUBLIC - NO AUTH)
+   🧪 QUEUE TEST (PUBLIC)
 ---------------------------------- */
 
 router.get("/test-queue", async (_req, res) => {
@@ -77,7 +77,7 @@ router.get("/test-queue", async (_req, res) => {
 });
 
 /* ----------------------------------
-   🎬 REEL V1 (3 credits)
+   🎬 REEL V1
 ---------------------------------- */
 
 router.post(
@@ -89,7 +89,7 @@ router.post(
 router.get("/reel/status/:jobId", getReelStatus);
 
 /* ----------------------------------
-   👗 HERO (1 credit)
+   👗 HERO
 ---------------------------------- */
 
 router.use(
@@ -103,11 +103,18 @@ router.use(
    📚 LOOKBOOK
 ---------------------------------- */
 
-// 🌍 PUBLIC LOOKBOOK FETCH (NO AUTH, NO BILLING)
-// 🔥 THIS IS THE CRITICAL FIX
-router.get("/lookbook/:id", getLookbookById);
+/**
+ * ✅ CRITICAL:
+ * This MUST be defined BEFORE router.use("/lookbook")
+ * This route is PUBLIC (no auth, no billing)
+ */
+router.get("/lookbook/:id", (req, res) => {
+  return getLookbookById(req, res);
+});
 
-// 🔒 PROTECTED LOOKBOOK ROUTES
+/**
+ * 🔒 Protected lookbook routes
+ */
 router.use(
   "/lookbook",
   optionalBilling("LOOKBOOK_ECOM"),
