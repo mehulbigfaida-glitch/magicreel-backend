@@ -5,7 +5,6 @@ import cors from "cors";
 import { prisma } from "./db/prisma";
 import predictionsRoutes from "../api/predictions";
 import authRoutes from "../auth/auth.routes";
-import { authenticate } from "../auth/jwt.middleware";
 import p2mRoutes from "./p2m/p2m.routes";
 import { heroQueue } from "./queue/hero.queue";
 
@@ -62,8 +61,9 @@ app.use(express.json({ limit: "20mb" }));
 app.use("/api/auth", authRoutes);
 app.use("/api/predictions", predictionsRoutes);
 app.use("/api/share", shareRoutes);
+
 /* ---------------------------------- */
-/* 🧪 QUEUE TEST (NON-BLOCKING) */
+/* 🧪 QUEUE TEST */
 /* ---------------------------------- */
 
 app.get("/api/test-queue", async (_req, res) => {
@@ -86,10 +86,11 @@ app.get("/api/test-queue", async (_req, res) => {
 });
 
 /* ---------------------------------- */
-/* 👗 P2M ROUTES (PROTECTED) */
+/* 👗 P2M ROUTES */
 /* ---------------------------------- */
 
-app.use("/api/p2m", authenticate, p2mRoutes);
+// ✅ IMPORTANT: REMOVE GLOBAL AUTH HERE
+app.use("/api/p2m", p2mRoutes);
 
 /* ---------------------------------- */
 /* 🚀 SERVER START */
