@@ -106,6 +106,12 @@ router.use(
    📚 LOOKBOOK (2 credits)
 ---------------------------------- */
 
+// 🌍 PUBLIC LOOKBOOK FETCH (NO BILLING, NO AUTH)
+router.get("/lookbook/:id", (req, res, next) => {
+  return lookbookRoutes(req, res, next);
+});
+
+// 🔒 PROTECTED LOOKBOOK ROUTES
 router.use(
   "/lookbook",
   optionalBilling("LOOKBOOK_ECOM"),
