@@ -1,3 +1,4 @@
+import { getLookbookById } from "./get-lookbook";
 import { Router } from "express";
 import { generateLookbookV2 } from "./generate-v2";
 import { getLookbookStatus } from "./status";
@@ -37,5 +38,11 @@ router.post(
   authenticate,
   (req, res) => exportLookbook(req, res) // ✅ prevents undefined crash
 );
+
+/* -------------------------------
+   PUBLIC FETCH (FOR SHARE)
+-------------------------------- */
+
+router.get("/lookbook/:id", getLookbookById);
 
 export default router;
