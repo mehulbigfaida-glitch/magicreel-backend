@@ -68,8 +68,8 @@ if (render) {
 
     return res.status(200).json({
   success: true,
-  runId: render?.id, // 🔥 CRITICAL
   reelVideoUrl: result.reelVideoUrl,
+  runId: result.predictionId, // 🔥 USE THIS
 });
 
   } catch (error: any) {
