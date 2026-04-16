@@ -36,12 +36,12 @@ export async function generateLookbookV2(req: Request, res: Response) {
 
     const userId = (req as any).user?.userId;
 
-if (!userId) {
-  return res.status(401).json({ error: "Unauthorized" });
-}
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
 
     /* ----------------------------------
-       ✅ CREATE LOOKBOOK (KEY FIX)
+       ✅ CREATE LOOKBOOK
     ---------------------------------- */
 
     const lookbook = await prisma.lookbook.create({
@@ -54,18 +54,34 @@ if (!userId) {
       },
     });
 
-    /* ----------------------------------
-       GENERATE POSES
-    ---------------------------------- */
-
     const poses: any[] = [];
 
-    // HERO always first
+    /* ----------------------------------
+       HERO (FRONT)
+    ---------------------------------- */
+
     poses.push({
       poseId: "HERO",
       poseType: "hero",
       imageUrl: heroImageUrl,
     });
+
+    await prisma.render.create({
+      data: {
+        pose: "hero",
+        engine: "QWEN",
+        type: "LOOKBOOK",
+        status: "completed",
+        modelImageUrl: heroImageUrl,
+        garmentImageUrl: heroImageUrl,
+        outputImageUrl: heroImageUrl,
+        lookbookId: lookbook.id,
+      },
+    });
+
+    /* ----------------------------------
+       BACK HERO (OPTIONAL)
+    ---------------------------------- */
 
     if (backHeroImageUrl) {
       poses.push({
@@ -73,10 +89,29 @@ if (!userId) {
         poseType: "back",
         imageUrl: backHeroImageUrl,
       });
+
+      await prisma.render.create({
+        data: {
+          pose: "back",
+          engine: "QWEN",
+          type: "LOOKBOOK",
+          status: "completed",
+          modelImageUrl: backHeroImageUrl,
+          garmentImageUrl: backHeroImageUrl,
+          outputImageUrl: backHeroImageUrl,
+          lookbookId: lookbook.id,
+        },
+      });
     }
 
-    if (REPLICATE_API_TOKEN) {
-      for (const pose of POSES) {
+    /* ----------------------------------
+       AI POSES
+    ---------------------------------- */
+
+    for (const pose of POSES) {
+      let finalUrl = heroImageUrl;
+
+      if (REPLICATE_API_TOKEN) {
         try {
           const response = await axios.post(
             QWEN_URL,
@@ -100,7 +135,6 @@ if (!userId) {
 
           const predictionUrl = response.data.urls.get;
 
-          let finalUrl = heroImageUrl;
           const start = Date.now();
 
           while (true) {
@@ -123,30 +157,57 @@ if (!userId) {
 
             await new Promise((r) => setTimeout(r, 1500));
           }
-
-          poses.push({
-            poseId: pose.id,
-            poseType: pose.type,
-            imageUrl: finalUrl,
-          });
-
         } catch {
-          poses.push({
-            poseId: pose.id,
-            poseType: pose.type,
-            imageUrl: heroImageUrl,
-          });
+          finalUrl = heroImageUrl;
         }
       }
+
+      poses.push({
+        poseId: pose.id,
+        poseType: pose.type,
+        imageUrl: finalUrl,
+      });
+
+      await prisma.render.create({
+        data: {
+          pose: pose.type,
+          engine: "QWEN",
+          type: "LOOKBOOK",
+          status: "completed",
+          modelImageUrl: heroImageUrl,
+          garmentImageUrl: heroImageUrl,
+          outputImageUrl: finalUrl,
+          lookbookId: lookbook.id,
+        },
+      });
     }
+
+    /* ----------------------------------
+       CROPPED
+    ---------------------------------- */
 
     const frontPose = poses.find(p => p.poseId === "P1");
 
     if (frontPose?.imageUrl) {
+      const croppedUrl = getCroppedImage(frontPose.imageUrl);
+
       poses.push({
         poseId: "P5",
         poseType: "cropped",
-        imageUrl: getCroppedImage(frontPose.imageUrl),
+        imageUrl: croppedUrl,
+      });
+
+      await prisma.render.create({
+        data: {
+          pose: "cropped",
+          engine: "QWEN",
+          type: "LOOKBOOK",
+          status: "completed",
+          modelImageUrl: heroImageUrl,
+          garmentImageUrl: heroImageUrl,
+          outputImageUrl: croppedUrl,
+          lookbookId: lookbook.id,
+        },
       });
     }
 
@@ -161,13 +222,13 @@ if (!userId) {
     }
 
     /* ----------------------------------
-       ✅ RETURN LOOKBOOK ID (KEY FIX)
+       RESPONSE
     ---------------------------------- */
 
     return res.json({
       success: true,
       poses,
-      runId: lookbook.id,   // 🔥 THIS IS THE FIX
+      runId: lookbook.id,
       type: "LOOKBOOK",
     });
 
