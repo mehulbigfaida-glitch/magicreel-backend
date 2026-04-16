@@ -50,7 +50,7 @@ export async function generateLookbookV2(req: Request, res: Response) {
         modelId: "default",
         presetId: "default",
         status: "completed",
-        garmentId: "default",
+        garmentId: "garment-default-1",
       },
     });
 
