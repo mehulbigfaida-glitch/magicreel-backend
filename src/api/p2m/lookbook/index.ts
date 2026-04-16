@@ -1,17 +1,22 @@
-import { getLookbookById } from "./get-lookbook";
 import { Router } from "express";
 import { generateLookbookV2 } from "./generate-v2";
 import { getLookbookStatus } from "./status";
 import { exportLookbook } from "./export";
 import { billingGuard } from "../../../billing/billing.middleware";
 import { authenticate } from "../../../auth/jwt.middleware";
+import { getLookbookById } from "./get-lookbook";
 
 const router = Router();
 
 /* -------------------------------
-   LOOKBOOK GENERATION
+   🌍 PUBLIC FETCH (FOR SHARE)
 -------------------------------- */
+// 🔥 IMPORTANT: NO AUTH HERE
+router.get("/:id", getLookbookById);
 
+/* -------------------------------
+   LOOKBOOK GENERATION (PROTECTED)
+-------------------------------- */
 router.post(
   "/generate-v2",
   authenticate,
@@ -20,9 +25,8 @@ router.post(
 );
 
 /* -------------------------------
-   STATUS
+   STATUS (PROTECTED)
 -------------------------------- */
-
 router.get(
   "/status",
   authenticate,
@@ -30,19 +34,12 @@ router.get(
 );
 
 /* -------------------------------
-   EXPORT (SAFE WRAP)
+   EXPORT (PROTECTED)
 -------------------------------- */
-
 router.post(
   "/export",
   authenticate,
-  (req, res) => exportLookbook(req, res) // ✅ prevents undefined crash
+  (req, res) => exportLookbook(req, res)
 );
-
-/* -------------------------------
-   PUBLIC FETCH (FOR SHARE)
--------------------------------- */
-
-router.get("/lookbook/:id", getLookbookById);
 
 export default router;
