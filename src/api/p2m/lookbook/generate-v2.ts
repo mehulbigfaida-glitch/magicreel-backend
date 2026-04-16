@@ -34,11 +34,11 @@ export async function generateLookbookV2(req: Request, res: Response) {
       return res.status(400).json({ error: "heroImageUrl required" });
     }
 
-    /* ----------------------------------
-       ✅ CREATE LOOKBOOK (MANDATORY)
-    ---------------------------------- */
-
     const userId = (req as any).user?.id;
+
+    /* ----------------------------------
+       ✅ CREATE LOOKBOOK (KEY FIX)
+    ---------------------------------- */
 
     const lookbook = await prisma.lookbook.create({
       data: {
@@ -46,7 +46,7 @@ export async function generateLookbookV2(req: Request, res: Response) {
         modelId: "default",
         presetId: "default",
         status: "completed",
-        garmentId: "default", // safe placeholder (we can improve later)
+        garmentId: "default",
       },
     });
 
@@ -56,6 +56,7 @@ export async function generateLookbookV2(req: Request, res: Response) {
 
     const poses: any[] = [];
 
+    // HERO always first
     poses.push({
       poseId: "HERO",
       poseType: "hero",
@@ -146,25 +147,6 @@ export async function generateLookbookV2(req: Request, res: Response) {
     }
 
     /* ----------------------------------
-       ✅ SAVE RENDER (CRITICAL)
-    ---------------------------------- */
-
-    const render = await prisma.render.create({
-      data: {
-        pose: "lookbook",
-        engine: "QWEN",
-        type: "LOOKBOOK",
-        status: "completed",
-
-        modelImageUrl: heroImageUrl,
-        garmentImageUrl: heroImageUrl,
-        outputImageUrl: poses[0]?.imageUrl || heroImageUrl,
-
-        lookbookId: lookbook.id, // 🔥 KEY FIX
-      },
-    });
-
-    /* ----------------------------------
        BILLING
     ---------------------------------- */
 
@@ -174,10 +156,15 @@ export async function generateLookbookV2(req: Request, res: Response) {
       console.error("Lookbook billing failed:", e);
     }
 
+    /* ----------------------------------
+       ✅ RETURN LOOKBOOK ID (KEY FIX)
+    ---------------------------------- */
+
     return res.json({
       success: true,
       poses,
-      runId: render.id, // 🔥 FINAL OUTPUT
+      runId: lookbook.id,   // 🔥 THIS IS THE FIX
+      type: "LOOKBOOK",
     });
 
   } catch (error) {
