@@ -113,7 +113,7 @@ export async function generateLookbookV2(req: Request, res: Response) {
     ---------------------------------- */
 
     for (const pose of POSES) {
-      let finalUrl = heroImageUrl;
+      let finalUrl: string | null = null;
 
       if (REPLICATE_API_TOKEN) {
         try {
@@ -161,16 +161,17 @@ export async function generateLookbookV2(req: Request, res: Response) {
 
             await new Promise((r) => setTimeout(r, 1500));
           }
-        } catch {
-          finalUrl = heroImageUrl;
-        }
+        } catch (err) {
+  console.error(`❌ Pose failed: ${pose.id}`, err);
+  finalUrl = null;
+}
       }
 
       poses.push({
-        poseId: pose.id,
-        poseType: pose.type,
-        imageUrl: finalUrl,
-      });
+  poseId: pose.id,
+  poseType: pose.type,
+  imageUrl: finalUrl || "", // keep empty if failed
+});
 
       await prisma.render.create({
         data: {
