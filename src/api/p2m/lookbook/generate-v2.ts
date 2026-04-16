@@ -34,7 +34,11 @@ export async function generateLookbookV2(req: Request, res: Response) {
       return res.status(400).json({ error: "heroImageUrl required" });
     }
 
-    const userId = (req as any).user?.id;
+    const userId = (req as any).user?.userId;
+
+if (!userId) {
+  return res.status(401).json({ error: "Unauthorized" });
+}
 
     /* ----------------------------------
        ✅ CREATE LOOKBOOK (KEY FIX)
