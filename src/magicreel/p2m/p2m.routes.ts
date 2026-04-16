@@ -12,6 +12,9 @@ import { generateReelV1Controller } from "../../api/p2m/reel/generate-v1";
 import { getReelStatus } from "../../api/p2m/reel/status";
 import { heroQueue } from "../queue/hero.queue";
 
+// ✅ IMPORT CONTROLLER DIRECTLY (CRITICAL FIX)
+import { getLookbookById } from "../../api/p2m/lookbook/get-lookbook";
+
 /* ----------------------------------
    CONFIG FLAGS
 ---------------------------------- */
@@ -74,12 +77,6 @@ router.get("/test-queue", async (_req, res) => {
 });
 
 /* ----------------------------------
-   🎬 CINEMATIC
----------------------------------- */
-
-
-
-/* ----------------------------------
    🎬 REEL V1 (3 credits)
 ---------------------------------- */
 
@@ -103,13 +100,12 @@ router.use(
 );
 
 /* ----------------------------------
-   📚 LOOKBOOK (2 credits)
+   📚 LOOKBOOK
 ---------------------------------- */
 
-// 🌍 PUBLIC LOOKBOOK FETCH (NO BILLING, NO AUTH)
-router.get("/lookbook/:id", (req, res, next) => {
-  return lookbookRoutes(req, res, next);
-});
+// 🌍 PUBLIC LOOKBOOK FETCH (NO AUTH, NO BILLING)
+// 🔥 THIS IS THE CRITICAL FIX
+router.get("/lookbook/:id", getLookbookById);
 
 // 🔒 PROTECTED LOOKBOOK ROUTES
 router.use(
