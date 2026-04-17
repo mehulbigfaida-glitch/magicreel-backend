@@ -6,6 +6,10 @@ import fs from "fs";
 import path from "path";
 import { uploadToCloudinary } from "../../../utils/cloudinary";
 
+// 🔥 NEW IMPORTS
+import { supabase } from "../../../lib/supabaseClient";
+const { randomUUID } = require("crypto");
+
 const REPLICATE_API_TOKEN = process.env.REPLICATE_API_TOKEN as string;
 
 const QWEN_URL =
@@ -57,34 +61,34 @@ export async function generateLookbookV2(req: Request, res: Response) {
     poses.push({ poseId: "hero", imageUrl: heroImageUrl });
 
     await prisma.render.create({
-  data: {
-    pose: "hero",
-    engine: "QWEN",
-    type: "LOOKBOOK",
-    status: "completed",
-    modelImageUrl: heroImageUrl,
-    garmentImageUrl: heroImageUrl,
-    outputImageUrl: heroImageUrl,
-    lookbookId: lookbook.id,
-  },
-});
+      data: {
+        pose: "hero",
+        engine: "QWEN",
+        type: "LOOKBOOK",
+        status: "completed",
+        modelImageUrl: heroImageUrl,
+        garmentImageUrl: heroImageUrl,
+        outputImageUrl: heroImageUrl,
+        lookbookId: lookbook.id,
+      },
+    });
 
     /* BACK */
     if (backHeroImageUrl) {
       poses.push({ poseId: "back", imageUrl: backHeroImageUrl });
 
       await prisma.render.create({
-  data: {
-    pose: "back",
-    engine: "QWEN",
-    type: "LOOKBOOK",
-    status: "completed",
-    modelImageUrl: backHeroImageUrl,
-    garmentImageUrl: backHeroImageUrl,
-    outputImageUrl: backHeroImageUrl,
-    lookbookId: lookbook.id,
-  },
-});
+        data: {
+          pose: "back",
+          engine: "QWEN",
+          type: "LOOKBOOK",
+          status: "completed",
+          modelImageUrl: backHeroImageUrl,
+          garmentImageUrl: backHeroImageUrl,
+          outputImageUrl: backHeroImageUrl,
+          lookbookId: lookbook.id,
+        },
+      });
     }
 
     /* AI POSES */
@@ -151,23 +155,47 @@ export async function generateLookbookV2(req: Request, res: Response) {
       });
 
       await prisma.render.create({
-  data: {
-    pose: pose.id,
-    engine: "QWEN",
-    type: "LOOKBOOK",
-    status: "completed",
-    modelImageUrl: heroImageUrl,
-    garmentImageUrl: heroImageUrl,
-    outputImageUrl: finalUrl,
-    lookbookId: lookbook.id,
-  },
-});
+        data: {
+          pose: pose.id,
+          engine: "QWEN",
+          type: "LOOKBOOK",
+          status: "completed",
+          modelImageUrl: heroImageUrl,
+          garmentImageUrl: heroImageUrl,
+          outputImageUrl: finalUrl,
+          lookbookId: lookbook.id,
+        },
+      });
+    }
+
+    // 🔥 CREATE SHARE ASSET (SAFE, NON-BLOCKING)
+    const shareId = randomUUID();
+
+    try {
+      await supabase.from("share_assets").insert([
+        {
+          id: shareId,
+          type: "lookbook",
+          media: poses.map((p, index) => ({
+            kind: "image",
+            url: p.imageUrl,
+            pose: index,
+          })),
+          metadata: {
+            poses: poses.map((_, i) => i),
+            aspectRatio: "2:3",
+          },
+        },
+      ]);
+    } catch (err) {
+      console.error("Share asset creation failed:", err);
     }
 
     return res.json({
       success: true,
       runId: lookbook.id,
       poses,
+      shareId, // 🔥 IMPORTANT
     });
 
   } catch (error) {
