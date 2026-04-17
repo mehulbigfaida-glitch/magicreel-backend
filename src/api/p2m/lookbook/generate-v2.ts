@@ -7,7 +7,7 @@ import path from "path";
 import { uploadToCloudinary } from "../../../utils/cloudinary";
 
 // 🔥 NEW IMPORTS
-import { supabase } from "../../../lib/supabaseClient";
+import { supabase } from "../../../lib/supabase";
 const { randomUUID } = require("crypto");
 
 const REPLICATE_API_TOKEN = process.env.REPLICATE_API_TOKEN as string;

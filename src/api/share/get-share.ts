@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { supabase } from "../../lib/supabaseClient";
+import { supabase } from "../../lib/supabase";
 
 export const getShareAsset = async (req: Request, res: Response) => {
   try {
