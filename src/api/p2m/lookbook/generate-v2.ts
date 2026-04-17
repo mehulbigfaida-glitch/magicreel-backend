@@ -171,25 +171,29 @@ export async function generateLookbookV2(req: Request, res: Response) {
     // 🔥 CREATE SHARE ASSET (SAFE, NON-BLOCKING)
     const shareId = randomUUID();
 
-    try {
-      await supabase.from("share_assets").insert([
-        {
-          id: shareId,
-          type: "lookbook",
-          media: poses.map((p, index) => ({
-            kind: "image",
-            url: p.imageUrl,
-            pose: index,
-          })),
-          metadata: {
-            poses: poses.map((_, i) => i),
-            aspectRatio: "2:3",
-          },
-        },
-      ]);
-    } catch (err) {
-      console.error("Share asset creation failed:", err);
-    }
+    const { error: shareError } = await supabase
+  .from("share_assets")
+  .insert([
+    {
+      id: shareId,
+      type: "lookbook",
+      media: poses.map((p, index) => ({
+        kind: "image",
+        url: p.imageUrl,
+        pose: index,
+      })),
+      metadata: {
+        poses: poses.map((_, i) => i),
+        aspectRatio: "2:3",
+      },
+    },
+  ]);
+
+if (shareError) {
+  console.error("❌ SHARE INSERT ERROR:", shareError);
+} else {
+  console.log("✅ SHARE CREATED:", shareId);
+}
 
     return res.json({
       success: true,
