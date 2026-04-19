@@ -26,3 +26,45 @@ export const getShareData = async (req: Request, res: Response) => {
     return res.status(500).json({ error: "Server error" });
   }
 };
+
+export const getShareMeta = async (req: any, res: any) => {
+  try {
+    const { shareId } = req.params;
+
+    const { data, error } = await supabase
+      .from("share_assets")
+      .select("*")
+      .eq("id", shareId)
+      .single();
+
+    if (error || !data) {
+      return res.status(404).send("Not found");
+    }
+
+    const hero = data.media?.[0]?.url;
+
+    const frontendUrl = `https://magicreel-frontend.vercel.app/s/${shareId}`;
+
+    res.send(`
+<!DOCTYPE html>
+<html>
+<head>
+  <meta property="og:title" content="MagicReel Lookbook" />
+  <meta property="og:description" content="Effortless style powered by MagicReel" />
+  <meta property="og:image" content="${hero}" />
+  <meta property="og:url" content="${frontendUrl}" />
+  <meta property="og:type" content="website" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta http-equiv="refresh" content="0; url=${frontendUrl}" />
+</head>
+<body>
+  Redirecting...
+</body>
+</html>
+`);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Server error");
+  }
+};

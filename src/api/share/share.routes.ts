@@ -1,9 +1,9 @@
 import express from "express";
-import { getShareData } from "./share.controller";
+import { getShareData, getShareMeta } from "./share.controller";
 
 const router = express.Router();
 
-// PUBLIC route (no auth)
 router.get("/:runId", getShareData);
+router.get("/meta/:shareId", getShareMeta);
 
 export default router;
