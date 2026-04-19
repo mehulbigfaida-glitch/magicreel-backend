@@ -1,24 +1,25 @@
 import { Request, Response } from "express";
-import { supabase } from "../../lib/supabase"; // adjust path if needed
+import { supabase } from "../../lib/supabase";
 
+// ==============================
+// GET SHARE DATA (JSON)
+// ==============================
 export const getShareData = async (req: Request, res: Response) => {
   try {
-    const { runId } = req.params; // we keep name, but it is actually shareId
+    const { runId } = req.params;
 
     console.log("🔍 Fetching share for ID:", runId);
 
     const { data, error } = await supabase
-      .from("share_assets") // ✅ correct table
+      .from("share_assets")
       .select("*")
-      .eq("id", runId) // ✅ IMPORTANT FIX
+      .eq("id", runId)
       .single();
 
     if (error || !data) {
       console.error("❌ Share fetch error:", error);
       return res.status(404).json({ error: "Not found" });
     }
-
-    console.log("✅ Share data found");
 
     return res.json(data);
   } catch (err) {
@@ -27,9 +28,14 @@ export const getShareData = async (req: Request, res: Response) => {
   }
 };
 
-export const getShareMeta = async (req: any, res: any) => {
+// ==============================
+// GET SHARE META (WHATSAPP PREVIEW)
+// ==============================
+export const getShareMeta = async (req: Request, res: Response) => {
   try {
     const { shareId } = req.params;
+
+    console.log("🔍 Meta fetch for:", shareId);
 
     const { data, error } = await supabase
       .from("share_assets")
@@ -38,42 +44,45 @@ export const getShareMeta = async (req: any, res: any) => {
       .single();
 
     if (error || !data) {
+      console.error("❌ Meta fetch error:", error);
       return res.status(404).send("Not found");
     }
 
-    const hero = data.media?.[0]?.url;
+    // ✅ HERO IMAGE
+    let hero = data.media?.[0]?.url;
+
+    // 🔥 Cloudinary optimization (VERY IMPORTANT)
+    if (hero && hero.includes("res.cloudinary.com")) {
+      hero = hero.replace(
+        "/upload/",
+        "/upload/w_1200,c_limit,f_auto,q_auto/"
+      );
+    }
 
     const frontendUrl = `https://magicreel-frontend.vercel.app/s/${shareId}`;
 
+    // ==============================
+    // RETURN HTML WITH OG TAGS
+    // ==============================
     res.send(`
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8" />
-
   <title>MagicReel Lookbook</title>
 
-  <!-- ✅ OPEN GRAPH -->
+  <!-- ✅ OPEN GRAPH (MINIMAL & STABLE) -->
   <meta property="og:title" content="MagicReel Lookbook" />
   <meta property="og:description" content="Effortless style powered by MagicReel" />
   <meta property="og:image" content="${hero}" />
-  <meta property="og:image:secure_url" content="${hero}" />
-  <meta property="og:image:type" content="image/png" />
-  <meta property="og:image:width" content="1080" />
-  <meta property="og:image:height" content="1350" />
-  <meta property="og:url" content="https://magicreel-frontend.vercel.app/s/${shareId}" />
+  <meta property="og:url" content="${frontendUrl}" />
   <meta property="og:type" content="website" />
 
   <!-- ✅ TWITTER -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:image" content="${hero}" />
 
-  <!-- ❗ DELAY REDIRECT (IMPORTANT) -->
-  <script>
-    setTimeout(function() {
-      window.location.href = "https://magicreel-frontend.vercel.app/s/${shareId}";
-    }, 1500);
-  </script>
+  <!-- 🔥 CRITICAL: DELAY REDIRECT -->
+  <meta http-equiv="refresh" content="2; url=${frontendUrl}" />
 </head>
 
 <body style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;">
@@ -84,7 +93,7 @@ export const getShareMeta = async (req: any, res: any) => {
 </html>
 `);
   } catch (err) {
-    console.error(err);
-    res.status(500).send("Server error");
+    console.error("❌ Meta API crash:", err);
+    return res.status(500).send("Server error");
   }
 };
