@@ -49,17 +49,37 @@ export const getShareMeta = async (req: any, res: any) => {
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="utf-8" />
+
+  <title>MagicReel Lookbook</title>
+
+  <!-- ✅ OPEN GRAPH -->
   <meta property="og:title" content="MagicReel Lookbook" />
   <meta property="og:description" content="Effortless style powered by MagicReel" />
   <meta property="og:image" content="${hero}" />
-  <meta property="og:url" content="${frontendUrl}" />
+  <meta property="og:image:secure_url" content="${hero}" />
+  <meta property="og:image:type" content="image/png" />
+  <meta property="og:image:width" content="1080" />
+  <meta property="og:image:height" content="1350" />
+  <meta property="og:url" content="https://magicreel-frontend.vercel.app/s/${shareId}" />
   <meta property="og:type" content="website" />
 
+  <!-- ✅ TWITTER -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta http-equiv="refresh" content="0; url=${frontendUrl}" />
+  <meta name="twitter:image" content="${hero}" />
+
+  <!-- ❗ DELAY REDIRECT (IMPORTANT) -->
+  <script>
+    setTimeout(function() {
+      window.location.href = "https://magicreel-frontend.vercel.app/s/${shareId}";
+    }, 1500);
+  </script>
 </head>
-<body>
-  Redirecting...
+
+<body style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;">
+  <div>
+    <h2>Loading MagicReel Lookbook...</h2>
+  </div>
 </body>
 </html>
 `);
