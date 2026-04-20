@@ -1,9 +1,10 @@
-import express from "express";
-import { getShareData, getShareMeta } from "./share.controller";
+import { Router } from "express";
+import { getShareAsset } from "./get-share";
+import { createShareAsset } from "./create-share";
 
-const router = express.Router();
+const router = Router();
 
-router.get("/:runId", getShareData);
-router.get("/meta/:shareId", getShareMeta);
+router.get("/:id", getShareAsset);
+router.post("/", createShareAsset); // ✅ ADD THIS
 
 export default router;
