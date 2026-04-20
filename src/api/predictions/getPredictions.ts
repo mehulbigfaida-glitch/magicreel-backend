@@ -19,7 +19,7 @@ export const getPredictions = async (req: Request, res: Response) => {
     });
 
     
-    // LOOKBOOK BASE
+  // LOOKBOOK BASE
 const lookbookJobs = await prisma.lookbook.findMany({
   orderBy: { createdAt: "desc" },
   take: 30,
@@ -37,26 +37,26 @@ const lookbookPredictions = await Promise.all(
       },
     });
 
-    const images = renders
+    // ✅ ONLY pose images
+    const lookbookImages = renders
       .map((r) => r.outputImageUrl)
-      .filter(Boolean);
+      .filter((url) => !!url);
 
-    console.log("LOOKBOOK DEBUG:", lb.id, images.length);
-    console.log("LOOKBOOK IMAGES:", lb.id, images);
-
-    // 🔥 HERO FALLBACK
-    const heroImage =
-  images.length > 0
-    ? images[0]
-    : lb.inputImageUrl ||
+    // ✅ HERO MUST COME FROM INPUT IMAGE
+    const heroImageUrl =
+      lb.inputImageUrl ||
+      lookbookImages[0] ||
       "https://via.placeholder.com/300x450?text=Lookbook";
 
     return {
       id: lb.id,
       type: "lookbook",
       status: "completed",
-      mediaUrls: images,
-      heroImageUrl: heroImage, // ✅ FIX
+
+      // ✅ FINAL STRUCTURE
+      heroImageUrl,
+      lookbookImages,
+
       createdAt: lb.createdAt,
     };
   })
