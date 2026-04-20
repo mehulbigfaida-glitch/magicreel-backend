@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { supabase } from "../../lib/supabase";
+import crypto from "crypto";
 
 export const createShareAsset = async (req: Request, res: Response) => {
   try {
@@ -12,17 +13,21 @@ export const createShareAsset = async (req: Request, res: Response) => {
       });
     }
 
-    // ✅ Ensure correct format
+    // ✅ Clean media format
     const cleanMedia = media.map((m: any) => ({
       url: m.url,
     }));
+
+    // ✅ Generate ID manually
+    const shareId = crypto.randomUUID();
 
     const { data, error } = await supabase
       .from("share_assets")
       .insert([
         {
+          id: shareId, // 🔥 IMPORTANT FIX
           type,
-          media: cleanMedia, // ✅ FIXED
+          media: cleanMedia,
         },
       ])
       .select()
@@ -40,7 +45,7 @@ export const createShareAsset = async (req: Request, res: Response) => {
     return res.status(200).json({
       success: true,
       asset: {
-        id: data.id, // ✅ CRITICAL
+        id: data.id, // ✅ MUST RETURN
       },
     });
 
