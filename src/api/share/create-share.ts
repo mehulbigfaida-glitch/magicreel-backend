@@ -5,19 +5,24 @@ export const createShareAsset = async (req: Request, res: Response) => {
   try {
     const { type, media } = req.body;
 
-    if (!type || !media || !Array.isArray(media)) {
+    if (!type || !Array.isArray(media)) {
       return res.status(400).json({
         success: false,
         error: "Invalid payload",
       });
     }
 
+    // ✅ Ensure correct format
+    const cleanMedia = media.map((m: any) => ({
+      url: m.url,
+    }));
+
     const { data, error } = await supabase
       .from("share_assets")
       .insert([
         {
           type,
-          media,
+          media: cleanMedia, // ✅ FIXED
         },
       ])
       .select()
@@ -28,14 +33,14 @@ export const createShareAsset = async (req: Request, res: Response) => {
 
       return res.status(500).json({
         success: false,
-        error: "Failed to create share asset",
+        error: error?.message || "Insert failed",
       });
     }
 
     return res.status(200).json({
       success: true,
       asset: {
-        id: data.id,
+        id: data.id, // ✅ CRITICAL
       },
     });
 
