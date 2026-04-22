@@ -1,5 +1,3 @@
-// FILE: src/billing/billing.middleware.ts (FULL REPLACEMENT)
-
 import { Request, Response, NextFunction } from "express";
 import { prisma } from "../magicreel/db/prisma";
 
@@ -45,7 +43,6 @@ export const billingGuard = (feature: FeatureType) => {
 
       const creditsRequired = featureCredits[feature];
 
-      // 🔥 ALWAYS FETCH FRESH CREDITS FROM DB
       const freshUser = await prisma.user.findUnique({
         where: { id: user.id },
       });
@@ -82,10 +79,12 @@ export const finalizeBilling = async (req: Request) => {
     if (!user || !user.id) return;
 
     const billing = (req as any).billing;
-
     if (!billing) return;
 
     const { feature, creditsRequired } = billing;
+
+    // ✅ NEW: read predictionId (safe optional)
+    const predictionId = (req as any).predictionId || null;
 
     await prisma.$transaction([
       prisma.user.update({
@@ -103,6 +102,8 @@ export const finalizeBilling = async (req: Request) => {
           credits: creditsRequired,
           type: "DEBIT",
           status: "COMPLETED",
+          // ✅ NEW FIELD
+          prediction_id: predictionId,
         },
       }),
     ]);
@@ -124,7 +125,6 @@ export async function checkCreditsOrThrow(req: any, required: number) {
     throw err;
   }
 
-  // 🔥 ALWAYS FETCH FRESH USER
   const freshUser = await prisma.user.findUnique({
     where: { id: user.id },
   });

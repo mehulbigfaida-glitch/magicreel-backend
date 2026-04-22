@@ -122,14 +122,17 @@ export async function generateHeroV2(req: Request, res: Response) {
     }
 
     /* =========================
-       BILLING
-    ========================= */
+   BILLING
+========================= */
 
-    try {
-      await finalizeBilling(req);
-    } catch (e) {
-      console.error("Billing failed AFTER success:", e);
-    }
+// ✅ attach prediction id for billing linkage
+(req as any).predictionId = frontJob.id;
+
+try {
+  await finalizeBilling(req);
+} catch (e) {
+  console.error("Billing failed AFTER success:", e);
+}
 
     return res.json({
       frontRunId,
