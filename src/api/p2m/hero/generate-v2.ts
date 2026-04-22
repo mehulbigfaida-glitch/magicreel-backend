@@ -58,15 +58,18 @@ export async function generateHeroV2(req: Request, res: Response) {
     });
 
     const frontJob = await prisma.productToModelJob.create({
-      data: {
-        userId,
-        productImageUrl: garmentFrontImageUrl,
-        modelImageUrl: avatarFaceImageUrl,
-        engine: "fashn",
-        engineJobId: "pending",
-        status: "running",
-      },
-    });
+  data: {
+    userId,
+    productImageUrl: garmentFrontImageUrl,
+    modelImageUrl: avatarFaceImageUrl,
+    engine: "fashn",
+    engineJobId: "pending",
+    status: "running",
+  },
+});
+
+// ✅ ADD THIS LINE
+(req as any).billing.predictionId = frontJob.id;
 
     const frontRunId = await fashn.runProductToModel({
   garmentImageUrl: garmentFrontImageUrl,
