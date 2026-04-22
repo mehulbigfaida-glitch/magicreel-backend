@@ -74,6 +74,8 @@ model CreditTransaction {
   referenceId  String?  @map("reference_id")
   createdAt    DateTime @default(now()) @map("created_at")
 
+  predictionId String?  @map("prediction_id")  // ✅ ADD THIS
+
   user         User     @relation(fields: [userId], references: [id])
 
   @@map("credit_transaction")

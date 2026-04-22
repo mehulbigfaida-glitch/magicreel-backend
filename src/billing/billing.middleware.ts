@@ -103,7 +103,7 @@ export const finalizeBilling = async (req: Request) => {
           type: "DEBIT",
           status: "COMPLETED",
           // ✅ NEW FIELD
-          prediction_id: predictionId,
+          predictionId: predictionId,
         },
       }),
     ]);
