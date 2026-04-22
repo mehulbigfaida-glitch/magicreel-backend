@@ -3,7 +3,6 @@ import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
 import path from "path";
 import https from "https";
-import { prisma } from "../db/prisma";
 
 const replicate = new Replicate({
   auth: process.env.REPLICATE_API_TOKEN!,
@@ -19,27 +18,27 @@ function downloadFile(url: string, outputPath: string): Promise<void> {
   return new Promise((resolve, reject) => {
     const file = fs.createWriteStream(outputPath);
 
-    https.get(url, (response) => {
-      response.pipe(file);
+    https
+      .get(url, (response) => {
+        response.pipe(file);
 
-      file.on("finish", () => {
-        file.close();
-        resolve();
+        file.on("finish", () => {
+          file.close();
+          resolve();
+        });
+      })
+      .on("error", (err) => {
+        fs.unlinkSync(outputPath);
+        reject(err);
       });
-    }).on("error", (err) => {
-      fs.unlinkSync(outputPath);
-      reject(err);
-    });
   });
 }
 
 export const reelV1Service = {
   async generate({
     imageUrl,
-    jobId, // ✅ ADD
   }: {
     imageUrl: string;
-    jobId?: string; // ✅ ADD
   }) {
     if (!imageUrl) {
       throw new Error("imageUrl is required");
@@ -116,39 +115,11 @@ export const reelV1Service = {
 
     console.log("✅ Cloudinary URL:", upload.secure_url);
 
-    // ✅ NEW: SAVE TO DB
-    try {
-      const render = await prisma.render.create({
-        data: {
-          outputImageUrl: null,
+    // ❌ NO DB WRITE HERE (CRITICAL FIX)
 
-          reelVideoUrl: upload?.secure_url || upload?.url || null,
-
-          type: "REEL",
-
-          status: "completed",
-
-          pose: "REEL",
-          engine: "KLING_V2",
-          modelImageUrl: imageUrl,
-          garmentImageUrl: imageUrl,
-
-          lookbook: {
-            connect: {
-              id: "lookbook-default-1",
-            },
-          },
-        },
-      });
-    } catch (e) {
-      console.error("❌ Reel save failed:", e);
-    }
-
-    // ✅ RETURN (KEEP OUTSIDE TRY)
     return {
       reelVideoUrl: upload?.secure_url || upload?.url || null,
       predictionId: result.id,
     };
-      }, // ✅ CLOSE FUNCTION
-
-}; // ✅ CLOSE OBJECT
+  },
+};
