@@ -46,14 +46,17 @@ export async function generateLookbookV2(req: Request, res: Response) {
     }
 
     const lookbook = await prisma.lookbook.create({
-      data: {
-        user: { connect: { id: userId } },
-        garment: { connect: { id: "garment-default-1" } },
-        modelId: "default",
-        presetId: "default",
-        status: "completed",
-      },
-    });
+  data: {
+    user: { connect: { id: userId } },
+    garment: { connect: { id: "garment-default-1" } },
+    modelId: "default",
+    presetId: "default",
+    status: "completed",
+  },
+});
+
+// ✅ ADD THIS
+(req as any).billing.predictionId = lookbook.id;
 
     const poses: any[] = [];
 
@@ -195,7 +198,17 @@ if (shareError) {
   console.log("✅ SHARE CREATED:", shareId);
 }
 
-    return res.json({
+/* ----------------------------------
+   💰 BILLING (FINAL STEP)
+---------------------------------- */
+
+try {
+  await finalizeBilling(req);
+} catch (e) {
+  console.error("Lookbook billing failed:", e);
+}    
+
+return res.json({
       success: true,
       runId: lookbook.id,
       poses,
