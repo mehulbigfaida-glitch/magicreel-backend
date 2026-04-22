@@ -3,6 +3,8 @@ import { prisma } from "../../magicreel/db/prisma";
 
 export const getPredictions = async (req: Request, res: Response) => {
   try {
+    const userId = undefined; // adjust if needed
+
     // HERO
     const heroJobs = await prisma.productToModelJob.findMany({
       orderBy: { createdAt: "desc" },
@@ -11,56 +13,71 @@ export const getPredictions = async (req: Request, res: Response) => {
 
     // REEL
     const reelJobs = await prisma.render.findMany({
-      where: {
-        type: "REEL",
-      },
+      where: { type: "REEL" },
       orderBy: { createdAt: "desc" },
       take: 30,
     });
 
-    
-  // LOOKBOOK BASE
-const lookbookJobs = await prisma.lookbook.findMany({
-  orderBy: { createdAt: "desc" },
-  take: 30,
-});
-
-const lookbookPredictions = await Promise.all(
-  lookbookJobs.map(async (lb: any) => {
-    const renders = await prisma.render.findMany({
-      where: {
-        lookbookId: lb.id,
-        type: "LOOKBOOK",
-      },
-      orderBy: {
-        createdAt: "asc",
-      },
+    // LOOKBOOK
+    const lookbookJobs = await prisma.lookbook.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 30,
     });
 
-    // ✅ ONLY pose images
-    const lookbookImages = renders
-      .map((r) => r.outputImageUrl)
-      .filter((url) => !!url);
+    const lookbookPredictions = await Promise.all(
+      lookbookJobs.map(async (lb: any) => {
+        const renders = await prisma.render.findMany({
+          where: {
+            lookbookId: lb.id,
+            type: "LOOKBOOK",
+          },
+          orderBy: { createdAt: "asc" },
+        });
 
-    // ✅ HERO MUST COME FROM INPUT IMAGE
-    const heroImageUrl =
-      lb.inputImageUrl ||
-      lookbookImages[0] ||
-      "https://via.placeholder.com/300x450?text=Lookbook";
+        const lookbookImages = renders
+          .map((r) => r.outputImageUrl)
+          .filter((url) => !!url);
 
-    return {
-      id: lb.id,
-      type: "lookbook",
-      status: "completed",
+        const heroImageUrl =
+          lb.inputImageUrl ||
+          lookbookImages[0] ||
+          "https://via.placeholder.com/300x450?text=Lookbook";
 
-      // ✅ FINAL STRUCTURE
-      heroImageUrl,
-      lookbookImages,
+        return {
+          id: lb.id,
+          type: "lookbook",
+          status: "completed",
+          heroImageUrl,
+          lookbookImages,
+          createdAt: lb.createdAt,
+        };
+      })
+    );
 
-      createdAt: lb.createdAt,
+    // ✅ FETCH CREDIT TRANSACTIONS
+    const creditTx = await prisma.creditTransaction.findMany({
+  where: {
+    status: "COMPLETED",
+  },
+  orderBy: { createdAt: "desc" },
+});
+
+    // ✅ MATCH FUNCTION
+    const getCredits = (item: any) => {
+      const itemTime = new Date(item.createdAt).getTime();
+
+      const match = creditTx
+        .filter((tx: any) =>
+          tx.feature?.toLowerCase().includes(item.type.toLowerCase())
+        )
+        .sort(
+          (a: any, b: any) =>
+            Math.abs(new Date(a.created_at).getTime() - itemTime) -
+            Math.abs(new Date(b.created_at).getTime() - itemTime)
+        )[0];
+
+      return match?.credits ?? 0;
     };
-  })
-);
 
     const predictions = [
       // HERO
@@ -70,6 +87,10 @@ const lookbookPredictions = await Promise.all(
         status: job.status,
         mediaUrl: job.resultImageUrl,
         createdAt: job.createdAt,
+        creditsUsed: getCredits({
+          type: "hero",
+          createdAt: job.createdAt,
+        }),
       })),
 
       // REEL
@@ -79,13 +100,23 @@ const lookbookPredictions = await Promise.all(
         status: job.status || "completed",
         mediaUrl: job.reelVideoUrl ?? null,
         createdAt: job.createdAt,
+        creditsUsed: getCredits({
+          type: "reel",
+          createdAt: job.createdAt,
+        }),
       })),
 
       // LOOKBOOK
-      ...lookbookPredictions,
+      ...lookbookPredictions.map((lb) => ({
+        ...lb,
+        creditsUsed: getCredits({
+          type: "lookbook",
+          createdAt: lb.createdAt,
+        }),
+      })),
     ];
 
-    // SORT LATEST FIRST
+    // SORT
     predictions.sort(
       (a, b) =>
         new Date(b.createdAt).getTime() -
