@@ -118,7 +118,7 @@ export const reelV1Service = {
 
     // ✅ NEW: SAVE TO DB
     try {
-      await prisma.render.create({
+      const render = await prisma.render.create({
         data: {
           outputImageUrl: null,
 

@@ -55,10 +55,12 @@ export const billingGuard = (feature: FeatureType) => {
         });
       }
 
+      // ✅ IMPORTANT: billing object (we will attach predictionId here)
       (req as any).billing = {
         userId: user.id,
         feature,
         creditsRequired,
+        predictionId: null, // ✅ NEW
       };
 
       next();
@@ -81,10 +83,7 @@ export const finalizeBilling = async (req: Request) => {
     const billing = (req as any).billing;
     if (!billing) return;
 
-    const { feature, creditsRequired } = billing;
-
-    // ✅ NEW: read predictionId (safe optional)
-    const predictionId = (req as any).predictionId || null;
+    const { feature, creditsRequired, predictionId } = billing;
 
     await prisma.$transaction([
       prisma.user.update({
@@ -102,8 +101,7 @@ export const finalizeBilling = async (req: Request) => {
           credits: creditsRequired,
           type: "DEBIT",
           status: "COMPLETED",
-          // ✅ NEW FIELD
-          predictionId: predictionId,
+          predictionId: predictionId, // ✅ FIXED SOURCE
         },
       }),
     ]);
