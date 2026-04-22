@@ -55,8 +55,13 @@ export async function generateLookbookV2(req: Request, res: Response) {
   },
 });
 
-// ✅ ADD THIS
-(req as any).billing.predictionId = lookbook.id;
+// ✅ STEP 1: create billing object (MANDATORY)
+(req as any).billing = {
+  userId,
+  feature: "LOOKBOOK_ECOM",
+  creditsRequired: 2,
+  predictionId: lookbook.id,
+};
 
     const poses: any[] = [];
 
