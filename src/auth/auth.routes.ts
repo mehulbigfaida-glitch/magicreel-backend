@@ -7,7 +7,7 @@ const router = Router();
 router.post("/register", register);
 router.post("/login", login);
 
-// ✅ Use unified handler
+// ✅ Use new unified handler
 router.get("/me", authenticate, getMe);
 
 export default router;
