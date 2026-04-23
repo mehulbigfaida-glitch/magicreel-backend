@@ -3,19 +3,14 @@ import { prisma } from "../../magicreel/db/prisma";
 
 export const getCreditsAnalytics = async (req: Request, res: Response) => {
   try {
-    let user = (req as any).user;
+    // ✅ STRICT JWT USER (NO FALLBACK)
+    const user = (req as any).user as { id: string };
 
-if (!user) {
-  user = {
-    id: "f859ac9b-96d5-4af1-81fc-401428d6bda4" // ✅ CORRECT ID
-  };
-}
-
-if (!user || !user.id) {
-  return res.status(401).json({
-    error: "Unauthorized",
-  });
-}
+    if (!user || !user.id) {
+      return res.status(401).json({
+        error: "Unauthorized",
+      });
+    }
 
     const userId = user.id;
 

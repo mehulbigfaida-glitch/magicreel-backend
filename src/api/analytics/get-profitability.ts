@@ -3,19 +3,19 @@ import { prisma } from "../../magicreel/db/prisma";
 
 export const getProfitability = async (req: Request, res: Response) => {
   try {
-    let user = (req as any).user;
+    // ✅ STRICT JWT USER (NO FALLBACK)
+    const user = (req as any).user as { id: string };
 
-    // 🔥 TEMP FIX (same as credits API)
-    if (!user) {
-      user = {
-        id: "f859ac9b-96d5-4af1-81fc-401428d6bda4", // same ID you used
-      };
+    if (!user || !user.id) {
+      return res.status(401).json({
+        error: "Unauthorized",
+      });
     }
 
     const userId = user.id;
 
     /* ----------------------------------
-       FETCH TRANSACTIONS
+       🔥 FETCH TRANSACTIONS
     ---------------------------------- */
 
     const transactions = await prisma.creditTransaction.findMany({
@@ -27,7 +27,7 @@ export const getProfitability = async (req: Request, res: Response) => {
     });
 
     /* ----------------------------------
-       BUILD PROFITABILITY MAP
+       📊 BUILD PROFITABILITY MAP
     ---------------------------------- */
 
     const result: Record<
@@ -48,6 +48,7 @@ export const getProfitability = async (req: Request, res: Response) => {
     }
 
     return res.json(result);
+
   } catch (error) {
     console.error("❌ Profitability error:", error);
     return res.status(500).json({
