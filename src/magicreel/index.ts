@@ -47,10 +47,24 @@ app.get("/", (_req, res) => {
 
 app.set("trust proxy", 1);
 
-app.use(cors({
-  origin: "https://magicreel-frontend.vercel.app",
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+
+      // ✅ Allow all Vercel + localhost
+      if (
+        origin.includes("vercel.app") ||
+        origin.includes("localhost")
+      ) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("Not allowed by CORS"));
+    },
+    credentials: true,
+  })
+);
 
 app.use(express.json({ limit: "20mb" }));
 
