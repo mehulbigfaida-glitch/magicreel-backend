@@ -8,6 +8,7 @@ import authRoutes from "../auth/auth.routes";
 import p2mRoutes from "./p2m/p2m.routes";
 import { heroQueue } from "./queue/hero.queue";
 import analyticsRoutes from "../api/analytics";
+import adminRoutes from "../api/admin";
 
 /* ---------------------------------- */
 /* APP INIT */
@@ -91,6 +92,7 @@ app.get("/api/test-queue", async (_req, res) => {
 // ✅ IMPORTANT: REMOVE GLOBAL AUTH HERE
 app.use("/api/p2m", p2mRoutes);
 app.use("/api/analytics", analyticsRoutes);
+app.use("/api/admin", adminRoutes);
 /* ---------------------------------- */
 /* 🚀 SERVER START */
 /* ---------------------------------- */
