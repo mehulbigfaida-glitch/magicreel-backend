@@ -51,7 +51,8 @@ export async function getMe(req: Request, res: Response) {
       return res.status(401).json({ error: "User not found" });
     }
 
-    res.json({ user });
+    const { passwordHash, ...safeUser } = user as any;
+    res.json({ user: safeUser });
   } catch (err) {
     console.error("GetMe error:", err);
     res.status(500).json({ error: "Failed to fetch user" });
