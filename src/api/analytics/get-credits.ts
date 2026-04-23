@@ -5,9 +5,11 @@ export const getCreditsAnalytics = async (req: Request, res: Response) => {
   try {
     let user = (req as any).user;
 
-// ✅ DEV FALLBACK (temporary)
+// ✅ TEMP: force correct user
 if (!user) {
-  user = await prisma.user.findFirst();
+  user = {
+    id: "PASTE_USER_ID_FROM_DB_HERE"
+  };
 }
 
 if (!user || !user.id) {
