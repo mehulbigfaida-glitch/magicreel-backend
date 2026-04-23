@@ -5,11 +5,14 @@ export const getAdminAnalytics = async (req: Request, res: Response) => {
   try {
     const user = (req as any).user as { id: string };
 
-    if (!user || !user.id) {
-      return res.status(401).json({
-        error: "Unauthorized",
-      });
-    }
+if (!user || !user.id) {
+  return res.status(401).json({ error: "Unauthorized" });
+}
+
+// 🔒 ADMIN CHECK
+if (user.id !== "f859ac9b-96d5-4af1-81fc-401428d6bda4") {
+  return res.status(403).json({ error: "Forbidden" });
+}
 
     /* ----------------------------------
        👥 TOTAL USERS
