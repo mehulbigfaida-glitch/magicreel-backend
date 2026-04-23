@@ -1,6 +1,5 @@
 import { Router } from "express";
-import { register, login } from "./auth.controller";
-import { getCurrentUser } from "./user.controller";
+import { register, login, getMe } from "./auth.controller";
 import { authenticate } from "./jwt.middleware";
 
 const router = Router();
@@ -8,7 +7,7 @@ const router = Router();
 router.post("/register", register);
 router.post("/login", login);
 
-// Protected route to get current user
-router.get("/me", authenticate, getCurrentUser);
+// ✅ Use unified handler
+router.get("/me", authenticate, getMe);
 
 export default router;

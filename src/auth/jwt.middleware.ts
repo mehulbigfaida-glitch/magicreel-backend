@@ -10,12 +10,12 @@ export function authenticate(
     // ✅ BYPASS FOR TEST ROUTE
     const url = (req as any).originalUrl || "";
 
-if (
-  url.includes("/api/test-queue") ||
-  url.includes("/test-queue")
-) {
-  return next();
-}
+    if (
+      url.includes("/api/test-queue") ||
+      url.includes("/test-queue")
+    ) {
+      return next();
+    }
 
     const authHeader = req.headers.authorization;
 
@@ -25,20 +25,21 @@ if (
 
     const token = authHeader.split(" ")[1];
 
-    if (!token) {
-      return res.status(401).json({ error: "Invalid token" });
-    }
-
     const decoded: any = jwt.verify(
       token,
       process.env.JWT_SECRET as string
     );
 
-    // ✅ normalize user
+    // 🚨 STRICT NORMALIZATION
+    const userId = decoded.id || decoded.userId;
+
+    if (!userId) {
+      return res.status(401).json({ error: "Invalid token payload" });
+    }
+
+    // ✅ FINAL STRUCTURE (LOCKED)
     (req as any).user = {
-      ...decoded,
-      id: decoded.userId || decoded.id,
-      userId: decoded.userId || decoded.id,
+      id: userId,
     };
 
     return next();

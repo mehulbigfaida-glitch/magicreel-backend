@@ -73,7 +73,7 @@ export async function loginUser(email: string, password: string) {
 // ----------------------------
 function generateToken(userId: string) {
   return jwt.sign(
-    { userId },
+    { id: userId }, // ✅ FIXED (standardized)
     JWT_SECRET,
     { expiresIn: "7d" }
   );
