@@ -8,6 +8,10 @@ const JWT_SECRET = process.env.JWT_SECRET || "dev_secret";
 // Register User
 // ----------------------------
 export async function registerUser(email: string, password: string) {
+  // ✅ Normalize input
+  email = email?.trim().toLowerCase();
+  password = password?.trim();
+
   if (!email || !password) {
     throw new Error("Email and password are required");
   }
@@ -16,26 +20,30 @@ export async function registerUser(email: string, password: string) {
     throw new Error("Database not initialized");
   }
 
+  // ✅ Check existing user
   const existingUser = await prisma.user.findUnique({
-    where: { email }
+    where: { email },
   });
 
   if (existingUser) {
     throw new Error("User already exists");
   }
 
+  // ✅ Hash password
   const passwordHash = await bcrypt.hash(password, 10);
 
+  // ✅ Create user
   const user = await prisma.user.create({
     data: {
       email,
       passwordHash,
       plan: "FREE",
       creditsAvailable: 1,
-      freeHeroUsed: false
-    }
+      freeHeroUsed: false,
+    },
   });
 
+  // ✅ Return JWT (auto-login)
   return generateToken(user.id);
 }
 
@@ -43,6 +51,10 @@ export async function registerUser(email: string, password: string) {
 // Login User
 // ----------------------------
 export async function loginUser(email: string, password: string) {
+  // ✅ Normalize input
+  email = email?.trim().toLowerCase();
+  password = password?.trim();
+
   if (!email || !password) {
     throw new Error("Email and password are required");
   }
@@ -52,13 +64,14 @@ export async function loginUser(email: string, password: string) {
   }
 
   const user = await prisma.user.findUnique({
-    where: { email }
+    where: { email },
   });
 
   if (!user) {
     throw new Error("Invalid credentials");
   }
 
+  // ✅ Compare password
   const isValid = await bcrypt.compare(password, user.passwordHash);
 
   if (!isValid) {
@@ -73,7 +86,7 @@ export async function loginUser(email: string, password: string) {
 // ----------------------------
 function generateToken(userId: string) {
   return jwt.sign(
-    { id: userId }, // ✅ FIXED (standardized)
+    { id: userId }, // ✅ must match req.user.id usage
     JWT_SECRET,
     { expiresIn: "7d" }
   );
