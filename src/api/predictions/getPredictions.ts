@@ -3,23 +3,65 @@ import { prisma } from "../../magicreel/db/prisma";
 
 export const getPredictions = async (req: Request, res: Response) => {
   try {
-    const userId = undefined; // adjust if needed
+    const userId = (req as any).user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    // ========================
+    // STEP 1: GET USER CREDIT TX
+    // ========================
+    const creditTx = await prisma.creditTransaction.findMany({
+      where: {
+        userId: userId,
+        status: "COMPLETED",
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    // ========================
+    // STEP 2: GROUP IDs BY TYPE
+    // ========================
+    const heroIds = creditTx
+      .filter((tx: any) => tx.feature === "HERO")
+      .map((tx: any) => tx.prediction_id);
+
+    const reelIds = creditTx
+      .filter((tx: any) => tx.feature === "REEL")
+      .map((tx: any) => tx.prediction_id);
+
+    const lookbookIds = creditTx
+      .filter((tx: any) => tx.feature === "LOOKBOOK")
+      .map((tx: any) => tx.prediction_id);
+
+    // ========================
+    // STEP 3: FETCH ONLY USER JOBS
+    // ========================
 
     // HERO
     const heroJobs = await prisma.productToModelJob.findMany({
+      where: {
+        id: { in: heroIds },
+      },
       orderBy: { createdAt: "desc" },
       take: 30,
     });
 
     // REEL
     const reelJobs = await prisma.render.findMany({
-      where: { type: "REEL" },
+      where: {
+        id: { in: reelIds },
+      },
       orderBy: { createdAt: "desc" },
       take: 30,
     });
 
     // LOOKBOOK
     const lookbookJobs = await prisma.lookbook.findMany({
+      where: {
+        id: { in: lookbookIds },
+      },
       orderBy: { createdAt: "desc" },
       take: 30,
     });
@@ -29,7 +71,6 @@ export const getPredictions = async (req: Request, res: Response) => {
         const renders = await prisma.render.findMany({
           where: {
             lookbookId: lb.id,
-            type: "LOOKBOOK",
           },
           orderBy: { createdAt: "asc" },
         });
@@ -54,15 +95,9 @@ export const getPredictions = async (req: Request, res: Response) => {
       })
     );
 
-    // ✅ FETCH CREDIT TRANSACTIONS
-    const creditTx = await prisma.creditTransaction.findMany({
-  where: {
-    status: "COMPLETED",
-  },
-  orderBy: { createdAt: "desc" },
-});
-
-    // ✅ MATCH FUNCTION
+    // ========================
+    // CREDIT MATCH FUNCTION
+    // ========================
     const getCredits = (item: any) => {
       const itemTime = new Date(item.createdAt).getTime();
 
@@ -72,13 +107,16 @@ export const getPredictions = async (req: Request, res: Response) => {
         )
         .sort(
           (a: any, b: any) =>
-            Math.abs(new Date(a.created_at).getTime() - itemTime) -
-            Math.abs(new Date(b.created_at).getTime() - itemTime)
+            Math.abs(new Date(a.createdAt).getTime() - itemTime) -
+            Math.abs(new Date(b.createdAt).getTime() - itemTime)
         )[0];
 
       return match?.credits ?? 0;
     };
 
+    // ========================
+    // BUILD RESPONSE
+    // ========================
     const predictions = [
       // HERO
       ...heroJobs.map((job) => ({
