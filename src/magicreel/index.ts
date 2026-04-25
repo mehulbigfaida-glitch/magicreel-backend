@@ -1,14 +1,23 @@
 import "dotenv/config";
-import shareRoutes from "../api/share/share.routes";
 import express from "express";
 import cors from "cors";
+
 import { prisma } from "./db/prisma";
-import predictionsRoutes from "../api/predictions";
+
+// ROUTES
 import authRoutes from "../auth/auth.routes";
+import predictionsRoutes from "../api/predictions";
+import shareRoutes from "../api/share/share.routes";
 import p2mRoutes from "./p2m/p2m.routes";
-import { heroQueue } from "./queue/hero.queue";
 import analyticsRoutes from "../api/analytics";
 import adminRoutes from "../api/admin";
+
+// BILLING
+import { upgradePlan } from "../billing/upgrade";
+import { authenticate } from "../auth/jwt.middleware";
+
+// QUEUE
+import { heroQueue } from "./queue/hero.queue";
 
 /* ---------------------------------- */
 /* APP INIT */
@@ -29,17 +38,11 @@ app.use((req, _res, next) => {
 /* 🔥 HEALTH ROUTES */
 /* ---------------------------------- */
 
-app.get("/health", (_req, res) => {
-  return res.status(200).send("ok");
-});
-
-app.get("/ping", (_req, res) => {
-  return res.status(200).send("pong");
-});
-
-app.get("/", (_req, res) => {
-  res.send("MagicReel backend running ✅");
-});
+app.get("/health", (_req, res) => res.status(200).send("ok"));
+app.get("/ping", (_req, res) => res.status(200).send("pong"));
+app.get("/", (_req, res) =>
+  res.send("MagicReel backend running ✅")
+);
 
 /* ---------------------------------- */
 /* MIDDLEWARE */
@@ -52,7 +55,6 @@ app.use(
     origin: function (origin, callback) {
       if (!origin) return callback(null, true);
 
-      // ✅ Allow all Vercel + localhost
       if (
         origin.includes("vercel.app") ||
         origin.includes("localhost")
@@ -72,9 +74,18 @@ app.use(express.json({ limit: "20mb" }));
 /* ROUTES */
 /* ---------------------------------- */
 
+// AUTH
 app.use("/api/auth", authRoutes);
+
+// BILLING (PROTECTED)
+app.post("/api/billing/upgrade", authenticate, upgradePlan);
+
+// CORE APIs
 app.use("/api/predictions", predictionsRoutes);
 app.use("/api/share", shareRoutes);
+app.use("/api/p2m", p2mRoutes);
+app.use("/api/analytics", analyticsRoutes);
+app.use("/api/admin", adminRoutes);
 
 /* ---------------------------------- */
 /* 🧪 QUEUE TEST */
@@ -84,29 +95,17 @@ app.get("/api/test-queue", async (_req, res) => {
   console.log("🧪 TEST QUEUE START");
 
   heroQueue
-    .add("test-job", {
-      jobId: "test123",
-    })
-    .then(() => {
-      console.log("✅ Job added");
-    })
-    .catch((err) => {
-      console.error("❌ Queue error:", err.message);
-    });
+    .add("test-job", { jobId: "test123" })
+    .then(() => console.log("✅ Job added"))
+    .catch((err) =>
+      console.error("❌ Queue error:", err.message)
+    );
 
   return res.json({
     message: "queued (non-blocking)",
   });
 });
 
-/* ---------------------------------- */
-/* 👗 P2M ROUTES */
-/* ---------------------------------- */
-
-// ✅ IMPORTANT: REMOVE GLOBAL AUTH HERE
-app.use("/api/p2m", p2mRoutes);
-app.use("/api/analytics", analyticsRoutes);
-app.use("/api/admin", adminRoutes);
 /* ---------------------------------- */
 /* 🚀 SERVER START */
 /* ---------------------------------- */

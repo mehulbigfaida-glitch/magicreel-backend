@@ -50,20 +50,16 @@ const userId = user.userId || user.id;
 const dbUser = await prisma.user.findUnique({
   where: { id: userId },
   select: {
-  creditsAvailable: true,
-  freeHeroUsed: true,
-}
+    creditsAvailable: true,
+  },
 });
 
 if (!dbUser) {
   return res.status(404).json({ error: "User not found" });
 }
 
-// ❌ BLOCK if no credits AND free already used
-if (
-  dbUser.creditsAvailable <= 0 &&
-  dbUser.freeHeroUsed === true
-) {
+// ❌ BLOCK if no credits
+if (dbUser.creditsAvailable <= 0) {
   return res.status(403).json({
     error: "No credits left",
   });
