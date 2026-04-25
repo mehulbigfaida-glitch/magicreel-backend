@@ -34,14 +34,13 @@ export async function registerUser(email: string, password: string) {
 
   // ✅ Create user
   const user = await prisma.user.create({
-    data: {
-      email,
-      passwordHash,
-      plan: "FREE",
-      creditsAvailable: 1,
-      freeHeroUsed: false,
-    },
-  });
+  data: {
+    email,
+    passwordHash,
+    plan: "FREE",
+    creditsAvailable: 1,
+  },
+});
 
   // ✅ Return JWT (auto-login)
   return generateToken(user.id);
