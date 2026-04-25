@@ -35,21 +35,47 @@ export async function generateHeroV2(req: Request, res: Response) {
 
     let user = (req as any).user;
 
-    if (!user) {
-      user = await prisma.user.findFirst(); // dev fallback
-    }
+if (!user) {
+  user = await prisma.user.findFirst(); // dev fallback
+}
 
-    if (!user || !user.id) {
-      return res.status(401).json({
-        error: "Unauthorized",
-      });
-    }
+if (!user || !user.id) {
+  return res.status(401).json({
+    error: "Unauthorized",
+  });
+}
 
-    const userId = user.userId || user.id;
+const userId = user.userId || user.id;
 
-    /* =========================
-       FRONT HERO
-    ========================= */
+/* =========================
+   CREDIT GUARD (ADD HERE)
+========================= */
+
+const dbUser = await prisma.user.findUnique({
+  where: { id: userId },
+  select: {
+  creditsAvailable: true,
+  freeHeroUsed: true,
+}
+});
+
+if (!dbUser) {
+  return res.status(404).json({ error: "User not found" });
+}
+
+// ❌ BLOCK if no credits AND free already used
+if (
+  dbUser.creditsAvailable <= 0 &&
+  dbUser.freeHeroUsed === true
+) {
+  return res.status(403).json({
+    error: "No credits left",
+  });
+}
+
+/* =========================
+   FRONT HERO
+========================= */
 
     const frontPrompt = buildHeroPrompt({
       categoryKey,
