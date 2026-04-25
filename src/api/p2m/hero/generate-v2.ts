@@ -35,10 +35,6 @@ export async function generateHeroV2(req: Request, res: Response) {
 
     let user = (req as any).user;
 
-if (!user) {
-  user = await prisma.user.findFirst(); // dev fallback
-}
-
 if (!user || !user.id) {
   return res.status(401).json({
     error: "Unauthorized",
