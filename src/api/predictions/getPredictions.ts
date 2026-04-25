@@ -13,27 +13,35 @@ export const getPredictions = async (req: Request, res: Response) => {
     // STEP 1: GET USER CREDIT TX
     // ========================
     const creditTx = await prisma.creditTransaction.findMany({
-      where: {
-        userId: userId,
-        status: "COMPLETED",
-      },
-      orderBy: { createdAt: "desc" },
-    });
+  where: {
+    status: "COMPLETED",
+    userId: userId,
+  },
+  orderBy: { createdAt: "desc" },
+});
+
+const belongsToUser = (item: any, type: string) => {
+  const itemTime = new Date(item.createdAt).getTime();
+
+  const match = creditTx.find((tx: any) => {
+    const txTime = new Date(tx.createdAt).getTime();
+
+    const isSameType = tx.feature
+      ?.toLowerCase()
+      .includes(type.toLowerCase());
+
+    const isCloseInTime = Math.abs(txTime - itemTime) < 15000; // 🔥 15 sec window
+
+    return isSameType && isCloseInTime;
+  });
+
+  return !!match;
+};
 
     // ========================
     // STEP 2: GROUP IDs BY TYPE
     // ========================
-    const heroIds = creditTx
-      .filter((tx: any) => tx.feature === "HERO")
-      .map((tx: any) => tx.prediction_id);
-
-    const reelIds = creditTx
-      .filter((tx: any) => tx.feature === "REEL")
-      .map((tx: any) => tx.prediction_id);
-
-    const lookbookIds = creditTx
-      .filter((tx: any) => tx.feature === "LOOKBOOK")
-      .map((tx: any) => tx.prediction_id);
+    
 
     // ========================
     // STEP 3: FETCH ONLY USER JOBS
@@ -41,30 +49,24 @@ export const getPredictions = async (req: Request, res: Response) => {
 
     // HERO
     const heroJobs = await prisma.productToModelJob.findMany({
-      where: {
-        id: { in: heroIds },
-      },
-      orderBy: { createdAt: "desc" },
-      take: 30,
-    });
+  orderBy: { createdAt: "desc" },
+  take: 50,
+});
 
     // REEL
     const reelJobs = await prisma.render.findMany({
       where: {
-        id: { in: reelIds },
-      },
+  type: "REEL",
+},
       orderBy: { createdAt: "desc" },
       take: 30,
     });
 
     // LOOKBOOK
     const lookbookJobs = await prisma.lookbook.findMany({
-      where: {
-        id: { in: lookbookIds },
-      },
-      orderBy: { createdAt: "desc" },
-      take: 30,
-    });
+  orderBy: { createdAt: "desc" },
+  take: 50,
+});
 
     const lookbookPredictions = await Promise.all(
       lookbookJobs.map(async (lb: any) => {
@@ -119,7 +121,9 @@ export const getPredictions = async (req: Request, res: Response) => {
     // ========================
     const predictions = [
       // HERO
-      ...heroJobs.map((job) => ({
+      ...heroJobs
+  .filter((job) => belongsToUser(job, "hero"))
+  .map((job) => ({
         id: job.id,
         type: "hero",
         status: job.status,
@@ -132,7 +136,9 @@ export const getPredictions = async (req: Request, res: Response) => {
       })),
 
       // REEL
-      ...reelJobs.map((job) => ({
+      ...reelJobs
+  .filter((job) => belongsToUser(job, "reel"))
+  .map((job) => ({
         id: job.id,
         type: "reel",
         status: job.status || "completed",
@@ -145,7 +151,9 @@ export const getPredictions = async (req: Request, res: Response) => {
       })),
 
       // LOOKBOOK
-      ...lookbookPredictions.map((lb) => ({
+      ...lookbookPredictions
+  .filter((lb) => belongsToUser(lb, "lookbook"))
+  .map((lb) => ({
         ...lb,
         creditsUsed: getCredits({
           type: "lookbook",
