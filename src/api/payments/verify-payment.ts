@@ -50,14 +50,15 @@ export const verifyPayment = async (req: Request, res: Response) => {
 
     // 🎯 STEP 3 — CALL BILLING DIRECTLY (NO FETCH)
     await upgradePlan(
-      {
-        body: { plan },
-        user: { id: userId },
-      } as any,
-      {
-        status: () => ({ json: () => {} }),
-      } as any
-    );
+  {
+    body: { plan },
+    user: { id: userId },
+    isInternal: true, // 🔐 KEY LINE
+  } as any,
+  {
+    status: () => ({ json: () => {} }),
+  } as any
+);
 
     // ✅ SUCCESS
     return res.json({

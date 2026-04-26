@@ -9,6 +9,15 @@ export const upgradePlan = async (req: Request, res: Response) => {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
+    // 🔐 CRITICAL SECURITY CHECK
+    const isInternal = (req as any).isInternal === true;
+
+    if (!isInternal) {
+      return res.status(403).json({
+        error: "Direct upgrade not allowed",
+      });
+    }
+
     const { plan } = req.body;
 
     if (!plan) {
@@ -54,6 +63,7 @@ export const upgradePlan = async (req: Request, res: Response) => {
       credits: updatedUser.creditsAvailable,
       plan: updatedUser.plan,
     });
+
   } catch (error) {
     console.error("Upgrade error:", error);
     return res.status(500).json({ error: "Upgrade failed" });
