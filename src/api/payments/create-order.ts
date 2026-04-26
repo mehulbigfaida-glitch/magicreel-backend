@@ -1,13 +1,8 @@
 import { Request, Response } from "express";
 import Razorpay from "razorpay";
 
-// 🔐 Validate env at runtime
 const key_id = process.env.RAZORPAY_KEY_ID;
 const key_secret = process.env.RAZORPAY_KEY_SECRET;
-
-if (!key_id || !key_secret) {
-  console.error("❌ Razorpay ENV missing");
-}
 
 const razorpay = new Razorpay({
   key_id: key_id!,
@@ -24,9 +19,14 @@ const PLAN_CONFIG: Record<PlanType, { amount: number }> = {
 
 export const createOrder = async (req: Request, res: Response) => {
   try {
-    const { plan } = req.body as { plan: PlanType };
+    console.log("🟡 CREATE ORDER HIT");
 
+    const { plan } = req.body as { plan: PlanType };
     const userId = (req as any).user?.id;
+
+    console.log("➡️ Plan:", plan);
+    console.log("➡️ User:", userId);
+
     if (!userId) {
       return res.status(401).json({ error: "Unauthorized" });
     }
@@ -37,11 +37,15 @@ export const createOrder = async (req: Request, res: Response) => {
 
     const { amount } = PLAN_CONFIG[plan];
 
+    console.log("💰 Amount:", amount);
+
     const order = await razorpay.orders.create({
       amount,
       currency: "INR",
       receipt: `rcpt_${userId}_${Date.now()}`,
     });
+
+    console.log("✅ ORDER CREATED:", order.id);
 
     return res.json({
       success: true,
@@ -52,11 +56,14 @@ export const createOrder = async (req: Request, res: Response) => {
     });
 
   } catch (error: any) {
-    console.error("❌ CREATE ORDER ERROR:", error);
+    console.error("❌ RAZORPAY FULL ERROR:");
+    console.error(error);
+    console.error("❌ MESSAGE:", error?.message);
+    console.error("❌ STACK:", error?.stack);
 
     return res.status(500).json({
       error: "Failed to create order",
-      details: error?.message || error,
+      message: error?.message,
     });
   }
 };
