@@ -21,7 +21,7 @@ import { upgradePlan } from "../billing/upgrade";
 import { authenticate } from "../auth/jwt.middleware";
 
 // QUEUE
-import { heroQueue } from "./queue/hero.queue";
+// import { heroQueue } from "./queue/hero.queue";
 
 /* ---------------------------------- */
 /* APP INIT */
@@ -102,12 +102,14 @@ app.use("/api/admin", adminRoutes);
 app.get("/api/test-queue", async (_req, res) => {
   console.log("🧪 TEST QUEUE START");
 
-  heroQueue
-    .add("test-job", { jobId: "test123" })
-    .then(() => console.log("✅ Job added"))
-    .catch((err) =>
-      console.error("❌ Queue error:", err.message)
-    );
+  // ⚠️ Queue disabled for now (local dev)
+// heroQueue.add("test-job", { jobId: "test123" })
+//   .then(() => console.log("✅ Job added"))
+//   .catch((err: any) =>
+//     console.error("❌ Queue error:", err.message)
+//   );
+
+console.log("⚠️ Queue skipped (disabled)");
 
   return res.json({
     message: "queued (non-blocking)",
