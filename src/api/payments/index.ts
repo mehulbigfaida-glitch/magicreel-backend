@@ -1,8 +1,10 @@
 import express from "express";
 import { getPaymentHistory } from "./history";
+import { authenticate } from "../../auth/jwt.middleware";
 
 const router = express.Router();
 
-router.get("/history", getPaymentHistory);
+// ✅ PROTECTED ROUTE
+router.get("/history", authenticate, getPaymentHistory);
 
 export default router;
