@@ -195,13 +195,13 @@ model ReelJob {
 
 model Payment {
   id                String   @id @default(uuid())
-  userId            String
+  userId            String   @map("user_id")
   plan              String
   amount            BigInt
-  razorpayOrderId   String?
-  razorpayPaymentId String?  @unique
+  razorpayOrderId   String?  @map("razorpay_order_id")
+  razorpayPaymentId String?  @unique @map("razorpay_payment_id")
   status            String
-  createdAt         DateTime @default(now())
+  createdAt         DateTime @default(now()) @map("created_at")
 
   @@map("payments")
 }
