@@ -5,21 +5,29 @@ export const getPaymentHistory = async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user?.id;
 
+    console.log("🔥 Fetching payments for user:", userId);
+
     if (!userId) {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
     const payments = await prisma.payment.findMany({
-      where: { userId },
-      orderBy: { createdAt: "desc" },
+      where: {
+        userId: String(userId), // 🔥 FORCE STRING MATCH
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
     });
+
+    console.log("✅ Payments found:", payments.length);
 
     return res.json({
       success: true,
       data: payments,
     });
-  } catch (error) {
-    console.error("❌ Payment history error:", error);
+  } catch (error: any) {
+    console.error("❌ Payment history error:", error.message);
     return res.status(500).json({ error: "Failed to fetch payments" });
   }
 };
