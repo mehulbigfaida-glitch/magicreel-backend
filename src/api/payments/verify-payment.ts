@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import crypto from "crypto";
 import { upgradePlan } from "../../billing/upgrade";
+import { prisma } from "../../magicreel/db/prisma";
 
 const processedPayments = new Set<string>();
 
@@ -59,6 +60,22 @@ export const verifyPayment = async (req: Request, res: Response) => {
     status: () => ({ json: () => {} }),
   } as any
 );
+
+await prisma.payment.create({
+  data: {
+    userId: userId,
+    plan: plan,
+    amount:
+      plan === "BASIC"
+        ? 90000
+        : plan === "PRO"
+        ? 360000
+        : 630000,
+    razorpayOrderId: razorpay_order_id,
+    razorpayPaymentId: razorpay_payment_id,
+    status: "SUCCESS",
+  },
+});
 
     // ✅ SUCCESS
     return res.json({

@@ -192,3 +192,16 @@ model ReelJob {
 
   @@map("reel_jobs")
 }
+
+model Payment {
+  id                String   @id @default(uuid())
+  userId            String
+  plan              String
+  amount            BigInt
+  razorpayOrderId   String?
+  razorpayPaymentId String?  @unique
+  status            String
+  createdAt         DateTime @default(now())
+
+  @@map("payments")
+}
