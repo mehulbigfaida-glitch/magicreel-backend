@@ -15,7 +15,7 @@ import adminRoutes from "../api/admin";
 // ✅ PAYMENT IMPORTS (ADD THIS)
 import { createOrder } from "../api/payments/create-order";
 import { verifyPayment } from "../api/payments/verify-payment";
-
+import paymentRoutes from "../api/payments";
 // BILLING
 import { upgradePlan } from "../billing/upgrade";
 import { authenticate } from "../auth/jwt.middleware";
@@ -87,6 +87,7 @@ app.post("/api/billing/upgrade", authenticate, upgradePlan);
 // ✅ PAYMENT ROUTES (ADD THIS BLOCK)
 app.post("/api/payments/create-order", authenticate, createOrder);
 app.post("/api/payments/verify-payment", authenticate, verifyPayment);
+app.use("/api/payments", paymentRoutes);
 
 // CORE APIs
 app.use("/api/predictions", predictionsRoutes);
