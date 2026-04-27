@@ -22,10 +22,15 @@ export const getPaymentHistory = async (req: Request, res: Response) => {
 
     console.log("✅ Payments found:", payments.length);
 
-    return res.json({
-      success: true,
-      data: payments,
-    });
+    const safePayments = payments.map((p) => ({
+  ...p,
+  amount: Number(p.amount), // 🔥 FIX BigInt
+}));
+
+return res.json({
+  success: true,
+  data: safePayments,
+});
   } catch (error: any) {
     console.error("❌ Payment history error:", error.message);
     return res.status(500).json({ error: "Failed to fetch payments" });
