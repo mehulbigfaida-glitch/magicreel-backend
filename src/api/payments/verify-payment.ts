@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import crypto from "crypto";
 import { prisma } from "../../magicreel/db/prisma";
+import { generateInvoiceForPayment } from "../../magicreel/services/invoice.service";
 
 const processedPayments = new Set<string>();
 
@@ -84,24 +85,36 @@ export const verifyPayment = async (req: Request, res: Response) => {
       },
     });
 
-    // ✅ SAVE PAYMENT (NOW FK WILL PASS)
-    await prisma.payment.create({
-      data: {
-        userId: userId,
-        plan: plan,
-        amount:
-          plan === "BASIC"
-            ? 90000
-            : plan === "PRO"
-            ? 360000
-            : 630000,
-        razorpayOrderId: razorpay_order_id,
-        razorpayPaymentId: razorpay_payment_id,
-        status: "SUCCESS",
-      },
-    });
+    // ✅ SAVE PAYMENT
+const payment = await prisma.payment.create({
+  data: {
+    userId: userId,
+    plan: plan,
+    amount:
+      plan === "BASIC"
+        ? 90000
+        : plan === "PRO"
+        ? 360000
+        : 630000,
+    razorpayOrderId: razorpay_order_id,
+    razorpayPaymentId: razorpay_payment_id,
+    status: "SUCCESS",
+  },
+});
 
-    console.log("🔥 PAYMENT STORED SUCCESSFULLY");
+console.log("🔥 PAYMENT STORED SUCCESSFULLY");
+
+// 🔥 GENERATE INVOICE (ADD THIS)
+try {
+  await generateInvoiceForPayment({
+    userId,
+    razorpayPaymentId: razorpay_payment_id,
+  });
+
+  console.log("🧾 INVOICE GENERATED");
+} catch (err) {
+  console.error("⚠️ Invoice generation failed:", err);
+}
 
     return res.json({
       success: true,

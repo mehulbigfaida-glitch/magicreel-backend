@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL") // ← THIS is the fix
 }
 
 ////////////////////////////////////////////////////////
@@ -60,6 +61,10 @@ model User {
   p2mJobs           ProductToModelJob[]
   transactions      CreditTransaction[]
   cinematicLookbooks CinematicLookbook[]
+
+  // ✅ ADD THESE 2 LINES ONLY
+  profile           UserProfile?
+  invoices          Invoice[]
 
   @@map("users")
 }
@@ -205,3 +210,65 @@ model Payment {
 
   @@map("payments")
 }
+
+model UserProfile {
+  id            String   @id @default(uuid())
+  userId        String   @unique
+
+  fullName      String
+  companyName   String
+  addressLine1  String
+  addressLine2  String?
+  city          String
+  state         String
+  postalCode    String
+  country       String   @default("India")
+
+  gstin         String?
+  phone         String
+  email         String
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user          User     @relation(fields: [userId], references: [id])
+}
+
+model Invoice {
+  id              String   @id @default(uuid())
+
+  userId          String
+  paymentId       String   @unique
+
+  invoiceNumber   String   @unique
+  invoiceDate     DateTime @default(now())
+
+  fullName        String
+  companyName     String
+  addressLine1    String
+  addressLine2    String?
+  city            String
+  state           String
+  postalCode      String
+  country         String
+
+  gstin           String?
+
+  planName        String
+  amount          Int
+  currency        String   @default("INR")
+
+  gstRate         Float
+  cgst            Int?
+  sgst            Int?
+  igst            Int?
+
+  totalAmount     Int
+
+  createdAt       DateTime @default(now())
+
+  user            User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
