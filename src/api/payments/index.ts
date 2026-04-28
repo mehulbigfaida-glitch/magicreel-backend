@@ -17,7 +17,7 @@ router.get("/test-invoice", async (req, res) => {
       userId: "16595a8c-79f0-4adf-a802-cc19ed6ecbaf",
 
       // 👉 CHANGE THIS EACH TIME (pay_test_1, pay_test_2...)
-      razorpayPaymentId: "pay_SiudyCcA5BgGry",
+      razorpayPaymentId: "pay_SiYC4hXogrvBk",
     });
 
     res.json({
