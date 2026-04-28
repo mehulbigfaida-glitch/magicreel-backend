@@ -272,3 +272,10 @@ model Invoice {
   @@index([userId])
 }
 
+model InvoiceSequence {
+  id         String   @id @default(uuid())
+  year       Int      @unique
+  lastNumber Int      @default(0)
+  updatedAt  DateTime @updatedAt
+}
+

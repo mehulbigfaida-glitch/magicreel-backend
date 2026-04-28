@@ -43,16 +43,31 @@ export async function generateInvoiceForPayment({
   // 5. Generate invoice number
   const year = new Date().getFullYear();
 
-  const count = await prisma.invoice.count({
-    where: {
-      createdAt: {
-        gte: new Date(`${year}-01-01`),
-        lte: new Date(`${year}-12-31`),
-      },
-    },
+const sequence = await prisma.$transaction(async (tx) => {
+  let seq = await tx.invoiceSequence.findUnique({
+    where: { year },
   });
 
-  const invoiceNumber = `MR-${year}-${String(count + 1).padStart(6, "0")}`;
+  if (!seq) {
+    seq = await tx.invoiceSequence.create({
+      data: {
+        year,
+        lastNumber: 1,
+      },
+    });
+  } else {
+    seq = await tx.invoiceSequence.update({
+      where: { year },
+      data: {
+        lastNumber: { increment: 1 },
+      },
+    });
+  }
+
+  return seq;
+});
+
+const invoiceNumber = `MR-${year}-${String(sequence.lastNumber).padStart(6, "0")}`;
 
   // 6. GST Calculation
   const amount = Number(payment.amount); // paise
