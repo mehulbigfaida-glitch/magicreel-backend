@@ -26,7 +26,10 @@ router.get("/test-invoice", async (req, res) => {
     });
   } catch (err) {
     console.error("❌ TEST INVOICE ERROR:", err);
-    res.status(500).json({ error: "Test invoice failed" });
+    res.status(500).json({
+  error: "Test invoice failed",
+  details: err instanceof Error ? err.message : err,
+});
   }
 });
 
