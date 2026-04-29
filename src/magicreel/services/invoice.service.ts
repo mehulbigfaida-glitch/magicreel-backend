@@ -1,4 +1,7 @@
-import { prisma } from "../../lib/prisma"; 
+import { prisma } from "../../lib/prisma";
+import { generateInvoicePDF } from "../services/invoicePdf.service";
+import fs from "fs";
+import path from "path";
 
 const COMPANY_STATE = "Maharashtra";
 const GST_RATE = 18;
@@ -43,31 +46,31 @@ export async function generateInvoiceForPayment({
   // 5. Generate invoice number
   const year = new Date().getFullYear();
 
-const sequence = await prisma.$transaction(async (tx) => {
-  let seq = await tx.invoiceSequence.findUnique({
-    where: { year },
+  const sequence = await prisma.$transaction(async (tx) => {
+    let seq = await tx.invoiceSequence.findUnique({
+      where: { year },
+    });
+
+    if (!seq) {
+      seq = await tx.invoiceSequence.create({
+        data: {
+          year,
+          lastNumber: 1,
+        },
+      });
+    } else {
+      seq = await tx.invoiceSequence.update({
+        where: { year },
+        data: {
+          lastNumber: { increment: 1 },
+        },
+      });
+    }
+
+    return seq;
   });
 
-  if (!seq) {
-    seq = await tx.invoiceSequence.create({
-      data: {
-        year,
-        lastNumber: 1,
-      },
-    });
-  } else {
-    seq = await tx.invoiceSequence.update({
-      where: { year },
-      data: {
-        lastNumber: { increment: 1 },
-      },
-    });
-  }
-
-  return seq;
-});
-
-const invoiceNumber = `MR-${year}-${String(sequence.lastNumber).padStart(6, "0")}`;
+  const invoiceNumber = `MR-${year}-${String(sequence.lastNumber).padStart(6, "0")}`;
 
   // 6. GST Calculation
   const amount = Number(payment.amount); // paise
@@ -117,5 +120,60 @@ const invoiceNumber = `MR-${year}-${String(sequence.lastNumber).padStart(6, "0")
     },
   });
 
-  return invoice;
+  // =========================
+  // 8. PDF GENERATION (NEW)
+  // =========================
+
+  try {
+    const pdfBuffer = await generateInvoicePDF({
+      invoiceNo: invoice.invoiceNumber,
+      date: new Date().toLocaleDateString("en-IN"),
+
+      customerName:
+        invoice.companyName || invoice.fullName || "Customer",
+
+      customerAddress: [
+        invoice.addressLine1,
+        invoice.addressLine2,
+        invoice.city,
+        invoice.state,
+        invoice.postalCode,
+      ]
+        .filter(Boolean)
+        .join(", "),
+
+      customerGSTIN: invoice.gstin || undefined,
+
+      placeOfSupply: `${invoice.state} (${invoice.state === "Maharashtra" ? "27" : ""})`,
+
+      description: `${invoice.planName} Plan`,
+
+      amount: invoice.amount / 100,
+
+      cgst: invoice.cgst ? invoice.cgst / 100 : undefined,
+      sgst: invoice.sgst ? invoice.sgst / 100 : undefined,
+      igst: invoice.igst ? invoice.igst / 100 : undefined,
+
+      total: invoice.totalAmount / 100,
+    });
+
+    // Save locally (temporary)
+    const filePath = path.join(
+      process.cwd(),
+      `invoice-${invoice.invoiceNumber}.pdf`
+    );
+
+    fs.writeFileSync(filePath, pdfBuffer);
+
+    // Optional: you can store this later in DB
+    return {
+      ...invoice,
+      pdfPath: filePath,
+    };
+  } catch (err) {
+    console.error("PDF generation failed:", err);
+
+    // Fail-safe: still return invoice if PDF fails
+    return invoice;
+  }
 }
