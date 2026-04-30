@@ -1,4 +1,5 @@
 import puppeteer from "puppeteer";
+import { uploadInvoicePdf } from "../../utils/uploadInvoicePdf";
 
 interface InvoiceData {
   invoiceNo: string;
@@ -60,14 +61,27 @@ export async function generateInvoicePDF(data: InvoiceData) {
   });
 
   const page = await browser.newPage();
-  await page.setContent(html, { waitUntil: "networkidle0" });
 
-  const pdf = await page.pdf({
-    format: "A4",
-    printBackground: true,
+  await page.setContent(html, {
+    waitUntil: "networkidle0",
   });
 
-  await browser.close();
+  const pdfUint8 = await page.pdf({
+  format: "A4",
+  printBackground: true,
+});
 
-  return pdf;
+const pdf = Buffer.from(pdfUint8);
+
+await browser.close();
+
+const pdfUrl = await uploadInvoicePdf(
+  pdf,
+  data.invoiceNo
+);
+
+return {
+  pdfBuffer: pdf,
+  pdfUrl,
+};
 }

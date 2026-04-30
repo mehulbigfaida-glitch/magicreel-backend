@@ -1,7 +1,5 @@
 import { prisma } from "../../lib/prisma";
 import { generateInvoicePDF } from "../services/invoicePdf.service";
-import fs from "fs";
-import path from "path";
 
 const COMPANY_STATE = "Maharashtra";
 const GST_RATE = 18;
@@ -15,14 +13,18 @@ export async function generateInvoiceForPayment({
 }) {
   // 1. Prevent duplicate invoice
   const existing = await prisma.invoice.findUnique({
-    where: { paymentId: razorpayPaymentId },
+    where: {
+      paymentId: razorpayPaymentId,
+    },
   });
 
   if (existing) return existing;
 
   // 2. Get payment
   const payment = await prisma.payment.findUnique({
-    where: { razorpayPaymentId },
+    where: {
+      razorpayPaymentId,
+    },
   });
 
   if (!payment) {
@@ -36,7 +38,9 @@ export async function generateInvoiceForPayment({
 
   // 4. Get user profile
   const profile = await prisma.userProfile.findUnique({
-    where: { userId },
+    where: {
+      userId,
+    },
   });
 
   if (!profile) {
@@ -48,7 +52,9 @@ export async function generateInvoiceForPayment({
 
   const sequence = await prisma.$transaction(async (tx) => {
     let seq = await tx.invoiceSequence.findUnique({
-      where: { year },
+      where: {
+        year,
+      },
     });
 
     if (!seq) {
@@ -60,9 +66,13 @@ export async function generateInvoiceForPayment({
       });
     } else {
       seq = await tx.invoiceSequence.update({
-        where: { year },
+        where: {
+          year,
+        },
         data: {
-          lastNumber: { increment: 1 },
+          lastNumber: {
+            increment: 1,
+          },
         },
       });
     }
@@ -70,12 +80,17 @@ export async function generateInvoiceForPayment({
     return seq;
   });
 
-  const invoiceNumber = `MR-${year}-${String(sequence.lastNumber).padStart(6, "0")}`;
+  const invoiceNumber = `MR-${year}-${String(
+    sequence.lastNumber
+  ).padStart(6, "0")}`;
 
   // 6. GST Calculation
-  const amount = Number(payment.amount); // paise
+  const amount = Number(payment.amount);
 
-  const base = Math.round(amount / (1 + GST_RATE / 100));
+  const base = Math.round(
+    amount / (1 + GST_RATE / 100)
+  );
+
   const gstAmount = amount - base;
 
   let cgst = null;
@@ -99,19 +114,23 @@ export async function generateInvoiceForPayment({
 
       fullName: profile.fullName,
       companyName: profile.companyName,
+
       addressLine1: profile.addressLine1,
       addressLine2: profile.addressLine2,
+
       city: profile.city,
       state: profile.state,
       postalCode: profile.postalCode,
       country: profile.country,
+
       gstin: profile.gstin,
 
       planName: payment.plan,
-      amount: amount,
+      amount,
       currency: "INR",
 
       gstRate: GST_RATE,
+
       cgst,
       sgst,
       igst,
@@ -121,59 +140,80 @@ export async function generateInvoiceForPayment({
   });
 
   // =========================
-  // 8. PDF GENERATION (NEW)
+  // 8. PDF GENERATION
   // =========================
 
   try {
-    const pdfBuffer = await generateInvoicePDF({
-      invoiceNo: invoice.invoiceNumber,
-      date: new Date().toLocaleDateString("en-IN"),
+    const { pdfUrl } =
+      await generateInvoicePDF({
+        invoiceNo: invoice.invoiceNumber,
 
-      customerName:
-        invoice.companyName || invoice.fullName || "Customer",
+        date: new Date().toLocaleDateString(
+          "en-IN"
+        ),
 
-      customerAddress: [
-        invoice.addressLine1,
-        invoice.addressLine2,
-        invoice.city,
-        invoice.state,
-        invoice.postalCode,
-      ]
-        .filter(Boolean)
-        .join(", "),
+        customerName:
+          invoice.companyName ||
+          invoice.fullName ||
+          "Customer",
 
-      customerGSTIN: invoice.gstin || undefined,
+        customerAddress: [
+          invoice.addressLine1,
+          invoice.addressLine2,
+          invoice.city,
+          invoice.state,
+          invoice.postalCode,
+        ]
+          .filter(Boolean)
+          .join(", "),
 
-      placeOfSupply: `${invoice.state} (${invoice.state === "Maharashtra" ? "27" : ""})`,
+        customerGSTIN:
+          invoice.gstin || undefined,
 
-      description: `${invoice.planName} Plan`,
+        placeOfSupply: `${invoice.state} (${
+          invoice.state === "Maharashtra"
+            ? "27"
+            : ""
+        })`,
 
-      amount: invoice.amount / 100,
+        description: `${invoice.planName} Plan`,
 
-      cgst: invoice.cgst ? invoice.cgst / 100 : undefined,
-      sgst: invoice.sgst ? invoice.sgst / 100 : undefined,
-      igst: invoice.igst ? invoice.igst / 100 : undefined,
+        amount: invoice.amount / 100,
 
-      total: invoice.totalAmount / 100,
-    });
+        cgst: invoice.cgst
+          ? invoice.cgst / 100
+          : undefined,
 
-    // Save locally (temporary)
-    const filePath = path.join(
-      process.cwd(),
-      `invoice-${invoice.invoiceNumber}.pdf`
+        sgst: invoice.sgst
+          ? invoice.sgst / 100
+          : undefined,
+
+        igst: invoice.igst
+          ? invoice.igst / 100
+          : undefined,
+
+        total: invoice.totalAmount / 100,
+      });
+
+    // Save Cloudinary URL
+    const updatedInvoice =
+      await prisma.invoice.update({
+        where: {
+          id: invoice.id,
+        },
+        data: {
+          pdfUrl,
+        },
+      });
+
+    return updatedInvoice;
+  } catch (err) {
+    console.error(
+      "PDF generation failed:",
+      err
     );
 
-    fs.writeFileSync(filePath, pdfBuffer);
-
-    // Optional: you can store this later in DB
-    return {
-      ...invoice,
-      pdfPath: filePath,
-    };
-  } catch (err) {
-    console.error("PDF generation failed:", err);
-
-    // Fail-safe: still return invoice if PDF fails
+    // Fail-safe
     return invoice;
   }
 }
