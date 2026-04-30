@@ -1,15 +1,16 @@
-import { Queue } from "bullmq";
-import redis from "../config/redisConnection";
+let heroQueue: any = null;
 
-export const heroQueue = new Queue("hero-generation", {
-  connection: redis,
-  defaultJobOptions: {
-    attempts: 3, // retry 3 times
-    backoff: {
-      type: "exponential",
-      delay: 5000, // 5 sec delay between retries
-    },
-    removeOnComplete: true,
-    removeOnFail: false,
-  },
-});
+if (process.env.ENABLE_QUEUE === "true") {
+  const { Queue } = require("bullmq");
+  const redis = require("../config/redisConnection").default;
+
+  heroQueue = new Queue("hero-generation", {
+    connection: redis,
+  });
+
+  console.log("✅ Hero queue enabled");
+} else {
+  console.warn("⚠️ Hero queue disabled (local dev)");
+}
+
+export { heroQueue };

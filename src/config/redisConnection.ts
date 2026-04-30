@@ -1,10 +1,22 @@
 import Redis from "ioredis";
 
-const redisUrl = process.env.REDIS_URL as string;
-
-const redis = new Redis(redisUrl, {
+const redis = new Redis(process.env.REDIS_URL as string, {
   maxRetriesPerRequest: null,
-  enableReadyCheck: false,
+  enableReadyCheck: true,
+  lazyConnect: true,
+
+  retryStrategy: (times) => {
+    const delay = Math.min(times * 200, 2000);
+    console.log(`🔄 Redis retry attempt: ${times}`);
+    return delay;
+  },
+
+  reconnectOnError: (err) => {
+    console.log("🔁 Reconnect on error:", err.message);
+    return true;
+  },
+
+  keepAlive: 10000,
 });
 
 redis.on("connect", () => {
