@@ -24,6 +24,14 @@ export function resolveCreativeDirection(
         visualAtmosphere:
           "high-end fashion editorial environment with cinematic elegance",
 
+        visualAnchors: [
+          "reflective editorial flooring",
+          "museum-grade shadow gradients",
+          "soft couture spotlight haze",
+          "architectural luxury framing",
+          "premium negative-space staging",
+        ],
+
         stylingBehavior: [
           "luxury fashion posture",
           "editorial visual balance",
@@ -61,6 +69,14 @@ export function resolveCreativeDirection(
 
         visualAtmosphere:
           "modern luxury city environment with editorial streetwear styling",
+
+        visualAnchors: [
+          "wet neon street reflections",
+          "urban alley cinematic depth",
+          "city light motion blur",
+          "editorial rooftop framing",
+          "high-contrast urban textures",
+        ],
 
         stylingBehavior: [
           "confident movement energy",
@@ -100,6 +116,14 @@ export function resolveCreativeDirection(
         visualAtmosphere:
           "minimal high-fashion environment with premium restraint",
 
+        visualAnchors: [
+          "soft matte architectural surfaces",
+          "clean editorial backdrop transitions",
+          "luxury tonal gradients",
+          "minimal gallery-style staging",
+          "controlled luxury emptiness",
+        ],
+
         stylingBehavior: [
           "minimal visual noise",
           "refined luxury posture",
@@ -137,6 +161,14 @@ export function resolveCreativeDirection(
 
         visualAtmosphere:
           "palatial couture environment with heritage luxury richness",
+
+        visualAnchors: [
+          "royal palace corridor depth",
+          "heritage archway framing",
+          "warm ceremonial lighting haze",
+          "ornamental luxury reflections",
+          "cinematic bridal grandeur",
+        ],
 
         stylingBehavior: [
           "royal elegance",
@@ -176,6 +208,14 @@ export function resolveCreativeDirection(
         visualAtmosphere:
           "high-fashion runway editorial environment with artistic luxury styling",
 
+        visualAnchors: [
+          "dramatic runway shadow cuts",
+          "avant-garde spotlight sculpting",
+          "editorial fog atmosphere",
+          "asymmetrical cinematic framing",
+          "high-contrast couture staging",
+        ],
+
         stylingBehavior: [
           "runway authority",
           "dramatic fashion posture",
@@ -214,6 +254,8 @@ export function resolveCreativeDirection(
         visualAtmosphere:
           "high-end fashion atmosphere",
 
+        visualAnchors: [],
+
         stylingBehavior: [],
 
         cinematicKeywords: [],
@@ -222,3 +264,4 @@ export function resolveCreativeDirection(
       };
   }
 }
+

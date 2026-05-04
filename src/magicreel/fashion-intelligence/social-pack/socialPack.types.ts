@@ -1,75 +1,77 @@
 export type SocialCreativeGoal =
-  | "lookbook"
-  | "instagram"
-  | "tradeshow"
-  | "sale"
-  | "reel-cover";
+| "lookbook"
+| "instagram"
+| "tradeshow"
+| "sale"
+| "reel-cover";
 
 export type CreativeDirection =
-  | "Luxury Editorial"
-  | "Streetwear"
-  | "Minimal Fashion"
-  | "Festive Couture"
-  | "High Fashion";
+| "Luxury Editorial"
+| "Streetwear"
+| "Minimal Fashion"
+| "Festive Couture"
+| "High Fashion";
 
 export type SocialElement =
-  | "Handbag"
-  | "Jewellery"
-  | "Sunglasses"
-  | "Watch"
-  | "Studio Props"
-  | "High Heels";
+| "Handbag"
+| "Jewellery"
+| "Sunglasses"
+| "Watch"
+| "Studio Props"
+| "High Heels";
 
 export interface SocialPackInput {
-  creativeGoal: SocialCreativeGoal;
+creativeGoal: SocialCreativeGoal;
 
-  creativeDirection: CreativeDirection;
+creativeDirection: CreativeDirection;
 
-  brandName?: string;
+brandName?: string;
 
-  heading?: string;
+heading?: string;
 
-  subheading?: string;
+subheading?: string;
 
-  elements?: SocialElement[];
+elements?: SocialElement[];
 
-  replaceBackground?: boolean;
+replaceBackground?: boolean;
 
-  backgroundPrompt?: string;
+backgroundPrompt?: string;
 }
 
 export interface ResolvedCreativeDirection {
-  cinematicTone: string;
+cinematicTone: string;
 
-  luxuryMood: string;
+luxuryMood: string;
 
-  compositionStyle: string;
+compositionStyle: string;
 
-  lightingStyle: string;
+lightingStyle: string;
 
-  visualAtmosphere: string;
+visualAtmosphere: string;
 
-  stylingBehavior: string[];
+visualAnchors: string[];
 
-  cinematicKeywords: string[];
+stylingBehavior: string[];
 
-  negativeKeywords: string[];
+cinematicKeywords: string[];
+
+negativeKeywords: string[];
 }
 
 export interface ResolvedCampaignGoal {
-  compositionBehavior: string[];
+compositionBehavior: string[];
 
-  typographyBehavior: string[];
+typographyBehavior: string[];
 
-  marketingBehavior: string[];
+marketingBehavior: string[];
 
-  outputIntent: string;
+outputIntent: string;
 }
 
 export interface GeminiPromptPayload {
-  systemPrompt: string;
+systemPrompt: string;
 
-  userPrompt: string;
+userPrompt: string;
 
-  creativeSummary: string;
+creativeSummary: string;
 }
