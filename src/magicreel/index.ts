@@ -89,12 +89,19 @@ app.post("/api/payments/create-order", authenticate, createOrder);
 app.post("/api/payments/verify-payment", authenticate, verifyPayment);
 app.use("/api/payments", paymentRoutes);
 
+import socialPackRoutes from "../api/social-pack/socialPack.routes";
+
 // CORE APIs
 app.use("/api/predictions", predictionsRoutes);
 app.use("/api/share", shareRoutes);
 app.use("/api/p2m", p2mRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/admin", adminRoutes);
+
+app.use(
+  "/api/social-pack",
+  socialPackRoutes
+);
 
 /* ---------------------------------- */
 /* 🧪 QUEUE TEST */
