@@ -1,267 +1,271 @@
+import { selectRandom } from "./utils/selectRandom";
+
 import {
-  CreativeDirection,
-  ResolvedCreativeDirection,
+CreativeDirection,
+ResolvedCreativeDirection,
 } from "./socialPack.types";
 
 export function resolveCreativeDirection(
-  direction: CreativeDirection
+direction: CreativeDirection
 ): ResolvedCreativeDirection {
-  switch (direction) {
-    case "Luxury Editorial":
-      return {
-        cinematicTone:
-          "premium editorial luxury fashion campaign",
+switch (direction) {
+case "Luxury Editorial":
+return {
+cinematicTone:
+"premium editorial luxury fashion campaign",
 
-        luxuryMood:
-          "refined cinematic sophistication",
 
-        compositionStyle:
-          "editorial luxury composition with premium negative space and fashion campaign hierarchy",
+    luxuryMood:
+      "refined cinematic sophistication",
 
-        lightingStyle:
-          "soft cinematic luxury lighting with premium skin rendering and controlled shadow depth",
+    compositionStyle:
+      "editorial luxury composition with premium negative space and fashion campaign hierarchy",
 
-        visualAtmosphere:
-          "high-end fashion editorial environment with cinematic elegance",
+    lightingStyle:
+      "soft cinematic luxury lighting with premium skin rendering and controlled shadow depth",
 
-        visualAnchors: [
-          "reflective editorial flooring",
-          "museum-grade shadow gradients",
-          "soft couture spotlight haze",
-          "architectural luxury framing",
-          "premium negative-space staging",
-        ],
+    visualAtmosphere:
+      "high-end fashion editorial environment with cinematic elegance",
 
-        stylingBehavior: [
-          "luxury fashion posture",
-          "editorial visual balance",
-          "premium campaign styling",
-          "high-fashion framing discipline",
-        ],
+    visualAnchors: selectRandom([
+      "reflective editorial flooring",
+      "museum-grade shadow gradients",
+      "soft couture spotlight haze",
+      "architectural luxury framing",
+      "premium negative-space staging",
+    ], 3),
 
-        cinematicKeywords: [
-          "editorial luxury realism",
-          "cinematic fashion atmosphere",
-          "premium composition hierarchy",
-          "couture campaign aesthetics",
-        ],
+    stylingBehavior: [
+      "luxury fashion posture",
+      "editorial visual balance",
+      "premium campaign styling",
+      "high-fashion framing discipline",
+    ],
 
-        negativeKeywords: [
-          "cheap ecommerce aesthetics",
-          "fast-fashion visuals",
-          "social media clutter",
-        ],
-      };
+    cinematicKeywords: [
+      "editorial luxury realism",
+      "cinematic fashion atmosphere",
+      "premium composition hierarchy",
+      "couture campaign aesthetics",
+    ],
 
-    case "Streetwear":
-      return {
-        cinematicTone:
-          "urban luxury streetwear campaign",
+    negativeKeywords: [
+      "cheap ecommerce aesthetics",
+      "fast-fashion visuals",
+      "social media clutter",
+    ],
+  };
 
-        luxuryMood:
-          "bold modern street fashion energy",
+case "Streetwear":
+  return {
+    cinematicTone:
+      "urban luxury streetwear campaign",
 
-        compositionStyle:
-          "high-contrast urban framing with aggressive focal hierarchy and social-first composition",
+    luxuryMood:
+      "bold modern street fashion energy",
 
-        lightingStyle:
-          "cinematic urban contrast lighting with edgy shadows and premium modern atmosphere",
+    compositionStyle:
+      "high-contrast urban framing with aggressive focal hierarchy and social-first composition",
 
-        visualAtmosphere:
-          "modern luxury city environment with editorial streetwear styling",
+    lightingStyle:
+      "cinematic urban contrast lighting with edgy shadows and premium modern atmosphere",
 
-        visualAnchors: [
-          "wet neon street reflections",
-          "urban alley cinematic depth",
-          "city light motion blur",
-          "editorial rooftop framing",
-          "high-contrast urban textures",
-        ],
+    visualAtmosphere:
+      "modern luxury city environment with editorial streetwear styling",
 
-        stylingBehavior: [
-          "confident movement energy",
-          "street-fashion posture",
-          "urban visual pacing",
-          "dynamic framing behavior",
-        ],
+    visualAnchors: selectRandom([
+      "wet neon street reflections",
+      "urban alley cinematic depth",
+      "city light motion blur",
+      "editorial rooftop framing",
+      "high-contrast urban textures",
+    ], 3),
 
-        cinematicKeywords: [
-          "urban luxury campaign",
-          "streetwear editorial realism",
-          "cinematic city atmosphere",
-          "high-energy fashion styling",
-        ],
+    stylingBehavior: [
+      "confident movement energy",
+      "street-fashion posture",
+      "urban visual pacing",
+      "dynamic framing behavior",
+    ],
 
-        negativeKeywords: [
-          "cheap influencer energy",
-          "mall-fashion aesthetics",
-          "generic streetwear posing",
-        ],
-      };
+    cinematicKeywords: [
+      "urban luxury campaign",
+      "streetwear editorial realism",
+      "cinematic city atmosphere",
+      "high-energy fashion styling",
+    ],
 
-    case "Minimal Fashion":
-      return {
-        cinematicTone:
-          "minimal luxury fashion editorial",
+    negativeKeywords: [
+      "cheap influencer energy",
+      "mall-fashion aesthetics",
+      "generic streetwear posing",
+    ],
+  };
 
-        luxuryMood:
-          "quiet luxury sophistication",
+case "Minimal Fashion":
+  return {
+    cinematicTone:
+      "minimal luxury fashion editorial",
 
-        compositionStyle:
-          "clean editorial spacing with minimalist visual hierarchy and refined composition restraint",
+    luxuryMood:
+      "quiet luxury sophistication",
 
-        lightingStyle:
-          "soft diffused luxury lighting with elegant tonal balance",
+    compositionStyle:
+      "clean editorial spacing with minimalist visual hierarchy and refined composition restraint",
 
-        visualAtmosphere:
-          "minimal high-fashion environment with premium restraint",
+    lightingStyle:
+      "soft diffused luxury lighting with elegant tonal balance",
 
-        visualAnchors: [
-          "soft matte architectural surfaces",
-          "clean editorial backdrop transitions",
-          "luxury tonal gradients",
-          "minimal gallery-style staging",
-          "controlled luxury emptiness",
-        ],
+    visualAtmosphere:
+      "minimal high-fashion environment with premium restraint",
 
-        stylingBehavior: [
-          "minimal visual noise",
-          "refined luxury posture",
-          "editorial simplicity",
-          "clean composition balance",
-        ],
+    visualAnchors: selectRandom([
+      "soft matte architectural surfaces",
+      "clean editorial backdrop transitions",
+      "luxury tonal gradients",
+      "minimal gallery-style staging",
+      "controlled luxury emptiness",
+    ], 3),
 
-        cinematicKeywords: [
-          "quiet luxury aesthetics",
-          "minimal editorial sophistication",
-          "premium visual restraint",
-          "refined cinematic elegance",
-        ],
+    stylingBehavior: [
+      "minimal visual noise",
+      "refined luxury posture",
+      "editorial simplicity",
+      "clean composition balance",
+    ],
 
-        negativeKeywords: [
-          "visual clutter",
-          "oversaturated styling",
-          "cheap glam aesthetics",
-        ],
-      };
+    cinematicKeywords: [
+      "quiet luxury aesthetics",
+      "minimal editorial sophistication",
+      "premium visual restraint",
+      "refined cinematic elegance",
+    ],
 
-    case "Festive Couture":
-      return {
-        cinematicTone:
-          "royal festive couture campaign",
+    negativeKeywords: [
+      "visual clutter",
+      "oversaturated styling",
+      "cheap glam aesthetics",
+    ],
+  };
 
-        luxuryMood:
-          "celebratory cinematic grandeur",
+case "Festive Couture":
+  return {
+    cinematicTone:
+      "royal festive couture campaign",
 
-        compositionStyle:
-          "heritage luxury composition with royal spatial hierarchy and couture campaign framing",
+    luxuryMood:
+      "celebratory cinematic grandeur",
 
-        lightingStyle:
-          "warm festive cinematic lighting with luxury highlights and premium celebratory atmosphere",
+    compositionStyle:
+      "heritage luxury composition with royal spatial hierarchy and couture campaign framing",
 
-        visualAtmosphere:
-          "palatial couture environment with heritage luxury richness",
+    lightingStyle:
+      "warm festive cinematic lighting with luxury highlights and premium celebratory atmosphere",
 
-        visualAnchors: [
-          "royal palace corridor depth",
-          "heritage archway framing",
-          "warm ceremonial lighting haze",
-          "ornamental luxury reflections",
-          "cinematic bridal grandeur",
-        ],
+    visualAtmosphere:
+      "palatial couture environment with heritage luxury richness",
 
-        stylingBehavior: [
-          "royal elegance",
-          "heritage couture posture",
-          "luxury festive movement",
-          "cinematic grandeur",
-        ],
+    visualAnchors: selectRandom([
+      "royal palace corridor depth",
+      "heritage archway framing",
+      "warm ceremonial lighting haze",
+      "ornamental luxury reflections",
+      "cinematic bridal grandeur",
+    ], 3),
 
-        cinematicKeywords: [
-          "royal couture atmosphere",
-          "heritage luxury storytelling",
-          "cinematic festive richness",
-          "premium bridal elegance",
-        ],
+    stylingBehavior: [
+      "royal elegance",
+      "heritage couture posture",
+      "luxury festive movement",
+      "cinematic grandeur",
+    ],
 
-        negativeKeywords: [
-          "cheap wedding photography",
-          "plastic festive styling",
-          "low-end commercial aesthetics",
-        ],
-      };
+    cinematicKeywords: [
+      "royal couture atmosphere",
+      "heritage luxury storytelling",
+      "cinematic festive richness",
+      "premium bridal elegance",
+    ],
 
-    case "High Fashion":
-      return {
-        cinematicTone:
-          "avant-garde high fashion editorial campaign",
+    negativeKeywords: [
+      "cheap wedding photography",
+      "plastic festive styling",
+      "low-end commercial aesthetics",
+    ],
+  };
 
-        luxuryMood:
-          "bold couture artistic direction",
+case "High Fashion":
+  return {
+    cinematicTone:
+      "avant-garde high fashion editorial campaign",
 
-        compositionStyle:
-          "experimental editorial hierarchy with dramatic fashion framing and couture visual rhythm",
+    luxuryMood:
+      "bold couture artistic direction",
 
-        lightingStyle:
-          "dramatic cinematic fashion lighting with sculpted luxury contrast",
+    compositionStyle:
+      "experimental editorial hierarchy with dramatic fashion framing and couture visual rhythm",
 
-        visualAtmosphere:
-          "high-fashion runway editorial environment with artistic luxury styling",
+    lightingStyle:
+      "dramatic cinematic fashion lighting with sculpted luxury contrast",
 
-        visualAnchors: [
-          "dramatic runway shadow cuts",
-          "avant-garde spotlight sculpting",
-          "editorial fog atmosphere",
-          "asymmetrical cinematic framing",
-          "high-contrast couture staging",
-        ],
+    visualAtmosphere:
+      "high-fashion runway editorial environment with artistic luxury styling",
 
-        stylingBehavior: [
-          "runway authority",
-          "dramatic fashion posture",
-          "editorial boldness",
-          "avant-garde movement styling",
-        ],
+    visualAnchors: selectRandom([
+      "dramatic runway shadow cuts",
+      "avant-garde spotlight sculpting",
+      "editorial fog atmosphere",
+      "asymmetrical cinematic framing",
+      "high-contrast couture staging",
+    ], 3),
 
-        cinematicKeywords: [
-          "high-fashion editorial realism",
-          "couture artistic direction",
-          "luxury runway atmosphere",
-          "cinematic fashion drama",
-        ],
+    stylingBehavior: [
+      "runway authority",
+      "dramatic fashion posture",
+      "editorial boldness",
+      "avant-garde movement styling",
+    ],
 
-        negativeKeywords: [
-          "generic fashion posing",
-          "cheap influencer styling",
-          "basic catalog aesthetics",
-        ],
-      };
+    cinematicKeywords: [
+      "high-fashion editorial realism",
+      "couture artistic direction",
+      "luxury runway atmosphere",
+      "cinematic fashion drama",
+    ],
 
-    default:
-      return {
-        cinematicTone:
-          "premium luxury fashion campaign",
+    negativeKeywords: [
+      "generic fashion posing",
+      "cheap influencer styling",
+      "basic catalog aesthetics",
+    ],
+  };
 
-        luxuryMood:
-          "cinematic editorial sophistication",
+default:
+  return {
+    cinematicTone:
+      "premium luxury fashion campaign",
 
-        compositionStyle:
-          "luxury fashion composition",
+    luxuryMood:
+      "cinematic editorial sophistication",
 
-        lightingStyle:
-          "premium cinematic lighting",
+    compositionStyle:
+      "luxury fashion composition",
 
-        visualAtmosphere:
-          "high-end fashion atmosphere",
+    lightingStyle:
+      "premium cinematic lighting",
 
-        visualAnchors: [],
+    visualAtmosphere:
+      "high-end fashion atmosphere",
 
-        stylingBehavior: [],
+    visualAnchors: [],
 
-        cinematicKeywords: [],
+    stylingBehavior: [],
 
-        negativeKeywords: [],
-      };
-  }
+    cinematicKeywords: [],
+
+    negativeKeywords: [],
+  };
+
+
 }
-
+}
