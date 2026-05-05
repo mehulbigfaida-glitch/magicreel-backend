@@ -49,6 +49,8 @@ compositionVariants: string[];
 
 lightingStyle: string;
 
+lightingVariants: string[];
+
 visualAtmosphere: string;
 
 visualAnchors: string[];

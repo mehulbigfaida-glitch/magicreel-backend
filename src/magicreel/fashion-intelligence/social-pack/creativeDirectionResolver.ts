@@ -14,6 +14,7 @@ return {
 cinematicTone:
 "premium editorial luxury fashion campaign",
 
+
     luxuryMood:
       "refined cinematic sophistication",
 
@@ -30,6 +31,14 @@ cinematicTone:
 
     lightingStyle:
       "soft cinematic luxury lighting with premium skin rendering and controlled shadow depth",
+
+    lightingVariants: selectRandom([
+      "soft couture spotlight falloff",
+      "museum-grade ambient glow",
+      "luxury diffused edge lighting",
+      "cinematic reflective floor lighting",
+      "subtle shadow-gradient transitions",
+    ], 3),
 
     visualAtmosphere:
       "high-end fashion editorial environment with cinematic elegance",
@@ -85,6 +94,14 @@ case "Streetwear":
     lightingStyle:
       "cinematic urban contrast lighting with edgy shadows and premium modern atmosphere",
 
+    lightingVariants: selectRandom([
+      "wet neon edge reflections",
+      "high-contrast street glow",
+      "urban cinematic rim lighting",
+      "moody alley shadow layering",
+      "night-city directional highlights",
+    ], 3),
+
     visualAtmosphere:
       "modern luxury city environment with editorial streetwear styling",
 
@@ -138,6 +155,14 @@ case "Minimal Fashion":
 
     lightingStyle:
       "soft diffused luxury lighting with elegant tonal balance",
+
+    lightingVariants: selectRandom([
+      "soft natural diffusion",
+      "minimal luxury ambient glow",
+      "clean shadow-softening gradients",
+      "subtle gallery illumination",
+      "quiet cinematic tonal balance",
+    ], 3),
 
     visualAtmosphere:
       "minimal high-fashion environment with premium restraint",
@@ -193,6 +218,14 @@ case "Festive Couture":
     lightingStyle:
       "warm festive cinematic lighting with luxury highlights and premium celebratory atmosphere",
 
+    lightingVariants: selectRandom([
+      "warm ceremonial glow",
+      "royal golden highlight reflections",
+      "palatial chandelier ambience",
+      "heritage cinematic lighting haze",
+      "luxury festive sparkle diffusion",
+    ], 3),
+
     visualAtmosphere:
       "palatial couture environment with heritage luxury richness",
 
@@ -247,6 +280,14 @@ case "High Fashion":
     lightingStyle:
       "dramatic cinematic fashion lighting with sculpted luxury contrast",
 
+    lightingVariants: selectRandom([
+      "runway spotlight sculpting",
+      "dramatic shadow-edge lighting",
+      "editorial contrast slicing",
+      "avant-garde haze illumination",
+      "cinematic couture rim lighting",
+    ], 3),
+
     visualAtmosphere:
       "high-fashion runway editorial environment with artistic luxury styling",
 
@@ -294,6 +335,8 @@ default:
 
     lightingStyle:
       "premium cinematic lighting",
+
+    lightingVariants: [],
 
     visualAtmosphere:
       "high-end fashion atmosphere",

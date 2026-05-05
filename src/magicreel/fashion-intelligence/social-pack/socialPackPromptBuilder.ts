@@ -142,6 +142,10 @@ ${creative.compositionVariants.join(", ")}
 LIGHTING STYLE:
 ${creative.lightingStyle}
 
+LIGHTING VARIANTS:
+${creative.lightingVariants.join(", ")}
+
+
 CAMPAIGN OBJECTIVE:
 ${campaign.outputIntent}
 
