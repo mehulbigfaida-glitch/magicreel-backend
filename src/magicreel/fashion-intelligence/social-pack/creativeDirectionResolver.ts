@@ -21,6 +21,14 @@ cinematicTone:
     compositionStyle:
       "editorial luxury composition with premium negative space and fashion campaign hierarchy",
 
+    compositionVariants: [
+      "asymmetrical editorial luxury framing",
+      "cinematic negative-space balancing",
+      "architectural couture depth layering",
+      "premium foreground-background separation",
+      "gallery-inspired fashion composition",
+    ],
+
     lightingStyle:
       "soft cinematic luxury lighting with premium skin rendering and controlled shadow depth",
 
@@ -66,6 +74,14 @@ case "Streetwear":
 
     compositionStyle:
       "high-contrast urban framing with aggressive focal hierarchy and social-first composition",
+
+    compositionVariants: [
+      "urban diagonal framing",
+      "street-level cinematic perspective",
+      "motion-weighted visual hierarchy",
+      "editorial rooftop composition",
+      "dynamic asymmetric city framing",
+    ],
 
     lightingStyle:
       "cinematic urban contrast lighting with edgy shadows and premium modern atmosphere",
@@ -113,6 +129,14 @@ case "Minimal Fashion":
     compositionStyle:
       "clean editorial spacing with minimalist visual hierarchy and refined composition restraint",
 
+    compositionVariants: [
+      "minimal center-weighted composition",
+      "editorial whitespace dominance",
+      "clean luxury symmetry",
+      "soft gallery-style framing",
+      "restrained cinematic hierarchy",
+    ],
+
     lightingStyle:
       "soft diffused luxury lighting with elegant tonal balance",
 
@@ -158,6 +182,14 @@ case "Festive Couture":
 
     compositionStyle:
       "heritage luxury composition with royal spatial hierarchy and couture campaign framing",
+
+    compositionVariants: [
+      "royal ceremonial framing",
+      "palatial architectural symmetry",
+      "heritage depth staging",
+      "grand couture spatial layering",
+      "cinematic bridal hierarchy",
+    ],
 
     lightingStyle:
       "warm festive cinematic lighting with luxury highlights and premium celebratory atmosphere",
@@ -205,6 +237,14 @@ case "High Fashion":
     compositionStyle:
       "experimental editorial hierarchy with dramatic fashion framing and couture visual rhythm",
 
+    compositionVariants: [
+      "avant-garde asymmetrical framing",
+      "runway perspective compression",
+      "editorial cinematic distortion",
+      "dramatic focal hierarchy",
+      "experimental luxury composition",
+    ],
+
     lightingStyle:
       "dramatic cinematic fashion lighting with sculpted luxury contrast",
 
@@ -251,6 +291,8 @@ default:
     compositionStyle:
       "luxury fashion composition",
 
+    compositionVariants: [],
+
     lightingStyle:
       "premium cinematic lighting",
 
@@ -265,7 +307,6 @@ default:
 
     negativeKeywords: [],
   };
-
 
 }
 }

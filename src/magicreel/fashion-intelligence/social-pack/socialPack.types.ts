@@ -45,6 +45,8 @@ luxuryMood: string;
 
 compositionStyle: string;
 
+compositionVariants: string[];
+
 lightingStyle: string;
 
 visualAtmosphere: string;

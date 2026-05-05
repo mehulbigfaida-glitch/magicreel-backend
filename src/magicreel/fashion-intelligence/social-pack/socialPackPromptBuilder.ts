@@ -136,6 +136,9 @@ ${creative.visualAnchors.join(", ")}
 COMPOSITION STYLE:
 ${creative.compositionStyle}
 
+COMPOSITION VARIANTS:
+${creative.compositionVariants.join(", ")}
+
 LIGHTING STYLE:
 ${creative.lightingStyle}
 
