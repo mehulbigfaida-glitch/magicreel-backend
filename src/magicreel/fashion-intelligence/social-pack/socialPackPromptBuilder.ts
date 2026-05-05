@@ -129,6 +129,10 @@ ${creative.luxuryMood}
 VISUAL ATMOSPHERE:
 ${creative.visualAtmosphere}
 
+VISUAL CINEMATIC ANCHORS:
+${creative.visualAnchors.join(", ")}
+
+
 COMPOSITION STYLE:
 ${creative.compositionStyle}
 
