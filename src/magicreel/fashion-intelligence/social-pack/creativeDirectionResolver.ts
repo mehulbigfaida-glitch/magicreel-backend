@@ -14,20 +14,19 @@ return {
 cinematicTone:
 "premium editorial luxury fashion campaign",
 
-
     luxuryMood:
       "refined cinematic sophistication",
 
     compositionStyle:
       "editorial luxury composition with premium negative space and fashion campaign hierarchy",
 
-    compositionVariants: [
+    compositionVariants: selectRandom([
       "asymmetrical editorial luxury framing",
       "cinematic negative-space balancing",
       "architectural couture depth layering",
       "premium foreground-background separation",
       "gallery-inspired fashion composition",
-    ],
+    ], 3),
 
     lightingStyle:
       "soft cinematic luxury lighting with premium skin rendering and controlled shadow depth",
@@ -75,13 +74,13 @@ case "Streetwear":
     compositionStyle:
       "high-contrast urban framing with aggressive focal hierarchy and social-first composition",
 
-    compositionVariants: [
+    compositionVariants: selectRandom([
       "urban diagonal framing",
       "street-level cinematic perspective",
       "motion-weighted visual hierarchy",
       "editorial rooftop composition",
       "dynamic asymmetric city framing",
-    ],
+    ], 3),
 
     lightingStyle:
       "cinematic urban contrast lighting with edgy shadows and premium modern atmosphere",
@@ -129,13 +128,13 @@ case "Minimal Fashion":
     compositionStyle:
       "clean editorial spacing with minimalist visual hierarchy and refined composition restraint",
 
-    compositionVariants: [
+    compositionVariants: selectRandom([
       "minimal center-weighted composition",
       "editorial whitespace dominance",
       "clean luxury symmetry",
       "soft gallery-style framing",
       "restrained cinematic hierarchy",
-    ],
+    ], 3),
 
     lightingStyle:
       "soft diffused luxury lighting with elegant tonal balance",
@@ -183,13 +182,13 @@ case "Festive Couture":
     compositionStyle:
       "heritage luxury composition with royal spatial hierarchy and couture campaign framing",
 
-    compositionVariants: [
+    compositionVariants: selectRandom([
       "royal ceremonial framing",
       "palatial architectural symmetry",
       "heritage depth staging",
       "grand couture spatial layering",
       "cinematic bridal hierarchy",
-    ],
+    ], 3),
 
     lightingStyle:
       "warm festive cinematic lighting with luxury highlights and premium celebratory atmosphere",
@@ -237,13 +236,13 @@ case "High Fashion":
     compositionStyle:
       "experimental editorial hierarchy with dramatic fashion framing and couture visual rhythm",
 
-    compositionVariants: [
+    compositionVariants: selectRandom([
       "avant-garde asymmetrical framing",
       "runway perspective compression",
       "editorial cinematic distortion",
       "dramatic focal hierarchy",
       "experimental luxury composition",
-    ],
+    ], 3),
 
     lightingStyle:
       "dramatic cinematic fashion lighting with sculpted luxury contrast",
