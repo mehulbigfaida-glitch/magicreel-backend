@@ -42,6 +42,26 @@ brandName?: string
 ) {
 const brandProfile = detectBrandProfile(brandName);
 
+// 🔥 HARD BRAND OVERRIDE
+if (brandProfile === "minimal") {
+return CINEMATIC_CLUSTERS.find(
+(c) => c.name === "Minimal Luxury"
+)!;
+}
+
+if (brandProfile === "street") {
+return CINEMATIC_CLUSTERS.find(
+(c) => c.name === "Urban Cinematic"
+)!;
+}
+
+if (brandProfile === "heritage") {
+return CINEMATIC_CLUSTERS.find(
+(c) => c.name === "Editorial Architectural"
+)!;
+}
+
+// 🔁 fallback to direction-based logic
 const directionMap: Record<CreativeDirection, string[]> = {
 "High Fashion": ["Runway Dramatic", "Editorial Architectural"],
 "Luxury Editorial": ["Editorial Architectural", "Minimal Luxury"],
@@ -50,20 +70,7 @@ const directionMap: Record<CreativeDirection, string[]> = {
 "Festive Couture": ["Runway Dramatic", "Editorial Architectural"],
 };
 
-let allowed = directionMap[direction];
-
-// 🔥 BRAND INFLUENCE LAYER
-if (brandProfile === "heritage") {
-allowed = ["Editorial Architectural"];
-}
-
-if (brandProfile === "minimal") {
-allowed = ["Minimal Luxury"];
-}
-
-if (brandProfile === "street") {
-allowed = ["Urban Cinematic"];
-}
+const allowed = directionMap[direction];
 
 const filtered = CINEMATIC_CLUSTERS.filter((c) =>
 allowed.includes(c.name)
