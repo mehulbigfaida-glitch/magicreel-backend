@@ -81,38 +81,45 @@ ${campaign.outputIntent}
 ${creative.luxuryMood}
  `.trim();
 
-// 🔥 IG PROMO OVERRIDE (MAIN UPGRADE)
+// 🔥 IG PROMO OVERRIDE (UPGRADED — CONTROLLED EXECUTION)
 if (input.creativeGoal === "instagram") {
 const systemPrompt = `
-You are an elite fashion campaign designer specializing in Instagram luxury posts.
+You are an elite fashion campaign designer specializing in premium Instagram fashion creatives.
 
-Your goal is to create highly realistic, premium, non-AI-looking Instagram fashion creatives.
+Your goal is to produce outputs indistinguishable from real luxury fashion brand posts.
 
 Avoid:
 
 * poster-like layouts
-* clutter
+* cluttered composition
 * influencer aesthetics
-* generic AI compositions
+* generic AI visuals
 
 Prioritize:
 
-* clean composition
 * strong visual hierarchy
-* realistic brand-level output
+* clean composition
+* cinematic realism
+* brand-level execution quality
   `.trim();
 
   const userPrompt = `
-  Create a premium Instagram fashion promotional post using the uploaded model image.
+  Create a premium Instagram fashion promotional post using the uploaded model image and logo.
+
+---
+
+FORMAT
+
+* Output must be a single 4:5 vertical image (Instagram-ready)
+* Do NOT create collage or multi-frame layout
 
 ---
 
 STRUCTURE
 
-* single strong subject
-* vertical 4:5 Instagram composition
-* strong focal hierarchy
-* clear negative space for text
+* one dominant subject (clear focal point)
+* strong hierarchy: subject > text > logo
+* preserve intentional negative space for typography
 
 ---
 
@@ -120,27 +127,44 @@ CREATIVE DIRECTION
 
 ${creative.cinematicTone}
 
-Lighting & mood must strictly follow this direction.
+Interpret this as a high-fashion editorial execution:
+
+* deep controlled shadows
+* subject highlighted using focused lighting
+* strong contrast with soft falloff
+* cinematic luxury mood
 
 ---
 
-COMPOSITION VARIATION
+COMPOSITION (STRICT)
 
-Randomly choose ONE layout:
+Choose ONE layout and fully commit:
 
-1. subject slightly left, text right
-2. subject slightly right, text left
-3. subject centered, text top
-4. subject centered, text bottom
+A. subject left → text right
+B. subject right → text left
+C. subject centered → text top
+D. subject centered → text bottom
+
+Rules:
+
+* do not mix layouts
+* maintain breathing space
+* composition must feel intentional, not random
 
 ---
 
-LIGHTING
+LIGHTING (STRICT)
 
 ${creative.lightingStyle}
 
-Enhance with:
+Enhance using:
 ${creative.lightingVariants.join(", ")}
+
+Rules:
+
+* lighting must sculpt subject and garment
+* background must remain darker than subject
+* avoid flat or evenly lit scenes
 
 ---
 
@@ -150,51 +174,64 @@ ${creative.stylingBehavior.join(", ")}
 
 ---
 
-TYPOGRAPHY
+TYPOGRAPHY (CRITICAL)
+
+Render REAL TEXT inside the image.
 
 Heading:
 "${input.heading || ""}"
 
-* elegant and clean
-* medium size
-* placed in negative space
-* do not overlap face or garment
+* elegant, modern typography
+* medium size (not oversized)
+* placed only in negative space
+* must NOT overlap face or key garment areas
 
 Subheading:
 "${input.subheading || ""}"
 
 * smaller than heading
 * aligned cleanly
+* visually connected to heading
 
----
+Rules:
 
-LOGO
-
-Use uploaded logo:
-
-* small size
-* corner placement
-* maintain proportions
-* do not distort
-* subtle premium branding
-
----
-
-NEGATIVE
-
-* no cheap poster
-* no clutter
 * no random placement
-* no over-editing
-* no AI-looking composition
+* no poster-style stacking
+* no cluttered typography
 
 ---
 
-OUTPUT
+LOGO (STRICT)
 
-* must look like real brand Instagram post
-* cinematic realism
-* clean premium layout
+Use the uploaded logo image:
+
+* place in a corner based on layout
+* small but sharp and readable
+* maintain exact proportions
+* do not stylize or distort
+* must feel like real brand placement
+
+---
+
+NEGATIVE FILTER
+
+Reject outputs that look like:
+
+* Canva posters
+* influencer edits
+* overdesigned graphics
+* generic AI compositions
+
+---
+
+FINAL GOAL
+
+The result must look like a real luxury fashion Instagram post:
+
+* editorial quality
+* realistic lighting
+* correct typography placement
+* premium visual balance
   `.trim();
 
   return {
