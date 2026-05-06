@@ -1,36 +1,45 @@
 import { CINEMATIC_CLUSTERS } from "../cinematicClusters";
 import { CreativeDirection } from "../socialPack.types";
 
-function detectBrandProfile(brandName?: string) {
-if (!brandName) return "neutral";
-
-const name = brandName.toLowerCase();
-
-if (
-name.includes("couture") ||
-name.includes("atelier") ||
-name.includes("royal") ||
-name.includes("heritage")
+function detectBrandProfile(
+brandName?: string,
+direction?: CreativeDirection,
+heading?: string,
+subheading?: string
 ) {
-return "heritage";
-}
+const text = `${brandName || ""} ${heading || ""} ${subheading || ""}`.toLowerCase();
+
+// 🔥 STRONG SIGNALS
 
 if (
-name.includes("studio") ||
-name.includes("collective") ||
-name.includes("lab") ||
-name.includes("minimal")
+text.includes("minimal") ||
+text.includes("clean") ||
+text.includes("essential") ||
+direction === "Minimal Fashion"
 ) {
 return "minimal";
 }
 
 if (
-name.includes("street") ||
-name.includes("urban") ||
-name.includes("club") ||
-name.includes("culture")
+text.includes("street") ||
+text.includes("urban") ||
+text.includes("club") ||
+text.includes("culture") ||
+text.includes("drop") ||
+direction === "Streetwear"
 ) {
 return "street";
+}
+
+if (
+text.includes("couture") ||
+text.includes("atelier") ||
+text.includes("royal") ||
+text.includes("heritage") ||
+text.includes("bridal") ||
+direction === "Festive Couture"
+) {
+return "heritage";
 }
 
 return "modern";
@@ -38,30 +47,38 @@ return "modern";
 
 export function selectCluster(
 direction: CreativeDirection,
-brandName?: string
+brandName?: string,
+heading?: string,
+subheading?: string
 ) {
-const brandProfile = detectBrandProfile(brandName);
+const profile = detectBrandProfile(
+brandName,
+direction,
+heading,
+subheading
+);
 
-// 🔥 HARD BRAND OVERRIDE
-if (brandProfile === "minimal") {
+// 🔥 HARD CONTROL
+
+if (profile === "minimal") {
 return CINEMATIC_CLUSTERS.find(
 (c) => c.name === "Minimal Luxury"
 )!;
 }
 
-if (brandProfile === "street") {
+if (profile === "street") {
 return CINEMATIC_CLUSTERS.find(
 (c) => c.name === "Urban Cinematic"
 )!;
 }
 
-if (brandProfile === "heritage") {
+if (profile === "heritage") {
 return CINEMATIC_CLUSTERS.find(
 (c) => c.name === "Editorial Architectural"
 )!;
 }
 
-// 🔁 fallback to direction-based logic
+// fallback
 const directionMap: Record<CreativeDirection, string[]> = {
 "High Fashion": ["Runway Dramatic", "Editorial Architectural"],
 "Luxury Editorial": ["Editorial Architectural", "Minimal Luxury"],

@@ -7,9 +7,17 @@ import { selectCluster } from "./utils/selectCluster";
 
 export function resolveCreativeDirection(
   direction: CreativeDirection,
-  brandName?: string
+  brandName?: string,
+  heading?: string,
+  subheading?: string
+
 ): ResolvedCreativeDirection {
-const cluster = selectCluster(direction, brandName);
+const cluster = selectCluster(
+  direction,
+  brandName,
+  heading,
+  subheading
+);
 
 switch (direction) {
 case "Luxury Editorial":
