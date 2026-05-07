@@ -1,39 +1,101 @@
 import { Request, Response } from "express";
+import { generateSocialPackExecutor } from "../../magicreel/fashion-intelligence/social-pack/socialPackExecutor";
 
-import {
-  buildSocialPackPrompt,
-} from "../../magicreel/fashion-intelligence/social-pack/socialPackPromptBuilder";
+/* =========================================================
+   TEMP BILLING
+========================================================= */
 
-import {
-  SocialPackPayload,
-} from "./socialPack.types";
+async function getUserCredits(userId: string) {
+  return 100;
+}
+
+async function deductCredits(
+  userId: string,
+  amount: number
+) {
+  console.log(
+    `Deducting ${amount} credits from ${userId}`
+  );
+}
+
+/* =========================================================
+   CONTROLLER
+========================================================= */
 
 export async function generateSocialPack(
   req: Request,
   res: Response
 ) {
   try {
-    const payload =
-      req.body as SocialPackPayload;
+    const { outputs, inputs } = req.body;
 
-    const orchestration =
-      buildSocialPackPrompt(
-        payload
+    const userId = "test-user";
+
+    /* ================= VALIDATION ================= */
+
+    if (
+      !outputs ||
+      !Array.isArray(outputs) ||
+      outputs.length === 0
+    ) {
+      return res.status(400).json({
+        success: false,
+        error: "No outputs selected",
+      });
+    }
+
+    /* ================= CREDIT CHECK ================= */
+
+    const credits =
+      await getUserCredits(userId);
+
+    if (credits < outputs.length) {
+      return res.status(400).json({
+        success: false,
+        error: "Not enough credits",
+      });
+    }
+
+    /* ================= GENERATION ================= */
+
+    const {
+      results,
+      successCount,
+    } =
+      await generateSocialPackExecutor({
+        outputs,
+        inputs,
+      });
+
+    /* ================= BILLING ================= */
+
+    if (successCount > 0) {
+      await deductCredits(
+        userId,
+        successCount
       );
+    }
+
+    /* ================= RESPONSE ================= */
 
     return res.json({
       success: true,
-
-      orchestration,
+      results,
     });
-  } catch (error) {
-    console.error(error);
+
+  } catch (err: any) {
+
+    console.error(
+      "SOCIAL PACK ERROR:",
+      err
+    );
 
     return res.status(500).json({
       success: false,
-
       error:
-        "Failed to generate social pack orchestration",
+        err?.message ||
+        "Unknown error",
+      stack: err?.stack,
     });
   }
 }
