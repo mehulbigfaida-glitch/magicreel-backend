@@ -62,7 +62,8 @@ export async function generateGeminiCampaignImage(args: {
 }): Promise<string> {
 
   // 🔥 ESM SAFE IMPORT
-  const genaiModule = await import("@google/genai");
+  const genaiModule =
+    await import("@google/genai");
 
   const GoogleGenAI =
     genaiModule.GoogleGenAI;
@@ -80,67 +81,152 @@ export async function generateGeminiCampaignImage(args: {
       args.heroImageUrl
     );
 
-  const response =
-    await ai.models.generateContent({
-      model: "gemini-2.5-flash-image",
+  const MAX_RETRIES = 5;
 
-      contents: [
-        {
-          role: "user",
-          parts: [
+  const retryDelays = [
+  10000, // 10s
+  20000, // 20s
+  30000, // 30s
+  45000, // 45s
+];
+
+  for (
+    let attempt = 1;
+    attempt <= MAX_RETRIES;
+    attempt++
+  ) {
+
+    try {
+
+      console.log(
+        `🔥 GEMINI ATTEMPT ${attempt}/${MAX_RETRIES}`
+      );
+
+      const response =
+        await ai.models.generateContent({
+
+          model:
+            "gemini-2.5-flash-image",
+
+          contents: [
             {
-              inlineData: {
-                mimeType:
-                  heroImage.mimeType,
-                data:
-                  heroImage.data,
-              },
-            },
-            {
-              text: args.prompt,
+              role: "user",
+
+              parts: [
+                {
+                  inlineData: {
+                    mimeType:
+                      heroImage.mimeType,
+
+                    data:
+                      heroImage.data,
+                  },
+                },
+
+                {
+                  text:
+                    args.prompt,
+                },
+              ],
             },
           ],
-        },
-      ],
 
-      config: {
-        responseModalities: [
-          Modality.IMAGE,
-          Modality.TEXT,
-        ],
-      },
-    });
+          config: {
+            responseModalities: [
+              Modality.IMAGE,
+              Modality.TEXT,
+            ],
+          },
+        });
 
-  const candidates =
-    response.candidates || [];
+      const candidates =
+        response.candidates || [];
 
-  for (const candidate of candidates) {
+      for (const candidate of candidates) {
 
-    const parts =
-      candidate.content?.parts || [];
+        const parts =
+          candidate.content?.parts || [];
 
-    for (const part of parts) {
+        for (const part of parts) {
 
-      const inlineData =
-        (part as any).inlineData;
+          const inlineData =
+            (part as any).inlineData;
+
+          if (
+            inlineData &&
+            typeof inlineData.data ===
+              "string"
+          ) {
+
+            console.log(
+              "✅ GEMINI IMAGE GENERATED"
+            );
+
+            const uploadedUrl =
+              await uploadBase64ToCloudinary(
+                inlineData.data
+              );
+
+            return uploadedUrl;
+          }
+        }
+      }
+
+      throw new Error(
+        "Gemini did not return image output"
+      );
+
+    } catch (err: any) {
+
+      const errorMessage =
+        typeof err?.message === "string"
+          ? err.message
+          : JSON.stringify(err);
+
+      console.error(
+        `❌ GEMINI ATTEMPT FAILED (${attempt})`,
+        errorMessage
+      );
+
+      const isRetryable =
+        errorMessage.includes("503") ||
+        errorMessage.includes("429") ||
+        errorMessage.includes("UNAVAILABLE");
 
       if (
-        inlineData &&
-        typeof inlineData.data ===
-          "string"
+        !isRetryable ||
+        attempt === MAX_RETRIES
       ) {
 
-        const uploadedUrl =
-          await uploadBase64ToCloudinary(
-            inlineData.data
-          );
-
-        return uploadedUrl;
+        throw new Error(
+          errorMessage
+        );
       }
+
+      
+
+const delay =
+  retryDelays[
+    Math.min(
+      attempt - 1,
+      retryDelays.length - 1
+    )
+  ];
+
+console.log(
+  `⏳ RETRYING GEMINI IN ${
+    delay / 1000
+  }s`
+);
+
+      await new Promise(
+        (resolve) =>
+          setTimeout(resolve, delay)
+      );
     }
   }
 
   throw new Error(
-    "Gemini did not return image output"
+    "Gemini generation failed"
   );
 }
