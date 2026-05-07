@@ -286,7 +286,10 @@ Rules:
 * maintain realistic luxury-brand behavior
 * avoid oversized placement
 * avoid floating logo behavior
-
+* logo must remain visually small and refined
+* logo should occupy minimal visual attention
+* branding should feel restrained and premium
+* prioritize editorial realism over logo prominence
 ---
 
 NEGATIVE
