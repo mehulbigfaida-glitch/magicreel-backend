@@ -178,19 +178,29 @@ Interpret this as:
 
 COMPOSITION
 
-* avoid perfect symmetry
-* avoid catalog-style posing
-* avoid stiff centered framing
+The composition must feel intentionally art-directed like a luxury fashion campaign.
+
+Avoid:
+
+* centered catalog symmetry
+* static showroom framing
+* safe ecommerce balance
+* flat visual hierarchy
 
 Use:
 
-* asymmetrical editorial balance
+* cinematic asymmetry
+* directional composition flow
+* layered visual depth
 * intentional negative space
-* layered depth
-* natural luxury composition
-* magazine-style framing
+* premium editorial balance
+* subtle visual tension
 
-The subject should feel naturally positioned within the frame, not mechanically centered.
+The image should feel captured during a real luxury campaign photoshoot — not arranged for product display.
+
+Architecture and environment must support the fashion subject rather than dominate it.
+
+The overall framing should feel visually confident, restrained, and cinematic.
 
 ---
 
