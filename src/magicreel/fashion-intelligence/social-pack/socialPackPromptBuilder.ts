@@ -117,9 +117,23 @@ FORMAT
 
 STRUCTURE
 
-* one dominant subject (clear focal point)
-* strong hierarchy: subject > text > logo
-* preserve intentional negative space for typography
+* one dominant fashion subject with editorial presence
+* subject must NOT feel like ecommerce catalog photography
+* composition must feel directed by a luxury fashion creative director
+* preserve cinematic negative space for typography
+* maintain intentional asymmetry and visual balance
+* create depth using foreground/background separation
+* framing must resemble luxury fashion campaign photography
+* avoid static centered balance unless artistically justified
+* composition should feel premium, restrained, and expensive
+
+Use cinematic editorial framing techniques:
+
+* off-center subject placement
+* layered spatial depth
+* controlled empty space
+* luxury visual breathing room
+* magazine-style composition hierarchy
 
 ---
 
@@ -138,18 +152,22 @@ Interpret this as a high-fashion editorial execution:
 
 COMPOSITION (STRICT)
 
-Choose ONE layout and fully commit:
+Choose ONE luxury editorial composition approach:
 
-A. subject left → text right
-B. subject right → text left
-C. subject centered → text top
-D. subject centered → text bottom
+A. cinematic left-weighted composition
+B. cinematic right-weighted composition
+C. architectural centered composition
+D. negative-space dominant editorial framing
 
 Rules:
 
-* do not mix layouts
-* maintain breathing space
-* composition must feel intentional, not random
+* composition must feel intentional and art-directed
+* avoid ecommerce symmetry
+* preserve typography-safe regions
+* allow cinematic breathing room
+* create visual depth between subject and environment
+* subject should not always occupy full frame height
+* framing should resemble premium fashion magazine campaigns
 
 ---
 
@@ -226,12 +244,27 @@ Reject outputs that look like:
 
 FINAL GOAL
 
-The result must look like a real luxury fashion Instagram post:
+The final output must resemble a real luxury fashion campaign produced by a world-class creative agency.
 
-* editorial quality
-* realistic lighting
-* correct typography placement
-* premium visual balance
+The image should feel:
+
+* cinematic
+* editorial
+* expensive
+* visually restrained
+* fashion-forward
+* magazine-worthy
+* luxury-brand authentic
+
+The result must NOT resemble:
+
+* ecommerce photography
+* influencer edits
+* AI-generated posters
+* Canva-style social graphics
+* generic fashion ads
+
+The viewer should immediately believe this belongs to a premium luxury fashion brand campaign.
   `.trim();
 
   return {
