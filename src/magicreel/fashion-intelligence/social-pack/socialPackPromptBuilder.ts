@@ -196,16 +196,27 @@ The subject should feel naturally positioned within the frame, not mechanically 
 
 POSE & CAMERA LANGUAGE
 
-* confident editorial posture
-* cinematic body language
-* subtle attitude and movement
-* natural fashion-model energy
+The model should feel like a real luxury fashion campaign subject — not a catalog model.
+
+Use:
+
+* subtle editorial attitude
+* natural asymmetry in posture
+* relaxed but intentional body positioning
+* believable fashion-model confidence
+* slight movement energy or cinematic stillness
+* elegant hand behavior
+* nuanced facial expression
 
 Avoid:
 
-* flat ecommerce stance
-* mannequin posing
 * stiff front-facing posture
+* symmetrical standing poses
+* mannequin-like presentation
+* catalog energy
+* influencer-style posing
+
+The pose should feel naturally captured during a premium editorial photoshoot rather than deliberately displayed for ecommerce.
 
 Use a fashion-photography crop:
 * strong subject presence
