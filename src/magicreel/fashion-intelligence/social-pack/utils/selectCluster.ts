@@ -87,10 +87,14 @@ const directionMap: Record<CreativeDirection, string[]> = {
 "Festive Couture": ["Runway Dramatic", "Editorial Architectural"],
 };
 
-const allowed = directionMap[direction];
+const allowed =
+  directionMap[direction] ||
+  directionMap["Luxury Editorial"];
 
-const filtered = CINEMATIC_CLUSTERS.filter((c) =>
-allowed.includes(c.name)
+const filtered = CINEMATIC_CLUSTERS.filter(
+  (c) =>
+    Array.isArray(allowed) &&
+    allowed.includes(c.name)
 );
 
 const index = Math.floor(Math.random() * filtered.length);
