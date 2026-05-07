@@ -10,8 +10,13 @@ async function getUserCredits(userId: string) {
   return 100;
 }
 
-async function deductCredits(userId: string, amount: number) {
-  console.log(`Deducting ${amount} credits from ${userId}`);
+async function deductCredits(
+  userId: string,
+  amount: number
+) {
+  console.log(
+    `Deducting ${amount} credits from ${userId}`
+  );
 }
 
 /* =========================================================
@@ -25,27 +30,39 @@ export default async function handler(
   try {
     const { outputs, inputs } = req.body;
 
-    const userId = "test-user"; // safe fallback (no req.user dependency)
+    const userId = "test-user";
 
-    if (!outputs || outputs.length === 0) {
+    /* ================= VALIDATION ================= */
+
+    if (
+      !outputs ||
+      !Array.isArray(outputs) ||
+      outputs.length === 0
+    ) {
       return res.status(400).json({
+        success: false,
         error: "No outputs selected",
       });
     }
 
     /* ================= CREDIT CHECK ================= */
 
-    const credits = await getUserCredits(userId);
+    const credits =
+      await getUserCredits(userId);
 
     if (credits < outputs.length) {
       return res.status(400).json({
+        success: false,
         error: "Not enough credits",
       });
     }
 
     /* ================= GENERATION ================= */
 
-    const { results, successCount } =
+    const {
+      results,
+      successCount,
+    } =
       await generateSocialPackExecutor({
         outputs,
         inputs,
@@ -54,19 +71,32 @@ export default async function handler(
     /* ================= CREDIT DEDUCTION ================= */
 
     if (successCount > 0) {
-      await deductCredits(userId, successCount);
+      await deductCredits(
+        userId,
+        successCount
+      );
     }
 
     /* ================= RESPONSE ================= */
 
-    return res.json(results);
-  } catch (err: any) {
-  console.error("SOCIAL PACK ERROR:", err);
+    return res.json({
+      success: true,
+      results,
+    });
 
-  return res.status(500).json({
-    success: false,
-    error: err?.message || "Unknown error",
-    stack: err?.stack,
-  });
-}
+  } catch (err: any) {
+
+    console.error(
+      "SOCIAL PACK ERROR:",
+      err
+    );
+
+    return res.status(500).json({
+      success: false,
+      error:
+        err?.message ||
+        "Unknown error",
+      stack: err?.stack,
+    });
+  }
 }
