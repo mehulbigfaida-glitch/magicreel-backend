@@ -242,6 +242,20 @@ Reject outputs that look like:
 
 ---
 
+LOGO RULES
+
+* use the uploaded logo asset exactly as provided
+* do NOT redesign the logo
+* do NOT generate substitute luxury brand marks
+* do NOT hallucinate typography-based logos
+* preserve logo fidelity and recognizability
+* place logo subtly and professionally
+* logo should feel naturally integrated into the campaign
+* maintain luxury-brand presentation quality
+* avoid oversized logo placement
+* logo must not dominate the composition
+
+
 FINAL GOAL
 
 The final output must resemble a real luxury fashion campaign produced by a world-class creative agency.
