@@ -38,19 +38,23 @@ export async function generateSocialPackExecutor({
 
         /* ================= EXTRACT PROMPT ================= */
 
-        const prompt =
-          (payload as any)?.prompt ||
-          (payload as any)?.finalPrompt ||
-          (payload as any)?.text;
+        const systemPrompt =
+  (payload as any)?.systemPrompt || "";
 
-        if (
-          !prompt ||
-          typeof prompt !== "string"
-        ) {
-          throw new Error(
-            "Invalid prompt generated"
-          );
-        }
+const userPrompt =
+  (payload as any)?.userPrompt || "";
+
+const prompt = `
+${systemPrompt}
+
+${userPrompt}
+`.trim();
+
+if (!prompt) {
+  throw new Error(
+    "Invalid prompt generated"
+  );
+}
 
         console.log(
           "SOCIAL PROMPT:",
