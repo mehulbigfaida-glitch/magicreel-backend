@@ -2,9 +2,17 @@ import axios from "axios";
 import { v2 as cloudinary } from "cloudinary";
 
 cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME as string,
-  api_key: process.env.CLOUDINARY_API_KEY as string,
-  api_secret: process.env.CLOUDINARY_API_SECRET as string,
+  cloud_name:
+    process.env
+      .CLOUDINARY_CLOUD_NAME as string,
+
+  api_key:
+    process.env
+      .CLOUDINARY_API_KEY as string,
+
+  api_secret:
+    process.env
+      .CLOUDINARY_API_SECRET as string,
 });
 
 type Base64Image = {
@@ -15,20 +23,25 @@ type Base64Image = {
 async function imageUrlToBase64(
   imageUrl: string
 ): Promise<Base64Image> {
-  const response = await axios.get<ArrayBuffer>(
-    imageUrl,
-    {
-      responseType: "arraybuffer",
-    }
-  );
+
+  const response =
+    await axios.get<ArrayBuffer>(
+      imageUrl,
+      {
+        responseType:
+          "arraybuffer",
+      }
+    );
 
   const mimeType =
-    response.headers["content-type"] ||
-    "image/png";
+    response.headers[
+      "content-type"
+    ] || "image/png";
 
-  const base64 = Buffer.from(
-    response.data
-  ).toString("base64");
+  const base64 =
+    Buffer.from(
+      response.data
+    ).toString("base64");
 
   return {
     mimeType,
@@ -39,15 +52,21 @@ async function imageUrlToBase64(
 async function uploadBase64ToCloudinary(
   base64: string
 ): Promise<string> {
-  const result = await cloudinary.uploader.upload(
-    `data:image/png;base64,${base64}`,
-    {
-      folder: "magicreel/social-pack",
-      resource_type: "image",
-    }
-  );
+
+  const result =
+    await cloudinary.uploader.upload(
+      `data:image/png;base64,${base64}`,
+      {
+        folder:
+          "magicreel/social-pack",
+
+        resource_type:
+          "image",
+      }
+    );
 
   if (!result.secure_url) {
+
     throw new Error(
       "Cloudinary upload failed"
     );
@@ -56,10 +75,13 @@ async function uploadBase64ToCloudinary(
   return result.secure_url;
 }
 
-export async function generateGeminiCampaignImage(args: {
-  heroImageUrl: string;
-  prompt: string;
-}): Promise<string> {
+export async function generateGeminiCampaignImage(
+  args: {
+    heroImageUrl: string;
+    logoImageUrl?: string;
+    prompt: string;
+  }
+): Promise<string> {
 
   // 🔥 ESM SAFE IMPORT
   const genaiModule =
@@ -71,24 +93,45 @@ export async function generateGeminiCampaignImage(args: {
   const Modality =
     genaiModule.Modality;
 
-  const ai = new GoogleGenAI({
-    apiKey:
-      process.env.GEMINI_API_KEY as string,
-  });
+  const ai =
+    new GoogleGenAI({
+      apiKey:
+        process.env
+          .GEMINI_API_KEY as string,
+    });
+
+  /* =========================================
+     HERO IMAGE
+  ========================================= */
 
   const heroImage =
     await imageUrlToBase64(
       args.heroImageUrl
     );
 
+  /* =========================================
+     OPTIONAL LOGO IMAGE
+  ========================================= */
+
+  const logoImage =
+    args.logoImageUrl
+      ? await imageUrlToBase64(
+          args.logoImageUrl
+        )
+      : null;
+
+  /* =========================================
+     RETRIES
+  ========================================= */
+
   const MAX_RETRIES = 5;
 
   const retryDelays = [
-  10000, // 10s
-  20000, // 20s
-  30000, // 30s
-  45000, // 45s
-];
+    10000, // 10s
+    20000, // 20s
+    30000, // 30s
+    45000, // 45s
+  ];
 
   for (
     let attempt = 1;
@@ -113,6 +156,9 @@ export async function generateGeminiCampaignImage(args: {
               role: "user",
 
               parts: [
+
+                /* ================= HERO IMAGE ================= */
+
                 {
                   inlineData: {
                     mimeType:
@@ -122,6 +168,24 @@ export async function generateGeminiCampaignImage(args: {
                       heroImage.data,
                   },
                 },
+
+                /* ================= LOGO IMAGE ================= */
+
+                ...(logoImage
+                  ? [
+                      {
+                        inlineData: {
+                          mimeType:
+                            logoImage.mimeType,
+
+                          data:
+                            logoImage.data,
+                        },
+                      },
+                    ]
+                  : []),
+
+                /* ================= PROMPT ================= */
 
                 {
                   text:
@@ -150,7 +214,8 @@ export async function generateGeminiCampaignImage(args: {
         for (const part of parts) {
 
           const inlineData =
-            (part as any).inlineData;
+            (part as any)
+              .inlineData;
 
           if (
             inlineData &&
@@ -179,7 +244,8 @@ export async function generateGeminiCampaignImage(args: {
     } catch (err: any) {
 
       const errorMessage =
-        typeof err?.message === "string"
+        typeof err?.message ===
+        "string"
           ? err.message
           : JSON.stringify(err);
 
@@ -189,9 +255,15 @@ export async function generateGeminiCampaignImage(args: {
       );
 
       const isRetryable =
-        errorMessage.includes("503") ||
-        errorMessage.includes("429") ||
-        errorMessage.includes("UNAVAILABLE");
+        errorMessage.includes(
+          "503"
+        ) ||
+        errorMessage.includes(
+          "429"
+        ) ||
+        errorMessage.includes(
+          "UNAVAILABLE"
+        );
 
       if (
         !isRetryable ||
@@ -203,25 +275,26 @@ export async function generateGeminiCampaignImage(args: {
         );
       }
 
-      
+      const delay =
+        retryDelays[
+          Math.min(
+            attempt - 1,
+            retryDelays.length - 1
+          )
+        ];
 
-const delay =
-  retryDelays[
-    Math.min(
-      attempt - 1,
-      retryDelays.length - 1
-    )
-  ];
-
-console.log(
-  `⏳ RETRYING GEMINI IN ${
-    delay / 1000
-  }s`
-);
+      console.log(
+        `⏳ RETRYING GEMINI IN ${
+          delay / 1000
+        }s`
+      );
 
       await new Promise(
         (resolve) =>
-          setTimeout(resolve, delay)
+          setTimeout(
+            resolve,
+            delay
+          )
       );
     }
   }

@@ -59,11 +59,16 @@ ${userPrompt}
         );
 
         const imageUrl =
-          await generateGeminiCampaignImage({
-            heroImageUrl:
-              inputs.heroImage,
-            prompt,
-          });
+  await generateGeminiCampaignImage({
+
+    heroImageUrl:
+      inputs.heroImage,
+
+    logoImageUrl:
+      inputs.logo,
+
+    prompt,
+  });
 
         results[goal] = imageUrl;
 
