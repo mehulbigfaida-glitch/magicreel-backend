@@ -104,36 +104,42 @@ Prioritize:
   `.trim();
 
   const userPrompt = `
-  Create a premium Instagram fashion promotional post using the uploaded model image and logo.
+Create a high-end fashion campaign photograph using the uploaded model image and logo.
+
+The result must feel like a real luxury brand photoshoot — not a designed poster.
 
 ---
 
-FORMAT
+CREATIVE INTENT
 
-* Output must be a single 4:5 vertical image (Instagram-ready)
-* Do NOT create collage or multi-frame layout
+Produce a cinematic fashion image that feels photographed first and designed second.
+
+The image should resemble a premium luxury campaign shot for a fashion magazine or global brand launch.
 
 ---
 
-STRUCTURE
+FORMAT (CRITICAL)
 
-* one dominant fashion subject with editorial presence
-* subject must NOT feel like ecommerce catalog photography
-* composition must feel directed by a luxury fashion creative director
-* preserve cinematic negative space for typography
-* maintain intentional asymmetry and visual balance
-* create depth using foreground/background separation
-* framing must resemble luxury fashion campaign photography
-* avoid static centered balance unless artistically justified
-* composition should feel premium, restrained, and expensive
+* final output must be vertical
+* preferred aspect ratio: 4:5
+* avoid landscape layouts
+* avoid banner-style framing
 
-Use cinematic editorial framing techniques:
+---
 
-* off-center subject placement
-* layered spatial depth
-* controlled empty space
-* luxury visual breathing room
-* magazine-style composition hierarchy
+SUBJECT PRESERVATION (CRITICAL)
+
+Strictly preserve:
+
+* facial identity
+* skin tone
+* garment design
+* embroidery
+* textures
+* styling details
+* silhouette and drape
+
+Do not redesign or alter the outfit.
 
 ---
 
@@ -141,37 +147,55 @@ CREATIVE DIRECTION
 
 ${creative.cinematicTone}
 
-Interpret this as a high-fashion editorial execution:
+Interpret this as:
 
-* deep controlled shadows
-* subject highlighted using focused lighting
-* strong contrast with soft falloff
-* cinematic luxury mood
-
----
-
-COMPOSITION (STRICT)
-
-Choose ONE luxury editorial composition approach:
-
-A. cinematic left-weighted composition
-B. cinematic right-weighted composition
-C. architectural centered composition
-D. negative-space dominant editorial framing
-
-Rules:
-
-* composition must feel intentional and art-directed
-* avoid ecommerce symmetry
-* preserve typography-safe regions
-* allow cinematic breathing room
-* create visual depth between subject and environment
-* subject should not always occupy full frame height
-* framing should resemble premium fashion magazine campaigns
+* cinematic editorial photography
+* premium luxury atmosphere
+* photographic realism
+* natural visual depth
+* refined fashion storytelling
 
 ---
 
-LIGHTING (STRICT)
+COMPOSITION
+
+* avoid perfect symmetry
+* avoid catalog-style posing
+* avoid stiff centered framing
+
+Use:
+
+* asymmetrical editorial balance
+* intentional negative space
+* layered depth
+* natural luxury composition
+* magazine-style framing
+
+The subject should feel naturally positioned within the frame, not mechanically centered.
+
+---
+
+POSE & CAMERA LANGUAGE
+
+* confident editorial posture
+* cinematic body language
+* subtle attitude and movement
+* natural fashion-model energy
+
+Avoid:
+
+* flat ecommerce stance
+* mannequin posing
+* stiff front-facing posture
+
+Use a fashion-photography crop:
+* strong subject presence
+* premium framing
+* believable perspective
+
+---
+
+LIGHTING
 
 ${creative.lightingStyle}
 
@@ -180,106 +204,105 @@ ${creative.lightingVariants.join(", ")}
 
 Rules:
 
-* lighting must sculpt subject and garment
-* background must remain darker than subject
-* avoid flat or evenly lit scenes
+* lighting must sculpt face and garment
+* maintain soft shadow falloff
+* background should remain moodier than subject
+* preserve dimensionality and realism
+* avoid flat lighting
 
 ---
 
-STYLING
+BACKGROUND & ENVIRONMENT
 
-${creative.stylingBehavior.join(", ")}
+${buildBackgroundDirection(input).join("\n") || `
+Use a refined luxury environment with cinematic realism and premium depth.
+`}
+
+Environment should feel:
+
+* expensive
+* atmospheric
+* fashion-editorial
+* cohesive with the garment mood
+
+Avoid:
+* flat gradients
+* artificial studio emptiness
+* graphic-style backdrops
 
 ---
 
-TYPOGRAPHY (CRITICAL)
+TYPOGRAPHY
 
-Render REAL TEXT inside the image.
+If typography is included:
 
 Heading:
 "${input.heading || ""}"
 
-* elegant, modern typography
-* medium size (not oversized)
-* placed only in negative space
-* must NOT overlap face or key garment areas
-
 Subheading:
 "${input.subheading || ""}"
 
-* smaller than heading
-* aligned cleanly
-* visually connected to heading
+Rules:
+
+* typography must feel naturally integrated
+* refined and minimal
+* never oversized
+* never poster-like
+* preserve luxury restraint
+* avoid clutter
+* do not overlap face or garment details
+
+---
+
+LOGO
+
+Use the uploaded logo image.
 
 Rules:
 
-* no random placement
-* no poster-style stacking
-* no cluttered typography
+* preserve original proportions and clarity
+* do not redesign or stylize the logo
+* integrate subtly into the composition
+* logo should feel naturally placed
+* maintain realistic luxury-brand behavior
+* avoid oversized placement
+* avoid floating logo behavior
 
 ---
 
-LOGO (STRICT)
+NEGATIVE
 
-Use the uploaded logo image:
+Avoid:
 
-* place in a corner based on layout
-* small but sharp and readable
-* maintain exact proportions
-* do not stylize or distort
-* must feel like real brand placement
-
----
-
-NEGATIVE FILTER
-
-Reject outputs that look like:
-
-* Canva posters
+* poster-style layouts
+* Canva aesthetics
 * influencer edits
-* overdesigned graphics
-* generic AI compositions
+* excessive graphic design
+* over-stylized AI imagery
+* plastic skin
+* distorted anatomy
+* cluttered composition
+* fake luxury branding
+* artificial text effects
 
 ---
-
-LOGO RULES
-
-* use the uploaded logo asset exactly as provided
-* do NOT redesign the logo
-* do NOT generate substitute luxury brand marks
-* do NOT hallucinate typography-based logos
-* preserve logo fidelity and recognizability
-* place logo subtly and professionally
-* logo should feel naturally integrated into the campaign
-* maintain luxury-brand presentation quality
-* avoid oversized logo placement
-* logo must not dominate the composition
-
 
 FINAL GOAL
 
-The final output must resemble a real luxury fashion campaign produced by a world-class creative agency.
+The output must feel indistinguishable from a real luxury fashion campaign image.
 
-The image should feel:
+It should feel:
 
 * cinematic
 * editorial
 * expensive
-* visually restrained
-* fashion-forward
-* magazine-worthy
-* luxury-brand authentic
+* restrained
+* photographic
+* premium
+* fashion-magazine worthy
 
-The result must NOT resemble:
-
-* ecommerce photography
-* influencer edits
-* AI-generated posters
-* Canva-style social graphics
-* generic fashion ads
-
-The viewer should immediately believe this belongs to a premium luxury fashion brand campaign.
-  `.trim();
+The viewer should believe this was art-directed and photographed by a real luxury fashion campaign team.
+`.trim();
 
   return {
   systemPrompt,
