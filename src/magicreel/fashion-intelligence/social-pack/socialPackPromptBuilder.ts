@@ -274,23 +274,35 @@ Avoid:
 
 TYPOGRAPHY
 
-If typography is included:
+If typography is included, it must behave like real luxury fashion campaign typography — not graphic overlay text.
 
-Heading:
-"${input.heading || ""}"
+Typography should feel:
 
-Subheading:
-"${input.subheading || ""}"
+* editorial
+* restrained
+* compositionally integrated
+* naturally placed within the scene
+* visually balanced with the subject and environment
 
-Rules:
+Avoid:
 
-* typography must feel naturally integrated
-* refined and minimal
-* never oversized
-* never poster-like
-* preserve luxury restraint
-* avoid clutter
-* do not overlap face or garment details
+* template-like top corner placement
+* perfectly centered text blocks
+* oversized promotional typography
+* graphic-design poster energy
+* disconnected overlay behavior
+
+Use:
+
+* elegant negative-space integration
+* subtle asymmetry
+* premium spacing rhythm
+* refined fashion-magazine hierarchy
+* natural alignment with architecture or composition flow
+
+Typography must support the image rather than dominate it.
+
+The viewer should feel the typography belongs to the photographed campaign itself rather than being digitally pasted afterward.
 
 ---
 
