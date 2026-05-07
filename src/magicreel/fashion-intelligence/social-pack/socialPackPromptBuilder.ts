@@ -118,12 +118,31 @@ The image should resemble a premium luxury campaign shot for a fashion magazine 
 
 ---
 
-FORMAT (CRITICAL)
+FORMAT (STRICT REQUIREMENT)
 
-* final output must be vertical
-* preferred aspect ratio: 4:5
-* avoid landscape layouts
-* avoid banner-style framing
+The final output MUST be vertical portrait orientation.
+
+Allowed:
+* 4:5 vertical
+* 2:3 vertical
+
+Forbidden:
+* landscape layouts
+* widescreen compositions
+* cinematic horizontal framing
+* banner-style layouts
+
+The composition must prioritize vertical fashion-photography hierarchy.
+
+The model must occupy strong visual presence within the frame.
+
+Avoid:
+* distant subject placement
+* excessive empty architecture
+* tiny subject scale
+* environment dominating over fashion subject
+
+The fashion subject should visually anchor the composition.
 
 ---
 
