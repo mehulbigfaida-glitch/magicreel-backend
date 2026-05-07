@@ -300,9 +300,21 @@ Use:
 * refined fashion-magazine hierarchy
 * natural alignment with architecture or composition flow
 
-Typography must support the image rather than dominate it.
+Typography content must strictly preserve the provided heading and subheading.
 
-The viewer should feel the typography belongs to the photographed campaign itself rather than being digitally pasted afterward.
+Do not rewrite, invent, paraphrase, or replace campaign text.
+
+Use exactly:
+
+Heading:
+"${input.heading || "SUMMER COLLECTION 2026"}"
+
+Subheading:
+"${input.subheading || "Ethnic Attire"}"
+
+Typography must remain subtle, luxurious, and compositionally integrated into the scene.
+
+The viewer should feel the typography belongs naturally within the photographed campaign rather than being digitally pasted afterward.
 
 ---
 
