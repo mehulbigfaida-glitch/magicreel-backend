@@ -1,5 +1,5 @@
 import { buildSocialPackPrompt } from "./socialPackPromptBuilder";
-import { retryGenerate } from "./retry";
+import { generateGeminiCampaignImage } from "../../../magicreel/services/geminiImage.service";
 
 type Args = {
   outputs: string[];
@@ -12,6 +12,7 @@ export async function generateSocialPackExecutor({
 }: Args) {
 
   const results: Record<string, any> = {};
+
   let successCount = 0;
 
   await Promise.all(
@@ -19,8 +20,6 @@ export async function generateSocialPackExecutor({
     outputs.map(async (goal) => {
 
       try {
-
-        /* ================= PROMPT BUILD ================= */
 
         const normalizedCreativeDirection =
           typeof inputs.creativeDirection ===
@@ -36,45 +35,35 @@ export async function generateSocialPackExecutor({
             creativeGoal: goal,
           });
 
-        /* ================= EXTRACT PROMPT ================= */
-
         const systemPrompt =
-  (payload as any)?.systemPrompt || "";
+          (payload as any)?.systemPrompt || "";
 
-const userPrompt =
-  (payload as any)?.userPrompt || "";
+        const userPrompt =
+          (payload as any)?.userPrompt || "";
 
-const prompt = `
+        const prompt = `
 ${systemPrompt}
 
 ${userPrompt}
-`.trim();
+        `.trim();
 
-if (!prompt) {
-  throw new Error(
-    "Invalid prompt generated"
-  );
-}
+        if (!prompt) {
+          throw new Error(
+            "Invalid prompt generated"
+          );
+        }
 
         console.log(
-          "SOCIAL PROMPT:",
+          "SOCIAL PACK PROMPT:",
           prompt
         );
 
-        /* ================= GENERATION ================= */
-
         const imageUrl =
-          await retryGenerate(prompt, {
-
-            // TEMP mapping
-            garmentImageUrl:
+          await generateGeminiCampaignImage({
+            heroImageUrl:
               inputs.heroImage,
-
-            modelImageUrl:
-              inputs.heroImage,
+            prompt,
           });
-
-        /* ================= SUCCESS ================= */
 
         results[goal] = imageUrl;
 
@@ -87,14 +76,11 @@ if (!prompt) {
           err
         );
 
-        /* ================= EXPOSE ERROR ================= */
-
         results[goal] = {
           success: false,
           error:
             err?.message ||
             "Generation failed",
-          stack: err?.stack,
         };
       }
     })
