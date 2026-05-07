@@ -60,11 +60,13 @@ export default async function handler(
     /* ================= RESPONSE ================= */
 
     return res.json(results);
-  } catch (err) {
-    console.error("SOCIAL PACK ERROR:", err);
+  } catch (err: any) {
+  console.error("SOCIAL PACK ERROR:", err);
 
-    return res.status(500).json({
-      error: "Generation failed",
-    });
-  }
+  return res.status(500).json({
+    success: false,
+    error: err?.message || "Unknown error",
+    stack: err?.stack,
+  });
+}
 }
