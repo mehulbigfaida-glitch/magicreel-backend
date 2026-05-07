@@ -18,10 +18,16 @@ export async function generateSocialPackExecutor({
       try {
         /* ================= PROMPT BUILD ================= */
 
-        const payload = buildSocialPackPrompt({
-          ...inputs,
-          creativeGoal: goal,
-        });
+        const normalizedCreativeDirection =
+  typeof inputs.creativeDirection === "string"
+    ? inputs.creativeDirection
+    : "Luxury Editorial";
+
+const payload = buildSocialPackPrompt({
+  ...inputs,
+  creativeDirection: normalizedCreativeDirection,
+  creativeGoal: goal,
+});
 
         // 🔥 Extract string from Gemini-style payload
         const prompt =
