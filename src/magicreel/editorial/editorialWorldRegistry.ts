@@ -441,4 +441,159 @@ export const editorialWorldRegistry: EditorialWorld[] = [
       "high-fashion western eveningwear",
     ],
   },
+
+{
+  id: "noir-couture",
+
+  label: "Noir Couture",
+
+  emotionalThesis:
+    "Vintage monochrome luxury with cinematic mystery, jewelry-heavy styling, and timeless couture portrait energy.",
+
+  visualIdentity: [
+    "monochrome luxury",
+    "film grain atmosphere",
+    "vintage editorial mood",
+    "jewelry-heavy styling",
+    "classic couture portraiture",
+  ],
+
+  lightingGrammar: [
+    "dramatic noir lighting",
+    "soft shadow gradients",
+    "cinematic monochrome contrast",
+    "editorial spotlighting",
+  ],
+
+  poseGrammar: [
+    "emotionally distant posing",
+    "slow fashion posture",
+    "classic editorial elegance",
+  ],
+
+  cameraGrammar: [
+    "tight portrait crops",
+    "cinematic compression",
+    "editorial framing tension",
+  ],
+
+  typographyGrammar: [
+    "minimal monochrome typography",
+    "editorial serif restraint",
+    "luxury spacing discipline",
+  ],
+
+  colorGovernance: [
+    "black and white dominance",
+    "muted silver tones",
+    "controlled monochrome contrast",
+  ],
+
+  atmosphereRules: [
+    "timeless editorial mystery",
+    "old Vogue couture energy",
+    "luxury cinematic stillness",
+  ],
+
+  restraintRules: [
+    "avoid oversaturation",
+    "avoid modern streetwear energy",
+    "avoid colorful lighting",
+  ],
+
+  forbiddenBehaviors: [
+    "playful fashion mood",
+    "neon styling",
+    "casual posing",
+  ],
+
+  bestFor: [
+    "jewelry-heavy couture",
+    "black luxury gowns",
+    "monochrome editorial fashion",
+  ],
+
+  garmentMappings: [
+    "black couture dress",
+    "luxury monochrome gown",
+    "high jewelry styling",
+  ],
+},
+
+{
+  id: "heritage-romance",
+
+  label: "Heritage Romance",
+
+  emotionalThesis:
+    "Emotionally rich heirloom couture storytelling with romantic bridal luxury and timeless ceremonial elegance.",
+
+  visualIdentity: [
+    "heirloom fashion",
+    "romantic bridal atmosphere",
+    "antique luxury palette",
+    "ceremonial richness",
+  ],
+
+  lightingGrammar: [
+    "soft romantic lighting",
+    "warm luxury diffusion",
+    "golden emotional glow",
+  ],
+
+  poseGrammar: [
+    "gentle bridal posture",
+    "emotional elegance",
+    "romantic stillness",
+  ],
+
+  cameraGrammar: [
+    "luxury bridal framing",
+    "soft portrait depth",
+    "cinematic emotional composition",
+  ],
+
+  typographyGrammar: [
+    "elegant serif typography",
+    "luxury bridal spacing",
+    "minimal romantic hierarchy",
+  ],
+
+  colorGovernance: [
+    "warm romantic palettes",
+    "gold accents",
+    "soft bridal tones",
+  ],
+
+  atmosphereRules: [
+    "ceremonial emotion",
+    "heirloom storytelling",
+    "timeless bridal romance",
+  ],
+
+  restraintRules: [
+    "avoid artificial glamour",
+    "avoid excessive contrast",
+    "avoid harsh shadows",
+  ],
+
+  forbiddenBehaviors: [
+    "streetwear styling",
+    "aggressive posing",
+    "urban nightlife energy",
+  ],
+
+  bestFor: [
+    "bridal lehengas",
+    "luxury ethnic couture",
+    "heavily embroidered garments",
+  ],
+
+  garmentMappings: [
+    "bridal lehenga",
+    "wedding couture",
+    "heirloom saree",
+  ],
+},
+
 ];
