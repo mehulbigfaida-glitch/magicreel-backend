@@ -90,7 +90,7 @@ app.post("/api/payments/verify-payment", authenticate, verifyPayment);
 app.use("/api/payments", paymentRoutes);
 
 import socialPackRoutes from "../api/social-pack/socialPack.routes";
-
+import editorialRoutes from "../api/editorial/editorial.routes";
 // CORE APIs
 app.use("/api/predictions", predictionsRoutes);
 app.use("/api/share", shareRoutes);
@@ -101,6 +101,11 @@ app.use("/api/admin", adminRoutes);
 app.use(
   "/api/social-pack",
   socialPackRoutes
+);
+
+app.use(
+  "/api/editorial",
+  editorialRoutes
 );
 
 /* ---------------------------------- */
