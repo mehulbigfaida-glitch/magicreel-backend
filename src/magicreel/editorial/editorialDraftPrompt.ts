@@ -1,12 +1,7 @@
-import {
-  EditorialWorld,
-  CampaignOutput,
-} from "./editorialPromptEngine";
+interface EditorialDraftPromptInput {
+  editorialWorld: string;
 
-interface DraftPromptInput {
-  editorialWorld: EditorialWorld;
-
-  output: CampaignOutput;
+  output: string;
 }
 
 const WORLD_DIRECTION: Record<
@@ -14,31 +9,31 @@ const WORLD_DIRECTION: Record<
   string
 > = {
   "dark-aristocracy": `
-Old-money cinematic darkness with sculptural shadows, aristocratic silence, emotional restraint, luxury loneliness, museum-grade black environments.
+Quiet aristocratic couture portraiture with sculptural shadows, cinematic darkness, aged architectural atmosphere, restrained luxury emotion, and museum-like stillness.
 `,
 
   "poetic-nature": `
-Poetic cinematic storytelling with romantic environmental atmosphere, emotional softness, wind interaction, natural luxury light, dreamlike realism.
+Soft cinematic fashion storytelling inspired by natural light, wind movement, emotional calmness, and poetic environmental realism.
 `,
 
   "museum-couture": `
-Architectural luxury presentation with gallery realism, sculptural framing, spatial restraint, timeless exhibition atmosphere.
+Architectural luxury editorial framing where the garment feels like a timeless couture artifact presented within a refined spatial environment.
 `,
 
   "noir-couture": `
-Vintage monochrome cinematic fashion with psychological mystery, elegant darkness, shadow-heavy Vogue realism.
+Vintage-inspired cinematic noir fashion editorial with shadow-heavy lighting, emotional restraint, elegant darkness, and sophisticated editorial realism.
 `,
 
   "heritage-romance": `
-Heirloom couture storytelling with nostalgic romance, antique architecture, emotional softness, timeless luxury realism.
+Heirloom-inspired couture storytelling with romantic heritage atmosphere, antique textures, emotional softness, and timeless luxury realism.
 `,
 
   "runway-editorial": `
-Fashion-week documentary realism with cinematic runway energy, backstage atmosphere, editorial movement, modern Vogue styling.
+Luxury fashion-week atmosphere with cinematic backstage realism, subtle movement, editorial confidence, and premium runway energy.
 `,
 
   "urban-luxury-cinema": `
-Modern luxury nightlife realism with reflective city environments, cinematic fashion atmosphere, Gucci-inspired emotional surrealism.
+Modern luxury fashion cinema inspired by high-end European campaigns, reflective city environments, cinematic nightlife mood, and confident editorial movement.
 `,
 };
 
@@ -47,16 +42,20 @@ const OUTPUT_DIRECTION: Record<
   string
 > = {
   "instagram-post": `
-Luxury editorial Instagram framing with cinematic composition and premium visual hierarchy.
+Authentic luxury campaign framing with natural composition balance and premium editorial photography realism.
 `,
 
   story: `
-Vertical fashion-film storytelling optimized for cinematic mobile viewing.
+Vertical cinematic composition designed for immersive luxury fashion storytelling with natural editorial depth.
 `,
 };
 
+const NEGATIVE_DIRECTION = `
+Avoid poster layouts, influencer aesthetics, plastic skin, artificial posing, centered symmetry, graphic overlays, AI-looking rendering, flat lighting, or synthetic fashion styling.
+`;
+
 export function buildEditorialDraftPrompt(
-  input: DraftPromptInput
+  input: EditorialDraftPromptInput
 ) {
   const worldDirection =
     WORLD_DIRECTION[
@@ -69,39 +68,48 @@ export function buildEditorialDraftPrompt(
     ] || "";
 
   return `
-CINEMATIC FASHION EDITORIAL.
+Create a cinematic luxury fashion campaign photograph using the uploaded hero image.
 
-Preserve:
-- garment identity
-- embroidery
-- silhouette
-- textile realism
-- model identity
+Maintain:
+- exact garment realism
+- embroidery accuracy
+- fabric texture integrity
+- silhouette accuracy
+- facial identity realism
 
-Reinterpret:
-- pose
-- body language
-- framing
-- cinematic composition
-- environmental interaction
+The result should feel like a real luxury fashion editorial photograph, not AI-generated artwork.
 
-Generate:
-- cinematic posture
-- editorial walking behavior
-- asymmetrical framing
-- emotional storytelling
-- fashion-film realism
-- premium campaign atmosphere
+Visual direction:
+- cinematic photographic realism
+- natural editorial composition
+- luxury fashion-magazine atmosphere
+- believable environmental depth
+- directional lighting
+- subtle asymmetry
+- restrained luxury emotion
 
-Avoid:
-- mannequin posing
-- catalog posture
-- influencer aesthetics
-- AI symmetry
-- static compositions
+Pose direction:
+- confident editorial posture
+- subtle natural movement
+- relaxed couture body language
+- avoid catalog stiffness
+
+Composition:
+- authentic photoshoot framing
+- realistic lens behavior
+- natural negative space
+- slightly imperfect editorial balance
+
+Lighting:
+- subject brighter than environment
+- sculpted facial lighting
+- cinematic shadow falloff
+- dimensional luxury atmosphere
 
 ${worldDirection}
 
 ${outputDirection}
+
+${NEGATIVE_DIRECTION}
 `;
 }
