@@ -102,7 +102,7 @@ Use the uploaded logo subtly and elegantly inside the luxury campaign compositio
   }
 
   const response = await axios.post(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent?key=${GEMINI_API_KEY}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${GEMINI_API_KEY}`,
 
     {
       contents: [
