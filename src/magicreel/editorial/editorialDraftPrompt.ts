@@ -390,21 +390,74 @@ The final image should feel like a timeless couture photograph captured inside a
 `,
 
   "dark-aristocracy": `
-Luxury black-and-white aristocratic couture editorial photographed with restrained medium-format realism inside a dark sculptural architectural world with softly aged textures, emotional silence, and natural optical depth.
+Luxury black-and-white aristocratic couture editorial photographed with restrained medium-format realism inside an emotionally silent old-world luxury environment.
+
+The environment should naturally evolve across generations while remaining inside the same aristocratic cinematic universe.
+
+Possible environmental interpretations include:
+candlelit palace interiors,
+aged European manor corridors,
+shadowed neoclassical halls,
+museum-like gallery chambers,
+weathered stone architecture,
+cathedral-inspired passageways,
+dark velvet salons,
+historic aristocratic libraries,
+grand stair halls,
+ornamental heritage interiors,
+sculptural palace rooms,
+or emotionally restrained architectural spaces with aged luxury textures.
+
+Avoid repeatedly generating the same corridor, archway, tunnel, or identical spatial composition.
+
+Each generation should feel like a different cinematic location photographed within the same old-world aristocratic fashion universe.
 
 Full-body editorial composition with elegant negative space, uninterrupted garment visibility, elongated silhouette framing, and balanced couture proportions.
 
 The model is captured in an emotionally interrupted moment with sculptural asymmetry, quiet psychological distance, relaxed aristocratic restraint, and naturally evolving editorial body language.
 
-The posture should feel observational rather than performative with subtle body rotation, gentle shoulder imbalance, elongated neck tension, quiet incidental hand placement, and emotionally detached presence.
+The posture should feel observational rather than performative with:
+subtle body rotation,
+gentle shoulder imbalance,
+elongated neck tension,
+quiet incidental hand placement,
+soft directional movement,
+and emotionally detached presence.
 
 The figure should appear inward, unaware of the camera, and suspended within a moment of timeless aristocratic stillness.
 
-Soft sculptural studio lighting with restrained contrast, analog tonal depth, matte cinematic texture, medium-format photographic realism, and subtle lens softness.
+Lighting should feel:
+soft sculptural studio realism,
+analog monochrome tonal depth,
+matte cinematic texture,
+medium-format photographic softness,
+aged shadow behavior,
+and subtle optical imperfection.
 
-Preserve garment identity, couture texture, embroidery realism, silhouette integrity, facial character, luxury material behavior, and full-length garment proportions while allowing naturally evolving editorial posture and sculptural asymmetry.
+Preserve:
+garment identity,
+couture texture,
+embroidery realism,
+silhouette integrity,
+facial character,
+luxury material behavior,
+and full-length garment proportions while allowing naturally evolving editorial posture and environmental storytelling.
 
-Avoid commercial fashion energy, influencer aesthetics, exaggerated glamour, theatrical posing, artificial beauty treatment, fantasy styling, dramatic cinematic effects, aggressive contrast, or symmetrical catalog posture.
+The garment remains the emotional center of the composition.
+
+Avoid:
+commercial fashion energy,
+influencer aesthetics,
+exaggerated glamour,
+theatrical posing,
+artificial beauty treatment,
+fantasy styling,
+dramatic CGI environments,
+repetitive architectural layouts,
+identical arches,
+symmetrical tunnel compositions,
+aggressive contrast,
+or catalog posture.
 
 The image should feel like a rare couture editorial photographed for an old-world luxury fashion house with emotional restraint, sculptural silence, timeless aristocratic realism, and quiet editorial power.
 `,
