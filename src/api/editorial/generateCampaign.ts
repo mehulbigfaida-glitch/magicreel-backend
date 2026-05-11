@@ -21,21 +21,20 @@ export async function generateCampaign(
     } = req.body;
 
     if (
-      !editorialWorld ||
-      !outputs?.length ||
-      !heroImageUrl
-    ) {
+  !editorialWorld ||
+  !heroImageUrl
+) {
       return res.status(400).json({
         error:
           "Missing editorialWorld, outputs, or heroImageUrl",
       });
     }
 
-    const promptAssets =
-      buildCampaignOutputs({
-        editorialWorld,
-        outputs,
-      });
+    const promptAssets = [
+  {
+    output: "instagram-post",
+  },
+];
 
     const generatedAssets =
       [];
