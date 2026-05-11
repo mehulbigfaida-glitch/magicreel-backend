@@ -1,68 +1,128 @@
-import { CinematicWorld } from "./cinematicWorld.registry";
+import { ResolvedCinematicWorld } from "./cinematicWorld.registry";
 
-export type CinematicFrameType =
-  | "entrance"
-  | "mid_walk"
-  | "upper_power"
-  | "angle_45"
-  | "detail_motion"
-  | "final_pose";
+export interface CinematicPromptInput {
+  world: ResolvedCinematicWorld;
+
+  brandName?: string;
+}
 
 /* ------------------------------------------------------- */
 
-function frameDirection(frame: CinematicFrameType): string {
-  switch (frame) {
-    case "entrance":
-      return "Full body visible, slightly far from camera, mid-stride, natural fabric movement.";
+function join(values: string[]) {
+  return values.join(", ");
+}
 
-    case "mid_walk":
-      return "Full body visible, closer to camera, confident forward walk, natural arm movement, fabric subtly flowing.";
+/* ------------------------------------------------------- */
 
-    case "upper_power":
-      return "Framed from waist up, strong confident expression, spotlight emphasizing upper garment.";
+function buildWorldAtmosphere(
+  world: ResolvedCinematicWorld
+) {
+  switch (world.id) {
+    case "dark-aristocracy":
+      return `Shadowed architectural silence, sculptural palace light, restrained cinematic depth, and medium-format realism elevate the garment into the emotional center of the frame.`;
 
-    case "angle_45":
-      return "Full body visible at slight 45 degree camera angle, clear garment silhouette, mid-stride motion.";
+    case "garden-nostalgia":
+      return `Soft monsoon air, diffused cinematic light, poetic stillness, and faded emotional warmth create an atmosphere of memory and romance.`;
 
-    case "detail_motion":
-      return "Lower body emphasis, one foot stepping forward, fabric flowing naturally, cinematic motion feel.";
+    case "royal-solitude":
+      return `Muted palace light, monumental emptiness, restrained composition, and emotional stillness create a feeling of regal isolation and timeless dignity.`;
 
-    case "final_pose":
-      return "Full body centered, standing confidently at center stage, strong final pose, powerful spotlight focus.";
+    case "museum-couture":
+      return `Curated stillness, sculptural gallery light, reverential composition, and tactile couture realism transform the garment into a timeless artifact.`;
+
+    case "poetic-nature":
+      return `Atmospheric haze, natural cinematic diffusion, environmental silence, and soft landscape depth dissolve the figure gently into emotion and nature.`;
 
     default:
-      return "Full body visible, confident fashion walk.";
+      return `Restrained cinematic realism with emotional depth and editorial sophistication.`;
   }
-}
-
-function environmentIntro(world: CinematicWorld): string {
-  if (world.theme === "runway") {
-    return "Place the woman from image 1 walking forward on a luxury fashion runway.";
-  }
-
-  return `Place the woman from image 1 walking forward confidently in a ${world.architecture}.`;
 }
 
 /* ------------------------------------------------------- */
 
-export function buildCinematicPrompt(
-  world: CinematicWorld,
-  frame: CinematicFrameType
-): string {
-  return `
-${environmentIntro(world)}
-${frameDirection(frame)}
-${world.theme === "runway" ? `Environment is ${world.architecture}.` : ""}
-${world.floor ? `The floor is ${world.floor}.` : ""}
-${world.audience ? `${world.audience}.` : ""}
-Lighting is ${world.lighting}.
-Atmosphere contains ${world.atmosphere}.
-Camera uses ${world.camera}.
-Lens style is ${world.lens}.
-Color grading is ${world.colorTone}.
-Her body orientation and walking direction must remain consistent.
-Do not modify facial features, skin tone, hairstyle, body shape, garment details, colors, or fit.
-Keep her face and clothing exactly unchanged.
-Professional cinematic fashion photography.
-`.replace(/\s+/g, " ").trim();
+function buildEditorialPoseDirection(
+  world: ResolvedCinematicWorld
+) {
+  switch (world.id) {
+    case "dark-aristocracy":
+      return `The posture feels restrained and powerful with subtle forward motion, slight asymmetry, quiet body tension, and emotionally controlled cinematic presence.`;
+
+    case "garden-nostalgia":
+      return `The figure carries soft natural movement with gentle posture asymmetry, poetic stillness, and emotionally unposed realism.`;
+
+    case "royal-solitude":
+      return `The body language feels isolated, dignified, emotionally restrained, and captured in a quiet transitional moment rather than a posed stance.`;
+
+    case "museum-couture":
+      return `The posture remains sculptural and reverential with restrained movement, controlled stillness, and editorial elegance.`;
+
+    case "poetic-nature":
+      return `The movement feels soft, atmospheric, and observational with natural cinematic body language and restrained emotional motion.`;
+
+    default:
+      return `The posture should feel naturally editorial with restrained cinematic movement and believable fashion realism.`;
+  }
+}
+
+/* ------------------------------------------------------- */
+
+function buildEnding(world: ResolvedCinematicWorld) {
+  switch (world.id) {
+    case "dark-aristocracy":
+      return `The image should feel timeless, powerful, restrained, emotionally silent, and photographed inside an aristocratic cinematic world.`;
+
+    case "garden-nostalgia":
+      return `The image should feel poetic, emotionally soft, nostalgic, and cinematically romantic.`;
+
+    case "royal-solitude":
+      return `The image should feel isolated, monumental, dignified, and emotionally restrained.`;
+
+    case "museum-couture":
+      return `The image should feel sculptural, curated, timeless, and reverential toward the garment.`;
+
+    case "poetic-nature":
+      return `The image should feel atmospheric, contemplative, cinematic, and emotionally immersed in nature.`;
+
+    default:
+      return `The image should feel cinematic, luxurious, emotionally restrained, and editorially believable.`;
+  }
+}
+
+/* ------------------------------------------------------- */
+
+export function buildCinematicPrompt({
+  world,
+  brandName,
+}: CinematicPromptInput): string {
+  const brandPrefix = brandName
+    ? `${brandName} cinematic luxury fashion editorial.`
+    : "Cinematic luxury fashion editorial.";
+
+  const prompt = `
+${brandPrefix}
+
+4:5 vertical luxury editorial composition with full cinematic garment framing, balanced negative space, and photographic fashion realism.
+
+Photographed inside ${world.selectedArchitecture}.
+
+${world.emotionalCore}
+
+${buildWorldAtmosphere(world)}
+
+${world.visualNarrative}
+
+${buildEditorialPoseDirection(world)}
+
+Preserve facial identity, skin tone, hairstyle, body proportions, garment embroidery, fabric texture, silhouette, fit, styling, and all fashion details exactly as provided.
+
+Luxury atmosphere guided by ${join(world.luxuryCodes)} with color psychology inspired by ${join(world.colorPsychology)}.
+
+Avoid artificial glamour, exaggerated motion, influencer aesthetics, commercial fashion energy, oversaturated styling, and synthetic AI beauty treatment.
+
+${buildEnding(world)}
+`;
+
+  return prompt
+    .replace(/\s+/g, " ")
+    .trim();
 }

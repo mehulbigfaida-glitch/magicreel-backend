@@ -12,6 +12,7 @@ import p2mRoutes from "./p2m/p2m.routes";
 import analyticsRoutes from "../api/analytics";
 import adminRoutes from "../api/admin";
 import editorialRoutes from "../api/editorial/editorial.routes";
+import editorialV1Routes from "../api/editorial-v1";
 
 // ✅ PAYMENT IMPORTS (ADD THIS)
 import { createOrder } from "../api/payments/create-order";
@@ -91,6 +92,7 @@ app.post("/api/payments/verify-payment", authenticate, verifyPayment);
 app.use("/api/payments", paymentRoutes);
 
 import socialPackRoutes from "../api/social-pack/socialPack.routes";
+import cinematicRoutes from "../api/cinematic";
 
 // CORE APIs
 app.use("/api/predictions", predictionsRoutes);
@@ -102,14 +104,20 @@ app.use(
   "/api/editorial",
   editorialRoutes
 );
+
+app.use(
+  "/api/editorial-v1",
+  editorialV1Routes
+);
+
 app.use(
   "/api/social-pack",
   socialPackRoutes
 );
 
 app.use(
-  "/api/editorial",
-  editorialRoutes
+  "/api/cinematic",
+  cinematicRoutes
 );
 
 /* ---------------------------------- */

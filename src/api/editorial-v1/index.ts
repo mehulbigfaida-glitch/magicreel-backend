@@ -1,0 +1,1 @@
+export { default } from './editorial-v1.routes'
