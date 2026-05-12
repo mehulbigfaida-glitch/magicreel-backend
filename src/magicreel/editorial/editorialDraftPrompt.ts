@@ -512,6 +512,34 @@ Preserve exactly:
 
 Do not redesign the garment.
 
+If a brand logo is provided, integrate it naturally and subtly into the editorial composition.
+
+Possible luxury placements include:
+- architectural signage
+- embossed plaque
+- metallic engraving
+- boutique wall branding
+- couture campaign corner mark
+- environmental typography
+- heritage emblem placement
+- luxury fashion-house insignia
+- printed editorial campaign mark
+- elegant spatial branding
+
+The logo must feel:
+minimal,
+premium,
+tasteful,
+cinematic,
+and naturally embedded into the environment.
+
+Avoid:
+oversized logos,
+commercial advertisement styling,
+floating graphics,
+watermark aesthetics,
+or aggressive brand placement.
+
 ${worldDirection}
 
 Pose refinement:
