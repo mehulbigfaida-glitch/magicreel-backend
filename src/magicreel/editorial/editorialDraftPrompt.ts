@@ -544,11 +544,23 @@ Do not redesign the garment.
 
 ${worldDirection}
 
-If a brand logo is provided, place it subtly and naturally like a real luxury fashion campaign brand mark.
+Brand logo:
 
-Keep the original logo design unchanged.
+The second provided image is the official brand logo.
 
-Avoid oversized or distorted logo rendering.
+Integrate the logo subtly as a refined luxury editorial signature.
+
+Preserve the original logo design exactly without reinterpretation.
+
+The logo must remain:
+- small
+- discreet
+- visually secondary
+- naturally embedded into the composition
+
+Avoid oversized branding, logo distortion, decorative reconstruction, floating patches, or dominant commercial placement.
+
+If no second image is provided, do not generate or invent any brand logo, watermark, text mark, or branding element.
 
 Pose refinement:
 ${poseVariation}
