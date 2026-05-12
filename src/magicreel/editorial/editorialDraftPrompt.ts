@@ -544,18 +544,11 @@ Do not redesign the garment.
 
 ${worldDirection}
 
-If a brand logo is provided, integrate it subtly and naturally like a real luxury fashion campaign brand mark.
+If a brand logo is provided, place it subtly and naturally like a real luxury fashion campaign brand mark.
 
-Keep the logo:
-- small
-- elegant
-- minimal
-- premium
-- visually secondary to the garment
+Keep the original logo design unchanged.
 
-Prefer tasteful editorial placement rather than commercial advertisement styling.
-
-Avoid oversized branding, floating graphics, distorted typography, or aggressive logo placement.
+Avoid oversized or distorted logo rendering.
 
 Pose refinement:
 ${poseVariation}
