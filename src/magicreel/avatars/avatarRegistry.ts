@@ -45,8 +45,8 @@ export const AVATAR_REGISTRY: Record<string, AvatarEntry> = {
   SHANAYA: {
     gender: "female",
     bodyType: "AVERAGE",
-    front: "https://res.cloudinary.com/duaqfspwa/image/upload/v1771245612/Shanaya_face_zmcu8k.png",
-    back: "https://res.cloudinary.com/duaqfspwa/image/upload/v1771245612/Shanaya_back_face_npsr0b.png",
+    front: "https://res.cloudinary.com/duaqfspwa/image/upload/v1778600385/Shanaya_45_nvtswo.png",
+    back: "https://res.cloudinary.com/duaqfspwa/image/upload/v1778601206/Shanaya_back_45_vouook.png",
     placeholder: "https://res.cloudinary.com/duaqfspwa/image/upload/v1771245614/Shanaya_face_placeholder_s8ulmz.png"
   },
 
