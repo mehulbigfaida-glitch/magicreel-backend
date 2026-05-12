@@ -309,7 +309,11 @@ cinematic restraint,
 and elegant environmental balance.
 
 The model should appear emotionally restrained, naturally poised, observant, and quietly detached without theatrical posing or exaggerated fashion energy.
+Allow natural editorial pose reinterpretation while preserving garment realism and silhouette integrity.
 
+Avoid rigid catalog posture, mannequin symmetry, identical hero-image recreation, or static front-facing stance.
+
+Favor subtle asymmetry, relaxed couture body language, observational posing, gentle body rotation, natural arm variation, and restrained fashion-editorial movement.
 Lighting should feel:
 soft sculptural monochrome realism,
 analog tonal depth,
