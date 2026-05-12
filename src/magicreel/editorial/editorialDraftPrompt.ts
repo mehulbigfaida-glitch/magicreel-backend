@@ -64,7 +64,11 @@ The final generated image itself must be vertically composed in portrait orienta
 
 Avoid distant full-body scaling, excessive architectural dominance, oversized environmental spacing, tiny subject framing, deep empty floor space, or cathedral-scale pullback compositions.
 
-The garment and model should visually occupy approximately 70–85% of the vertical composition height while still preserving elegant couture breathing room.
+The model and garment must appear visually dominant within the portrait composition with strong couture presence and premium editorial proximity.
+
+The subject should feel confidently framed like a luxury fashion campaign hero image rather than a distant environmental scene.
+
+Maintain elegant breathing room while ensuring the garment remains the immediate visual focus of the composition.
 
 Frame the subject with premium fashion campaign proximity similar to luxury magazine advertisements and haute couture editorials.
 
