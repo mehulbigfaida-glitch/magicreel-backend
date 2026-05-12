@@ -58,26 +58,30 @@ const OUTPUT_DIRECTION: Record<
   string
 > = {
   "instagram-post": `
-Luxury fashion editorial composition optimized for Instagram portrait presentation.
+Luxury fashion editorial composition optimized specifically for vertical Instagram 4:5 presentation.
 
-Prefer elegant vertical 4:5 framing with balanced cinematic composition, natural environmental depth, and sophisticated editorial spacing.
-
-The composition should feel like a real luxury fashion campaign photographed for a premium maison advertisement.
+The final image must remain portrait-oriented with a strong vertical editorial composition.
 
 Maintain:
+- full-body garment visibility
+- elegant vertical framing
 - cinematic realism
-- environmental storytelling
+- restrained environmental storytelling
 - natural asymmetry
-- architectural depth
-- luxury negative space
-- editorial optical balance
+- premium editorial atmosphere
+
+The model should remain visually prominent within the frame while preserving environmental depth and luxury cinematic realism.
 
 Avoid:
-- landscape cinematic crops
-- panoramic framing
-- ultra-wide environmental layouts
+- landscape framing
+- widescreen cinematic crops
+- panoramic layouts
+- excessive environmental widening
+- distant subject placement
+- tiny figure composition
+- horizontal architectural staging
 
-The image should remain visually immersive and editorial rather than rigidly centered or poster-like.
+The image should feel like a premium luxury fashion campaign photographed for Instagram editorial advertising with portrait-first composition hierarchy.
 `,
 
   story: `
@@ -420,8 +424,6 @@ The final image should feel like a timeless couture photograph captured inside a
   "dark-aristocracy": `
 Luxury black-and-white aristocratic couture editorial photographed with restrained medium-format realism inside an emotionally silent old-world luxury environment.
 
-The environment should naturally evolve across generations while remaining inside the same aristocratic cinematic universe.
-
 Possible environmental interpretations include:
 candlelit palace interiors,
 aged European manor corridors,
@@ -472,8 +474,6 @@ luxury material behavior,
 and full-length garment proportions while allowing naturally evolving editorial posture and environmental storytelling.
 
 The garment should remain visually important while allowing natural editorial asymmetry, cinematic environmental storytelling, and emotionally organic composition balance.
-
-Avoid rigid centered placement or symmetrical catalog framing.
 
 Avoid:
 commercial fashion energy,

@@ -59,22 +59,8 @@ export async function generateGeminiCampaignImage(
 
   const parts: any[] = [
     {
-      text: `
-Use the uploaded hero image as the primary campaign subject reference.
-
-Preserve:
-- garment identity
-- silhouette
-- embroidery
-- styling
-- luxury realism
-- couture structure
-
-Transform the image into a cinematic luxury editorial campaign.
-
-${input.prompt}
-`,
-    },
+  text: input.prompt,
+},
 
     {
       inlineData: {
@@ -86,20 +72,13 @@ ${input.prompt}
   ];
 
   if (logoBase64) {
-    parts.push({
-      text: `
-Use the uploaded logo subtly and elegantly inside the luxury campaign composition.
-`,
-    });
-
-    parts.push({
-      inlineData: {
-        mimeType: "image/png",
-
-        data: logoBase64,
-      },
-    });
-  }
+  parts.push({
+    inlineData: {
+      mimeType: "image/png",
+      data: logoBase64,
+    },
+  });
+}
 
   const response = await axios.post(
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${GEMINI_API_KEY}`,
