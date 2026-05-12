@@ -386,7 +386,9 @@ The second provided image is the official brand logo.
 
 Integrate the logo subtly as a refined luxury editorial signature.
 
-Preserve the original logo design exactly without reinterpretation.
+The uploaded logo image is only a branding reference and must not influence the composition structure, framing orientation, canvas ratio, camera distance, environmental scale, or portrait layout of the final editorial image.
+
+Even if the logo image is horizontally shaped or landscape-oriented, the final campaign image must remain fully portrait-oriented with the same editorial composition behavior and subject hierarchy.
 
 The logo must remain:
 - small
