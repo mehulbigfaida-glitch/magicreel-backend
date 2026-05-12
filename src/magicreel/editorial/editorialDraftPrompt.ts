@@ -35,9 +35,7 @@ const POSE_VARIATIONS = [
 const COMPOSITION_VARIATIONS =
   [
     "slightly asymmetrical editorial framing with controlled negative space",
-    "elongated silhouette composition with cinematic spacing",
     "architectural depth with restrained visual hierarchy",
-    "balanced couture framing with atmospheric spatial realism",
     "editorial stillness with subtle environmental layering",
     "luxury campaign composition with natural optical imperfection",
   ];
@@ -442,7 +440,7 @@ Avoid repeatedly generating the same corridor, archway, tunnel, or identical spa
 
 Each generation should feel like a different cinematic location photographed within the same old-world aristocratic fashion universe.
 
-Full-body editorial composition with elegant negative space, uninterrupted garment visibility, elongated silhouette framing, and balanced couture proportions.
+Editorial fashion-house composition with natural garment visibility, cinematic spatial balance, elegant negative space, and emotionally restrained framing.
 
 The model is captured in an emotionally interrupted moment with sculptural asymmetry, quiet psychological distance, relaxed aristocratic restraint, and naturally evolving editorial body language.
 
@@ -473,7 +471,9 @@ facial character,
 luxury material behavior,
 and full-length garment proportions while allowing naturally evolving editorial posture and environmental storytelling.
 
-The garment remains the emotional center of the composition.
+The garment should remain visually important while allowing natural editorial asymmetry, cinematic environmental storytelling, and emotionally organic composition balance.
+
+Avoid rigid centered placement or symmetrical catalog framing.
 
 Avoid:
 commercial fashion energy,
@@ -542,41 +542,20 @@ Preserve exactly:
 
 Do not redesign the garment.
 
-If a brand logo is provided, preserve the exact logo design without modification, abstraction, reinterpretation, fragmentation, or geometric transformation.
+${worldDirection}
 
-The logo should appear subtly and minimally like a real luxury fashion campaign brand mark.
+If a brand logo is provided, integrate it subtly and naturally like a real luxury fashion campaign brand mark.
 
-Preferred placements include:
-- small editorial corner branding
-- elegant campaign signature
-- refined luxury watermark
-- subtle boutique-style insignia
-- minimal fashion-house placement
-
-The logo must remain:
+Keep the logo:
 - small
-- clean
+- elegant
+- minimal
 - premium
-- readable
-- unobtrusive
 - visually secondary to the garment
 
-Do not transform the logo into:
-- architectural symbols
-- abstract shapes
-- environmental geometry
-- wall graphics
-- oversized signage
-- fragmented visual elements
+Prefer tasteful editorial placement rather than commercial advertisement styling.
 
-Avoid:
-commercial advertising aesthetics,
-large branding,
-floating graphics,
-distorted typography,
-or aggressive logo placement.
-
-${worldDirection}
+Avoid oversized branding, floating graphics, distorted typography, or aggressive logo placement.
 
 Pose refinement:
 ${poseVariation}
