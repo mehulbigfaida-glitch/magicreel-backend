@@ -60,11 +60,33 @@ const OUTPUT_DIRECTION: Record<
   string
 > = {
   "instagram-post": `
-Portrait 4:5 editorial campaign composition optimized for luxury fashion advertising and Instagram editorials.
+Strict vertical 4:5 luxury fashion campaign composition.
+
+The final image must be vertically framed in portrait orientation with professional Instagram editorial proportions.
+
+Never generate:
+- landscape compositions
+- cinematic widescreen framing
+- horizontal layouts
+- panoramic crops
+- ultra-wide architectural framing
+
+The model and garment must remain fully visible inside a vertically balanced couture editorial composition optimized for luxury Instagram campaigns.
 `,
 
   story: `
-Vertical cinematic editorial composition optimized for immersive luxury storytelling.
+Strict vertical cinematic story composition optimized for immersive mobile-first luxury storytelling.
+
+The final image must remain vertically framed for premium fashion story presentation.
+
+Avoid:
+- horizontal framing
+- landscape layouts
+- panoramic composition
+- wide cinematic crops
+- excessive empty side spacing
+
+Maintain strong vertical visual flow with immersive editorial depth.
 `,
 };
 
@@ -512,33 +534,39 @@ Preserve exactly:
 
 Do not redesign the garment.
 
-If a brand logo is provided, integrate it naturally and subtly into the editorial composition.
+If a brand logo is provided, preserve the exact logo design without modification, abstraction, reinterpretation, fragmentation, or geometric transformation.
 
-Possible luxury placements include:
-- architectural signage
-- embossed plaque
-- metallic engraving
-- boutique wall branding
-- couture campaign corner mark
-- environmental typography
-- heritage emblem placement
-- luxury fashion-house insignia
-- printed editorial campaign mark
-- elegant spatial branding
+The logo should appear subtly and minimally like a real luxury fashion campaign brand mark.
 
-The logo must feel:
-minimal,
-premium,
-tasteful,
-cinematic,
-and naturally embedded into the environment.
+Preferred placements include:
+- small editorial corner branding
+- elegant campaign signature
+- refined luxury watermark
+- subtle boutique-style insignia
+- minimal fashion-house placement
+
+The logo must remain:
+- small
+- clean
+- premium
+- readable
+- unobtrusive
+- visually secondary to the garment
+
+Do not transform the logo into:
+- architectural symbols
+- abstract shapes
+- environmental geometry
+- wall graphics
+- oversized signage
+- fragmented visual elements
 
 Avoid:
-oversized logos,
-commercial advertisement styling,
+commercial advertising aesthetics,
+large branding,
 floating graphics,
-watermark aesthetics,
-or aggressive brand placement.
+distorted typography,
+or aggressive logo placement.
 
 ${worldDirection}
 
