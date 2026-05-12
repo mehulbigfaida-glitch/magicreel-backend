@@ -60,7 +60,13 @@ const OUTPUT_DIRECTION: Record<
   "instagram-post": `
 Generate a true native portrait 4:5 luxury editorial image.
 
-The final generated image itself must be vertically composed in portrait orientation.
+The final generated image itself must be vertically composed in portrait orientation. The model must occupy a strong luxury editorial presence within the frame.
+
+Avoid distant full-body scaling, excessive architectural dominance, oversized environmental spacing, tiny subject framing, deep empty floor space, or cathedral-scale pullback compositions.
+
+The garment and model should visually occupy approximately 70–85% of the vertical composition height while still preserving elegant couture breathing room.
+
+Frame the subject with premium fashion campaign proximity similar to luxury magazine advertisements and haute couture editorials.
 
 Do not generate widescreen, cinematic landscape, horizontal framing, panoramic composition, letterboxed composition, or centered subject with empty side expansion.
 
