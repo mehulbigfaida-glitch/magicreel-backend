@@ -60,18 +60,26 @@ const OUTPUT_DIRECTION: Record<
   string
 > = {
   "instagram-post": `
-Strict vertical 4:5 luxury fashion campaign composition.
+Luxury fashion editorial composition optimized for Instagram portrait presentation.
 
-The final image must be vertically framed in portrait orientation with professional Instagram editorial proportions.
+Prefer elegant vertical 4:5 framing with balanced cinematic composition, natural environmental depth, and sophisticated editorial spacing.
 
-Never generate:
-- landscape compositions
-- cinematic widescreen framing
-- horizontal layouts
-- panoramic crops
-- ultra-wide architectural framing
+The composition should feel like a real luxury fashion campaign photographed for a premium maison advertisement.
 
-The model and garment must remain fully visible inside a vertically balanced couture editorial composition optimized for luxury Instagram campaigns.
+Maintain:
+- cinematic realism
+- environmental storytelling
+- natural asymmetry
+- architectural depth
+- luxury negative space
+- editorial optical balance
+
+Avoid:
+- landscape cinematic crops
+- panoramic framing
+- ultra-wide environmental layouts
+
+The image should remain visually immersive and editorial rather than rigidly centered or poster-like.
 `,
 
   story: `
