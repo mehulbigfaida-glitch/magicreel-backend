@@ -5,51 +5,6 @@ interface EditorialDraftPromptInput {
 }
 
 /* =========================================
-   RANDOM HELPER
-========================================= */
-
-function randomItem(
-  items: string[]
-) {
-  return items[
-    Math.floor(
-      Math.random() *
-        items.length
-    )
-  ];
-}
-
-/* =========================================
-   LIGHTWEIGHT VARIATION LAYER
-========================================= */
-
-const POSE_VARIATIONS = [
-  "subtle torso rotation with quiet editorial restraint",
-  "gentle shoulder imbalance and observational stillness",
-  "naturally evolving couture posture with restrained asymmetry",
-  "slightly interrupted movement with emotional distance",
-  "quiet architectural interaction with sculptural body language",
-  "soft editorial asymmetry with relaxed luxury composure",
-];
-
-const COMPOSITION_VARIATIONS =
-  [
-    "slightly asymmetrical editorial framing with controlled negative space",
-    "architectural depth with restrained visual hierarchy",
-    "editorial stillness with subtle environmental layering",
-    "luxury campaign composition with natural optical imperfection",
-  ];
-
-const LIGHTING_VARIATIONS = [
-  "soft sculptural editorial lighting with analog tonal depth",
-  "cinematic directional lighting with restrained luxury contrast",
-  "matte medium-format lighting realism with gentle shadow falloff",
-  "subtle atmospheric illumination with natural skin realism",
-  "luxury fashion-house lighting with dimensional softness",
-  "quiet cinematic light behavior with restrained highlights",
-];
-
-/* =========================================
    OUTPUTS
 ========================================= */
 
@@ -58,42 +13,41 @@ const OUTPUT_DIRECTION: Record<
   string
 > = {
   "instagram-post": `
-Generate a true native portrait 4:5 luxury editorial image.
+Generate a native portrait luxury editorial image designed for premium Instagram fashion campaigns.
 
-The final generated image itself must be vertically composed in portrait orientation. The model must occupy a strong luxury editorial presence within the frame.
+The composition must feel naturally portrait-oriented with strong couture editorial framing and balanced luxury negative space.
 
-Avoid distant full-body scaling, excessive architectural dominance, oversized environmental spacing, tiny subject framing, deep empty floor space, or cathedral-scale pullback compositions.
+The model and garment must remain the immediate visual focus of the image with confident editorial presence and premium fashion-house proximity.
 
-The model and garment must appear visually dominant within the portrait composition with strong couture presence and premium editorial proximity.
+Avoid:
+- distant subject scaling
+- excessive environmental dominance
+- tiny full-body framing
+- cathedral-scale pullback compositions
+- widescreen cinematic framing
+- horizontal layouts
+- panoramic composition
+- empty side expansion
+- letterboxed cinematic crops
 
-The subject should feel confidently framed like a luxury fashion campaign hero image rather than a distant environmental scene.
+Maintain elegant breathing room while preserving strong garment visibility and premium editorial dominance.
 
-Maintain elegant breathing room while ensuring the garment remains the immediate visual focus of the composition.
-
-Frame the subject with premium fashion campaign proximity similar to luxury magazine advertisements and haute couture editorials.
-
-Do not generate widescreen, cinematic landscape, horizontal framing, panoramic composition, letterboxed composition, or centered subject with empty side expansion.
-
-The composition must be naturally designed for portrait fashion editorials similar to luxury magazine campaigns and Instagram luxury advertisements.
-
-Maintain full vertical editorial balance with proper portrait spatial distribution, elegant headroom, couture silhouette visibility, and portrait-first environmental composition.
-
-The final output must feel inherently portrait-composed rather than cropped from a cinematic widescreen frame.
+The final image should feel like an authentic luxury magazine campaign photographed for a world-class couture fashion house.
 `,
 
   story: `
-Strict vertical cinematic story composition optimized for immersive mobile-first luxury storytelling.
+Generate a vertical luxury fashion story composition optimized for immersive mobile-first editorial storytelling.
 
-The final image must remain vertically framed for premium fashion story presentation.
+Maintain strong vertical framing, elegant fashion hierarchy, cinematic restraint, and premium luxury atmosphere.
 
 Avoid:
 - horizontal framing
-- landscape layouts
-- panoramic composition
-- wide cinematic crops
-- excessive empty side spacing
+- panoramic layouts
+- excessive side spacing
+- environmental overexpansion
+- distant cinematic pullback
 
-Maintain strong vertical visual flow with immersive editorial depth.
+The final result should feel immersive, premium, vertical, and editorial-first.
 `,
 };
 
@@ -106,387 +60,283 @@ const WORLD_DIRECTION: Record<
   string
 > = {
   "lago-eleganza": `
-Create a luxury European resort editorial campaign set in an elegant Italian lakeside world inspired by quiet aristocratic leisure and couture vacation culture.
+Create a luxury European resort editorial campaign inspired by elite Italian lakeside fashion culture and quiet aristocratic leisure.
 
-The scene should feel cinematic, refined, and emotionally restrained — capturing the atmosphere of elite summer life around Lake Como.
-
-Environment should include sophisticated European resort elements such as:
-luxury lakefront villas,
-stone terraces,
-Mediterranean gardens,
-grand hotel corridors,
+Environment may include:
+lakefront villas,
+Mediterranean terraces,
 sunlit promenades,
-lakeside balconies,
-outdoor cafés,
-parasols,
-soft architectural archways,
-classic European textures,
+grand hotel corridors,
+European resort architecture,
+soft archways,
+stone textures,
 or elegant waterfront settings.
 
-Lighting must feel like soft natural European sunlight with warm cinematic diffusion, gentle highlights, realistic shadow depth, golden late-afternoon atmosphere, and luxurious ambient glow.
+Lighting should feel:
+warm European sunlight,
+soft cinematic diffusion,
+gentle shadow depth,
+and natural luxury realism.
 
-The emotional tone should feel:
+The mood should feel:
 quiet wealth,
-resort aristocracy,
 effortless elegance,
-soft prestige,
 editorial leisure,
-polished vacation sophistication,
 and understated couture luxury.
 
-Maintain realistic editorial photography aesthetics with:
-natural skin texture,
-authentic fabric behavior,
-luxury fashion photography realism,
-premium cinematic composition,
-high-end magazine quality,
-and elegant visual restraint.
+Preserve realistic luxury fashion photography aesthetics with premium editorial restraint.
 
-Avoid overly dramatic fashion poses, exaggerated AI stylization, fantasy environments, cyberpunk aesthetics, extreme saturation, surrealism, or artificial-looking lighting.
-
-The result must feel like an authentic luxury resort editorial campaign photographed in an elite Italian lakeside destination.
+Avoid:
+tourist photography,
+artificial glamour,
+fantasy styling,
+or exaggerated AI stylization.
 `,
 
   "chromatic-glamour": `
-Create a high-fashion luxury editorial campaign inside a bold chromatic studio environment inspired by modern Gucci-style pop luxury campaigns.
-
-The image must feel:
-vibrant,
-glamorous,
-youthful,
-expensive,
-clean,
-graphic,
-fashion-forward,
-minimalist yet bold.
+Create a bold luxury fashion editorial campaign inside a high-fashion chromatic studio world inspired by modern couture pop luxury campaigns.
 
 The environment should feature:
-a single dominant saturated luxury color world,
 monochromatic studio architecture,
-clean geometric blocks,
-sculptural negative space,
-minimal set design,
-controlled hard shadows,
-and glossy luxury atmosphere.
+graphic geometry,
+clean sculptural forms,
+controlled shadows,
+minimal luxury staging,
+and saturated editorial color harmony.
 
-Allow:
-standing poses,
-seated poses,
-leaning poses,
-geometric interaction,
-elegant asymmetry,
-and strong fashion posture.
-
-The emotional tone should feel:
-cool,
-glamorous,
-emotionally restrained,
-fashion elite,
+The image should feel:
+fashion-forward,
 confident,
-and modern luxury.
+minimal,
+glamorous,
+expensive,
+and emotionally restrained.
 
-Never cheerful or influencer-like.
+Preserve:
+crisp garment rendering,
+luxury realism,
+editorial polish,
+and premium magazine aesthetics.
 
-Ultra realistic luxury fashion photography.
-Luxury campaign quality.
-Crisp garment rendering.
-Premium magazine aesthetics.
+Avoid:
+influencer energy,
+cheerful commercial styling,
+busy environments,
+or artificial CGI aesthetics.
 `,
 
   "runway-silence": `
-Create an ultra-luxury fashion editorial campaign photograph in the aesthetic language of restrained European runway minimalism and silent luxury tailoring.
+Create a restrained luxury runway editorial inspired by European fashion-house minimalism and timeless couture tailoring.
 
-The image should feel emotionally restrained, architecturally clean, psychologically calm, and visually expensive through simplicity alone.
-
-Environment must feel:
-gallery-like,
+Environment should feel:
 minimal,
-sculptural,
+gallery-like,
+architectural,
 silent,
-composed,
-emotionally detached,
-timeless,
-and fashion-house minimal.
+emotionally restrained,
+and visually expensive through simplicity.
 
-Model direction:
-emotionally restrained expression,
-confident stillness,
-anti-commercial energy,
-relaxed luxury posture,
-natural hand placement,
-editorial body language,
-and quiet authority.
-
-Material rendering must prioritize:
+The image should prioritize:
 tailoring geometry,
-drape realism,
-structured silhouettes,
-luxury fabric depth,
-and premium textile realism.
+fabric realism,
+sculptural silhouettes,
+quiet editorial confidence,
+and luxury restraint.
 
 Avoid:
-travel environments,
-fantasy styling,
+busy storytelling,
+tourist environments,
 commercial smiling,
-busy backgrounds,
-oversaturated colors,
-and dramatic storytelling.
-
-The image should feel like timeless runway archive photography photographed for an elite European maison.
+oversaturated color,
+or dramatic theatrical energy.
 `,
 
   "alpine-nomad": `
-Create a cinematic luxury fashion-house campaign set in an alpine wilderness world inspired by nomadic winter aristocracy, expedition luxury, and rugged couture storytelling.
+Create a cinematic luxury campaign set inside a cold alpine wilderness inspired by aristocratic expedition fashion and rugged couture realism.
 
-Environment should feature:
-vast alpine snow landscapes,
-cinematic mountain terrain,
+Environment may include:
+snow landscapes,
+mountain terrain,
 frozen rivers,
-snow-covered forests,
+winter forests,
 cold atmospheric depth,
-cinematic snowfall,
-expansive wilderness scale,
-and remote luxury-travel atmosphere.
+or cinematic alpine isolation.
 
-Visual language must feel:
-wilderness sophistication,
-rugged aristocratic elegance,
+The mood should feel:
 emotionally restrained,
-cinematic expedition fashion,
-frontier couture realism,
-and fashion-house storytelling photography.
-
-Model behavior:
-emotionally restrained luxury confidence,
-cinematic solitude,
-nomadic elegance,
-controlled movement,
-wilderness composure,
-and rugged editorial presence.
+rugged yet elegant,
+cinematic,
+remote,
+and fashion-house refined.
 
 Avoid:
-tourist photography,
-camping aesthetics,
-sporty ski-advertisement energy,
-fantasy CGI environments,
-and exaggerated AI stylization.
+sporty ski aesthetics,
+tourist imagery,
+fantasy environments,
+or exaggerated stylization.
 `,
 
   "sculpted-riviera": `
-Create a luxury fashion-house campaign set in a sculptural Mediterranean architectural world inspired by avant-garde Riviera modernism and artistic coastal geometry.
+Create a sculptural Mediterranean luxury editorial inspired by avant-garde Riviera architecture and artistic coastal minimalism.
 
-Environment should feature:
-monumental curved Mediterranean architecture,
-sculptural cream stone surfaces,
-organic architectural openings,
+Environment may include:
+curved stone architecture,
+Mediterranean geometry,
 warm limestone textures,
-minimalist luxury geometry,
-Mediterranean sky,
-and artistic shadow patterns.
+minimalist luxury surfaces,
+artistic shadows,
+and sculptural coastal spaces.
 
-Visual language must feel:
-sculptural,
-graphic,
-emotionally restrained,
-elegant,
+The image should feel:
 architectural,
-expensive,
-editorial,
-and globally recognizable luxury branding.
-
-Model behavior:
-statuesque editorial posing,
-emotionally detached luxury confidence,
-elongated silhouette emphasis,
-controlled gestures,
-graphic body positioning,
-and fashion-editorial restraint.
+graphic,
+elegant,
+restrained,
+and globally recognizable as luxury fashion branding.
 
 Avoid:
-tourist photography,
+streetwear energy,
 casual posing,
-busy backgrounds,
-street-style aesthetics,
-lifestyle influencer mood,
-and fantasy rendering.
+tourist imagery,
+or busy environments.
 `,
 
   "mediterranean-heirloom": `
-Create a cinematic luxury Mediterranean fashion campaign photographed in historic Southern Europe during golden-hour sunlight.
+Create a cinematic Mediterranean couture campaign photographed in historic Southern Europe during warm golden-hour light.
 
-Environment should feel:
+Environment may include:
 aged limestone architecture,
-ancient Mediterranean streets,
 heritage archways,
-warm stone textures,
-rustic European atmosphere,
-old-world luxury,
-and cinematic travel editorial energy.
+Mediterranean streets,
+rustic European textures,
+and old-world travel atmosphere.
 
-The model should feel:
-emotionally distant,
-elegant but unposed,
-introspective,
-naturally captured mid-movement,
-aristocratic yet effortless,
-and cinematic rather than commercial.
+The image should feel:
+elegant,
+emotionally restrained,
+naturally cinematic,
+and editorial rather than commercial.
 
-Composition should feel like:
-a real luxury maison campaign with slightly asymmetrical framing,
-environmental storytelling,
-cinematic negative space,
-subtle imperfection,
-premium editorial realism,
-and sophisticated travel narrative.
+Maintain:
+asymmetrical editorial realism,
+luxury travel atmosphere,
+and refined environmental storytelling.
 
 Avoid:
-catalog posing,
-centered ecommerce framing,
 tourist-photo aesthetics,
-flat lighting,
-fantasy styling,
-and artificial AI perfection.
+catalog posing,
+or artificial perfection.
 `,
 
   "celestial-silence": `
-Create a cinematic luxury editorial image in the “Celestial Silence” world.
+Create a surreal luxury editorial inside a quiet atmospheric world filled with emotional silence and cinematic negative space.
 
-The scene must feel emotionally quiet, surreal, contemplative, and visually infinite.
-
-Place the model inside a vast atmospheric landscape with strong negative space and cinematic emotional silence.
-
-Environment inspiration:
-reflective dark lake,
-distant mountain silhouettes,
-atmospheric fog,
-luminous dusk horizon,
+Environment may include:
+reflective lakes,
+distant mountains,
+midnight-blue skies,
 floating lantern lights,
-endless midnight-blue sky,
-soft cinematic gradients,
-and dreamlike open voids.
+soft atmospheric fog,
+or dreamlike open landscapes.
 
-Lighting behavior:
-soft moonlit blue ambience,
-subtle cyan atmospheric glow,
-warm floating lantern illumination,
-delicate cinematic rim lighting,
-and natural shadow falloff.
+Lighting should feel:
+soft moonlit ambience,
+subtle cyan glow,
+gentle cinematic gradients,
+and natural shadow softness.
 
-Pose direction:
-quiet,
-introspective,
-emotionally restrained,
-naturally elegant,
-and emotionally present.
+The mood should feel:
+contemplative,
+emotionally quiet,
+elegant,
+and visually infinite.
 
-The image should feel like a frame from an expensive surreal luxury fashion film.
+Avoid:
+chaotic fantasy imagery,
+aggressive effects,
+or artificial CGI behavior.
 `,
 
   "garden-nostalgia": `
-Create a fading-memory couture editorial inspired by forgotten aristocratic gardens, abandoned estate pathways, weathered stone ruins, overgrown wild grass, softened mountain horizons, and nostalgic botanical silence.
+Create a nostalgic couture editorial inspired by forgotten aristocratic gardens and fading romantic memory.
 
-The atmosphere should feel:
-poetic,
+Environment may include:
+weathered stone ruins,
+abandoned estate pathways,
+overgrown botanical landscapes,
+soft mountain horizons,
+or poetic old-world garden spaces.
+
+The image should feel:
 melancholic,
-emotionally distant,
-and suspended in time.
-
-The posture should feel:
-naturally elegant,
-emotionally inward,
-restrained,
-softened,
 quiet,
-and cinematically still.
+restrained,
+timeless,
+and emotionally distant.
 
 Lighting should feel:
 faded natural daylight,
-atmospheric haze,
-muted highlights,
-softened directional falloff,
+soft atmospheric haze,
 aged medium-format realism,
-and weathered cinematic softness.
+and muted cinematic softness.
 
 Avoid:
-fashion-model posing,
-glamour energy,
-influencer aesthetics,
-commercial bridal styling,
-exaggerated movement,
-and artificial sensuality.
-
-The final image should feel like a timeless couture photograph captured inside a fading romantic memory.
+commercial glamour,
+fashion-model theatrics,
+or exaggerated sensuality.
 `,
 
   "dark-aristocracy": `
 Luxury black-and-white aristocratic couture editorial photographed with restrained medium-format realism inside an emotionally silent old-world luxury environment.
 
-Possible environmental interpretations include:
-candlelit palace interiors,
-aged European manor corridors,
-shadowed neoclassical halls,
-museum-like gallery chambers,
-weathered stone architecture,
-cathedral-inspired passageways,
-dark velvet salons,
-historic aristocratic libraries,
-grand stair halls,
-ornamental heritage interiors,
-sculptural palace rooms,
-or emotionally restrained architectural spaces with aged luxury textures.
+Environment may include:
+aged European interiors,
+shadowed palace halls,
+historic manor rooms,
+gallery-like architectural spaces,
+ornamental stone corridors,
+candlelit salons,
+museum-inspired chambers,
+or sculptural old-world luxury settings.
 
-Avoid repeatedly generating the same corridor, archway, tunnel, or identical spatial composition.
+Each generation should feel visually distinct while remaining inside the same aristocratic couture universe.
 
-Each generation should feel like a different cinematic location photographed within the same old-world aristocratic fashion universe.
+The composition must prioritize:
+garment visibility,
+luxury editorial realism,
+subject dominance,
+cinematic restraint,
+and elegant environmental balance.
 
-Editorial fashion-house composition with natural garment visibility, cinematic spatial balance, elegant negative space, and emotionally restrained framing.
-
-The model is captured in an emotionally interrupted moment with sculptural asymmetry, quiet psychological distance, relaxed aristocratic restraint, and naturally evolving editorial body language.
-
-The posture should feel observational rather than performative with:
-subtle body rotation,
-gentle shoulder imbalance,
-elongated neck tension,
-quiet incidental hand placement,
-soft directional movement,
-and emotionally detached presence.
-
-The figure should appear inward, unaware of the camera, and suspended within a moment of timeless aristocratic stillness.
+The model should appear emotionally restrained, naturally poised, observant, and quietly detached without theatrical posing or exaggerated fashion energy.
 
 Lighting should feel:
-soft sculptural studio realism,
-analog monochrome tonal depth,
+soft sculptural monochrome realism,
+analog tonal depth,
 matte cinematic texture,
-medium-format photographic softness,
-aged shadow behavior,
-and subtle optical imperfection.
+subtle shadow falloff,
+and medium-format photographic softness.
 
 Preserve:
 garment identity,
-couture texture,
 embroidery realism,
+luxury textile behavior,
 silhouette integrity,
-facial character,
-luxury material behavior,
-and full-length garment proportions while allowing naturally evolving editorial posture and environmental storytelling.
-
-The garment should remain visually important while allowing natural editorial asymmetry, cinematic environmental storytelling, and emotionally organic composition balance.
+facial realism,
+and couture proportions.
 
 Avoid:
-commercial fashion energy,
+commercial glamour,
 influencer aesthetics,
-exaggerated glamour,
-theatrical posing,
-artificial beauty treatment,
-fantasy styling,
-dramatic CGI environments,
-repetitive architectural layouts,
-identical arches,
+excessive environmental dominance,
+cathedral-scale distance,
 symmetrical tunnel compositions,
+fantasy styling,
+CGI environments,
 aggressive contrast,
-or catalog posture.
+or repetitive architectural layouts.
 
-The image should feel like a rare couture editorial photographed for an old-world luxury fashion house with emotional restraint, sculptural silence, timeless aristocratic realism, and quiet editorial power.
+The final image should feel like an authentic couture editorial photographed for a historic luxury fashion house with quiet emotional restraint and timeless monochrome realism.
 `,
 };
 
@@ -506,21 +356,6 @@ export function buildEditorialDraftPrompt(
     OUTPUT_DIRECTION[
       input.output
     ] || "";
-
-  const poseVariation =
-    randomItem(
-      POSE_VARIATIONS
-    );
-
-  const compositionVariation =
-    randomItem(
-      COMPOSITION_VARIATIONS
-    );
-
-  const lightingVariation =
-    randomItem(
-      LIGHTING_VARIATIONS
-    );
 
   return `
 Use the uploaded hero garment image as the primary subject reference.
@@ -555,18 +390,14 @@ The logo must remain:
 - visually secondary
 - naturally embedded into the composition
 
-Avoid oversized branding, logo distortion, decorative reconstruction, floating patches, or dominant commercial placement.
+Avoid:
+- oversized branding
+- logo distortion
+- decorative reconstruction
+- floating patches
+- dominant commercial placement
 
 If no second image is provided, do not generate or invent any brand logo, watermark, text mark, or branding element.
-
-Pose refinement:
-${poseVariation}
-
-Composition refinement:
-${compositionVariation}
-
-Lighting refinement:
-${lightingVariation}
 
 ${outputDirection}
 `;
