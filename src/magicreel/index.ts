@@ -93,6 +93,7 @@ app.use("/api/payments", paymentRoutes);
 
 import socialPackRoutes from "../api/social-pack/socialPack.routes";
 import cinematicRoutes from "../api/cinematic";
+import createAIRoutes from "./create-ai/createAI.routes";
 
 // CORE APIs
 app.use("/api/predictions", predictionsRoutes);
@@ -118,6 +119,11 @@ app.use(
 app.use(
   "/api/cinematic",
   cinematicRoutes
+);
+
+app.use(
+  "/api/create-ai",
+  createAIRoutes
 );
 
 /* ---------------------------------- */
