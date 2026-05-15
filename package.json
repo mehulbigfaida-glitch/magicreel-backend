@@ -29,6 +29,7 @@
     "jszip": "^3.10.1",
     "morgan": "^1.10.1",
     "multer": "^2.0.2",
+    "openai": "^6.37.0",
     "puppeteer": "^24.42.0",
     "qrcode.react": "^4.2.0",
     "razorpay": "^2.9.6",

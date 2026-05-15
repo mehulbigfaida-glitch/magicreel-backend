@@ -46,6 +46,22 @@ app.use((req, _res, next) => {
 
 app.get("/health", (_req, res) => res.status(200).send("ok"));
 app.get("/ping", (_req, res) => res.status(200).send("pong"));
+
+app.get(
+  "/api/openai-check",
+  (_req, res) => {
+
+    return res.json({
+      hasOpenAIKey:
+        !!process.env.OPENAI_API_KEY,
+
+      keyLength:
+        process.env.OPENAI_API_KEY?.length || 0
+    });
+
+  }
+);
+
 app.get("/", (_req, res) =>
   res.send("MagicReel backend running ✅")
 );
