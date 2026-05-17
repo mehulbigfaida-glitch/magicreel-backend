@@ -1,16 +1,32 @@
 import "dotenv/config";
 import OpenAI from "openai";
+import { v2 as cloudinary } from "cloudinary";
 import { buildCreateAIPrompt } from "../createAI.prompt";
 
 const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey:
+    process.env.OPENAI_API_KEY,
+});
+
+cloudinary.config({
+
+  cloud_name:
+    process.env.CLOUDINARY_CLOUD_NAME,
+
+  api_key:
+    process.env.CLOUDINARY_API_KEY,
+
+  api_secret:
+    process.env.CLOUDINARY_API_SECRET
+
 });
 
 export class OpenAIProvider {
-  async generate(input: {
-    garmentImageUrl: string;
-    processingImageUrl: string;
-  }) {
+
+  async generate(input:{
+    garmentImageUrl:string;
+    processingImageUrl:string;
+  }){
 
     const prompt =
       buildCreateAIPrompt();
@@ -20,56 +36,153 @@ export class OpenAIProvider {
     );
 
     console.log({
+
       garment:
         input.garmentImageUrl,
 
       muse:
         input.processingImageUrl
+
     });
 
     const result =
-      await client.images.generate({
+    await client.responses.create({
 
-        model:
-          "gpt-image-2",
+      model:
+        "gpt-image-2",
 
-        size:
-          "1024x1280",
+      tools:[
+        {
+          type:
+          "image_generation"
+        }
+      ],
 
-        quality:
-          "high",
+      input:[{
 
-        prompt:`
+        role:"user",
+
+        content:[
+
+          {
+
+            type:
+            "input_text",
+
+            text:`
 
 ${prompt}
 
-Garment image:
-${input.garmentImageUrl}
+TASK:
 
-Muse image:
-${input.processingImageUrl}
+Create one premium luxury fashion hero.
 
-Create a premium luxury fashion hero.
+IMAGE 1:
+GARMENT SOURCE OF TRUTH
 
-STRICT RULES:
+IMAGE 2:
+MUSE SOURCE OF TRUTH
 
-- exact 4:5 portrait composition
-- full body visible from head to feet
-- centered symmetrical framing
-- preserve muse identity
+PRIMARY OPERATION:
+
+Transfer the exact garment from IMAGE 1 onto the person in IMAGE 2.
+
+Do not redesign.
+Do not reinterpret.
+Do not restyle.
+
+GARMENT RULES:
+
+- preserve exact silhouette
+- preserve exact embroidery
+- preserve exact textile
+- preserve exact stitching
+- preserve exact colors
+- preserve exact proportions
+- preserve exact drape
+- preserve exact garment length
+- preserve exact fit
+- preserve exact folds
+
+MUSE RULES:
+
+- preserve exact face identity
+- preserve hairstyle
 - preserve anatomy
-- preserve garment identity
-- preserve textile details
-- premium studio background
-- realistic fashion campaign photography
-- ultra detailed skin
-- premium DSLR realism
+- preserve skin tone
+- preserve body proportions
+
+COMPOSITION:
+
+- exact 4:5 portrait
+- exact 1024x1280 composition
+- full body visible
+- head to feet visible
+- centered
+- symmetrical
+
+QUALITY:
+
+- ultra premium
+- luxury campaign quality
+- DSLR realism
+- realistic skin pores
+- sharp face details
+- high textile detail
+- premium lighting
+
+BACKGROUND:
+
+- premium seamless studio
+- soft shadows
+- minimal luxury environment
+
+NEGATIVE:
+
+- no garment redesign
+- no identity drift
+- no cropped feet
+- no AI artifacts
+- no extra limbs
+- no altered face
 
 `
-      });
+          },
+
+          {
+
+            type:
+            "input_image",
+
+            image_url:
+            input.garmentImageUrl,
+
+            detail:
+            "high"
+
+          },
+
+          {
+
+            type:
+            "input_image",
+
+            image_url:
+            input.processingImageUrl,
+
+            detail:
+            "high"
+
+          }
+
+        ]
+
+      }]
+
+    });
 
     console.log(
-      "[OPENAI IMAGE RAW]",
+      "[OPENAI RAW]",
       JSON.stringify(
         result,
         null,
@@ -77,33 +190,75 @@ STRICT RULES:
       )
     );
 
+    const generated =
+    result.output.find(
+
+      (item:any)=>
+
+      item.type===
+
+      "image_generation_call"
+
+    ) as any;
+
+    if(
+      !generated
+    ){
+
+      throw new Error(
+        "No image generated"
+      );
+
+    }
+
     const imageBase64 =
-      result?.data?.[0]?.b64_json;
+      generated?.result;
 
     if(
       !imageBase64
     ){
 
-      console.error(
-        "[OPENAI NO IMAGE]",
-        result
+      throw new Error(
+        "Image payload missing"
       );
 
-      throw new Error(
-        "No image returned from OpenAI"
-      );
     }
 
-    return {
+    const uploadResult =
+    await cloudinary
+    .uploader
+    .upload(
+
+      `data:image/png;base64,${imageBase64}`,
+
+      {
+
+        folder:
+        "magicreel/create-ai"
+
+      }
+
+    );
+
+    console.log(
+
+      "[CLOUDINARY HERO]",
+
+      uploadResult.secure_url
+
+    );
+
+    return{
 
       success:true,
 
       engine:"openai",
 
       output:
-        `data:image/png;base64,${imageBase64}`
+      uploadResult.secure_url
 
     };
 
   }
+
 }
