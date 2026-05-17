@@ -1,5 +1,5 @@
 import "dotenv/config";
-import OpenAI from "openai";
+import OpenAI, { toFile } from "openai";
 import { v2 as cloudinary } from "cloudinary";
 import { buildCreateAIPrompt } from "../createAI.prompt";
 
@@ -45,31 +45,66 @@ export class OpenAIProvider {
 
     });
 
-    const result =
-    await client.responses.create({
+    const garmentResponse =
+await fetch(
+  input.garmentImageUrl
+);
 
-      model:
-        "gpt-image-2",
+const garmentType =
+garmentResponse.headers.get(
+  "content-type"
+) || "image/png";
 
-      tools:[
-        {
-          type:
-          "image_generation"
-        }
-      ],
+const garmentBuffer =
+Buffer.from(
+  await garmentResponse.arrayBuffer()
+);
 
-      input:[{
+const garmentFile =
+await toFile(
+  garmentBuffer,
+  `garment.${garmentType.split("/")[1]}`,
+  {
+    type: garmentType
+  }
+);
 
-        role:"user",
+const museResponse =
+await fetch(
+  input.processingImageUrl
+);
 
-        content:[
+const museType =
+museResponse.headers.get(
+  "content-type"
+) || "image/png";
 
-          {
+const museBuffer =
+Buffer.from(
+  await museResponse.arrayBuffer()
+);
 
-            type:
-            "input_text",
+const museFile =
+await toFile(
+  museBuffer,
+  `muse.${museType.split("/")[1]}`,
+  {
+    type: museType
+  }
+);
 
-            text:`
+const result =
+await client.images.edit({
+
+  model:
+    "gpt-image-2",
+
+  image:[
+    garmentFile,
+    museFile
+  ],
+
+  prompt:`
 
 ${prompt}
 
@@ -146,40 +181,13 @@ NEGATIVE:
 - no extra limbs
 - no altered face
 
-`
-          },
+`,
 
-          {
+  quality:"high",
 
-            type:
-            "input_image",
+  size:"1024x1536"
 
-            image_url:
-            input.garmentImageUrl,
-
-            detail:
-            "high"
-
-          },
-
-          {
-
-            type:
-            "input_image",
-
-            image_url:
-            input.processingImageUrl,
-
-            detail:
-            "high"
-
-          }
-
-        ]
-
-      }]
-
-    });
+});
 
     console.log(
       "[OPENAI RAW]",
@@ -190,29 +198,18 @@ NEGATIVE:
       )
     );
 
-    const generated =
-    result.output.find(
-
-      (item:any)=>
-
-      item.type===
-
-      "image_generation_call"
-
-    ) as any;
-
-    if(
-      !generated
-    ){
-
-      throw new Error(
-        "No image generated"
-      );
-
-    }
-
     const imageBase64 =
-      generated?.result;
+result.data?.[0]?.b64_json;
+
+if(
+  !imageBase64
+){
+
+  throw new Error(
+    "Image payload missing"
+  );
+
+}
 
     if(
       !imageBase64
