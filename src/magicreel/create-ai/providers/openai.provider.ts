@@ -156,6 +156,12 @@ COMPOSITION:
 - centered
 - symmetrical
 
+FOOTWARE:
+
+- Generate realistic premium footwear appropriate for the garment
+- Ensure footwear is fully visible
+- Use commercially realistic fashion styling
+
 QUALITY:
 
 - ultra premium
@@ -177,6 +183,7 @@ NEGATIVE:
 - no garment redesign
 - no identity drift
 - no cropped feet
+- no barefoot
 - no AI artifacts
 - no extra limbs
 - no altered face
@@ -185,7 +192,7 @@ NEGATIVE:
 
   quality:"high",
 
-  size:"1024x1536"
+  size:"1024x1280"
 
 });
 
