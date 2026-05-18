@@ -1,125 +1,93 @@
-import { GarmentDNA } from "./types";
+import { GarmentDNA }
+from "./types";
 
 export function buildPromptRules(
-  dna: GarmentDNA
-): string {
+g:GarmentDNA
+){
 
-  const rules:string[]=[];
+if(
+g.isTop
+){
 
-  // GLOBAL
-  rules.push(
-    "preserve original garment structure"
-  );
+return`
 
-  rules.push(
-    "preserve intended garment styling"
-  );
+- generate realistic lower garments
+- preserve shirt hem behavior
+- generate premium footwear
+- avoid underwear-like bottoms
 
-  rules.push(
-    "do not invent garment components not present in source"
-  );
+`;
 
+}
 
-  // FOOTWEAR
+if(
+g.isBottom
+){
 
-  if(
-    dna.footVisibility==="visible"
-  ){
+return`
 
-    rules.push(
-      "avoid barefoot appearance"
-    );
+- generate complementary top
+- generate premium footwear
 
-  }
+`;
 
+}
 
-  // BLOUSE
+if(
+g.isOnePiece
+){
 
-  if(
-    dna.blousePresent
-  ){
+return`
 
-    rules.push(
-      "preserve original blouse structure"
-    );
+- preserve silhouette
+- preserve hem behavior
+- preserve draping
 
-    rules.push(
-      "preserve blouse neckline"
-    );
+`;
 
-    rules.push(
-      "preserve blouse coverage"
-    );
+}
 
-    rules.push(
-      "never replace blouse with tube tops"
-    );
+if(
+g.isOverlay
+){
 
-  }
+return`
 
+- generate complementary inner garment
+- generate lower garments
 
-  // TUCK
+`;
 
-  if(
-    dna.tuckState==="tucked"
-  ){
+}
 
-    rules.push(
-      "maintain original tucked styling"
-    );
+if(
+g.isEthnic
+){
 
-  }
+return`
 
-  if(
-    dna.tuckState==="untucked"
-  ){
+- preserve draping
+- preserve blouse structure
+- preserve neckline
+- do not invent garments
 
-    rules.push(
-      "maintain original untucked styling"
-    );
+`;
 
-  }
+}
 
+if(
+g.isSet
+){
 
-  // FIT
+return`
 
-  if(
-    dna.fit==="oversized"
-  ){
+- preserve complete coordinated outfit
+- do not split garments
 
-    rules.push(
-      "preserve relaxed oversized silhouette"
-    );
+`;
 
-  }
+}
 
-
-  // LAYERING
-
-  if(
-    dna.layering==="multi"
-  ){
-
-    rules.push(
-      "preserve garment layering"
-    );
-
-  }
-
-
-  // CLOSURE
-
-  if(
-    dna.closureState==="open"
-  ){
-
-    rules.push(
-      "maintain original open garment state"
-    );
-
-  }
-
-
-  return rules.join(". ");
+return "";
 
 }

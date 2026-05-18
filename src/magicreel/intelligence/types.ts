@@ -1,53 +1,19 @@
-export interface GarmentDNA {
+export interface GarmentDNA{
 
-  category: string;
+category:string;
 
-  style:
-    | "ethnic"
-    | "western"
-    | "fusion"
-    | "unknown";
+garmentName:string;
 
-  garmentLength:
-    | "cropped"
-    | "waist"
-    | "hip"
-    | "knee"
-    | "ankle"
-    | "floor";
+isTop:boolean;
 
-  footVisibility:
-    | "visible"
-    | "hidden";
+isBottom:boolean;
 
-  fit:
-    | "slim"
-    | "regular"
-    | "oversized"
-    | "unknown";
+isOnePiece:boolean;
 
-  sleeve:
-    | "none"
-    | "short"
-    | "half"
-    | "full"
-    | "unknown";
+isOverlay:boolean;
 
-  blousePresent: boolean;
+isEthnic:boolean;
 
-  tuckState:
-    | "tucked"
-    | "untucked"
-    | "unknown";
+isSet:boolean;
 
-  layering:
-    | "single"
-    | "multi";
-
-  closureState:
-    | "open"
-    | "closed"
-    | "unknown";
-
-  confidence:number;
 }
