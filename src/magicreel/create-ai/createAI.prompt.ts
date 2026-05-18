@@ -44,17 +44,14 @@ Preserve exactly:
 
 Do not redesign, reinterpret, simplify, enhance, restyle, or modify the garment.
 
-Use the Muse image only as body and identity reference.
+Use the Muse image only as identity and human reference.
 
 Preserve exactly:
 - face identity
-- body shape
-- body proportions
-- shoulder width
-- waist shape
-- arm proportions
-- leg proportions
-- realistic anatomy
+- hairstyle
+- natural human consistency
+- realistic appearance
+- natural proportions
 
 Do not:
 - crop body
@@ -62,18 +59,18 @@ Do not:
 - create sitting pose
 - hide feet
 - create side view
-- alter body proportions
 - generate multiple people
 - create mirrored subjects
+- alter identity
 
 Generate:
 
-premium Hero image
+premium fashion Hero image
 
 Composition:
 - portrait 4:5
 - full body
-- entire body visible from head to feet
+- entire person visible from head to feet
 - centered composition
 - symmetrical framing
 - premium fashion presentation
@@ -100,7 +97,7 @@ Do not generate:
 - distractions
 
 Keep visual attention on:
-garment + Muse only
+garment and subject only
 
 Photography:
 - ultra realistic
@@ -108,7 +105,6 @@ Photography:
 - premium editorial photography
 - luxury studio lighting
 - sharp textile details
-- realistic skin texture
 - premium DSLR quality
 
 Garment Intelligence Rules:
