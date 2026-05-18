@@ -4,7 +4,7 @@ export interface GarmentDNA{
 
   garmentName:string;
 
-  // backward compatibility
+  // compatibility
   style?:string;
 
   isTop:boolean;
