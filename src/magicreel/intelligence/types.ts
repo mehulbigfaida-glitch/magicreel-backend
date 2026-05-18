@@ -1,10 +1,10 @@
-export interface GarmentDNA{
+export interface GarmentDNA {
 
   category:string;
 
   garmentName:string;
 
-  // compatibility fields already used
+  // compatibility layer
   style?:string;
 
   garmentLength?:string;
@@ -12,6 +12,8 @@ export interface GarmentDNA{
   confidence?:number;
 
   layering?:string;
+
+  [key:string]: any;
 
   isTop:boolean;
 
