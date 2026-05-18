@@ -2,29 +2,39 @@ export interface GarmentDNA {
 
   category:string;
 
-  garmentName:string;
+  garmentName?:string;
 
-  // compatibility layer
   style?:string;
 
   garmentLength?:string;
 
-  confidence?:number;
+  footVisibility?:string;
+
+  fit?:string;
+
+  sleeve?:string;
+
+  blousePresent?:boolean;
+
+  tuckState?:string;
 
   layering?:string;
 
-  [key:string]: any;
+  closureState?:string;
 
-  isTop:boolean;
+  confidence?:number;
 
-  isBottom:boolean;
+  // taxonomy layer
+  isTop?:boolean;
 
-  isOnePiece:boolean;
+  isBottom?:boolean;
 
-  isOverlay:boolean;
+  isOnePiece?:boolean;
 
-  isEthnic:boolean;
+  isOverlay?:boolean;
 
-  isSet:boolean;
+  isEthnic?:boolean;
+
+  isSet?:boolean;
 
 }
