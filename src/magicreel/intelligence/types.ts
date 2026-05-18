@@ -4,8 +4,14 @@ export interface GarmentDNA{
 
   garmentName:string;
 
-  // compatibility
+  // compatibility fields already used
   style?:string;
+
+  garmentLength?:string;
+
+  confidence?:number;
+
+  layering?:string;
 
   isTop:boolean;
 
