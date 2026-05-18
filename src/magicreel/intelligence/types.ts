@@ -1,19 +1,22 @@
 export interface GarmentDNA{
 
-category:string;
+  category:string;
 
-garmentName:string;
+  garmentName:string;
 
-isTop:boolean;
+  // backward compatibility
+  style?:string;
 
-isBottom:boolean;
+  isTop:boolean;
 
-isOnePiece:boolean;
+  isBottom:boolean;
 
-isOverlay:boolean;
+  isOnePiece:boolean;
 
-isEthnic:boolean;
+  isOverlay:boolean;
 
-isSet:boolean;
+  isEthnic:boolean;
+
+  isSet:boolean;
 
 }
