@@ -24,14 +24,24 @@ cloudinary.config({
 export class OpenAIProvider {
 
   async generate(input:{
-    garmentImageUrl:string;
-    processingImageUrl:string;
 
-    // NEW
-    // optional only
-    category?:string;
-    garmentName?:string;
-  }){
+  garmentImageUrl:string;
+
+  processingImageUrl:string;
+
+  // =====================
+  // GARMENT INTELLIGENCE
+  // =====================
+
+  category?:string;
+
+  garmentName?:string;
+
+  fit?:string;
+
+  tuckState?:string;
+
+}){
 
     const prompt =
       buildCreateAIPrompt(
