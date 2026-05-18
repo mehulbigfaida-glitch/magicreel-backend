@@ -26,10 +26,18 @@ export class OpenAIProvider {
   async generate(input:{
     garmentImageUrl:string;
     processingImageUrl:string;
+
+    // NEW
+    // optional only
+    category?:string;
+    garmentName?:string;
   }){
 
     const prompt =
-      buildCreateAIPrompt();
+      buildCreateAIPrompt(
+        input.category ?? "",
+        input.garmentName ?? ""
+      );
 
     console.log(
       "[CREATE AI GENERATING]"
@@ -41,11 +49,18 @@ export class OpenAIProvider {
         input.garmentImageUrl,
 
       muse:
-        input.processingImageUrl
+        input.processingImageUrl,
+
+      category:
+        input.category,
+
+      garmentName:
+        input.garmentName
 
     });
 
-    const garmentResponse =
+
+const garmentResponse =
 await fetch(
   input.garmentImageUrl
 );
@@ -55,10 +70,12 @@ garmentResponse.headers.get(
   "content-type"
 ) || "image/png";
 
+
 const garmentBuffer =
 Buffer.from(
   await garmentResponse.arrayBuffer()
 );
+
 
 const garmentFile =
 await toFile(
@@ -69,20 +86,24 @@ await toFile(
   }
 );
 
+
 const museResponse =
 await fetch(
   input.processingImageUrl
 );
+
 
 const museType =
 museResponse.headers.get(
   "content-type"
 ) || "image/png";
 
+
 const museBuffer =
 Buffer.from(
   await museResponse.arrayBuffer()
 );
+
 
 const museFile =
 await toFile(
@@ -92,6 +113,7 @@ await toFile(
     type: museType
   }
 );
+
 
 const result =
 await client.images.edit({
@@ -156,12 +178,6 @@ COMPOSITION:
 - centered
 - symmetrical
 
-FOOTWARE:
-
-- Generate realistic premium footwear appropriate for the garment
-- Ensure footwear is fully visible
-- Use commercially realistic fashion styling
-
 QUALITY:
 
 - ultra premium
@@ -183,86 +199,79 @@ NEGATIVE:
 - no garment redesign
 - no identity drift
 - no cropped feet
-- no barefoot
 - no AI artifacts
 - no extra limbs
 - no altered face
 
 `,
 
-  quality:"high",
+quality:"high",
 
-  size:"1024x1280"
+size:"1024x1280"
 
 });
 
-    console.log(
-      "[OPENAI RAW]",
-      JSON.stringify(
-        result,
-        null,
-        2
-      )
-    );
+console.log(
+"[OPENAI RAW]",
+JSON.stringify(
+result,
+null,
+2
+)
+);
 
-    const imageBase64 =
+const imageBase64 =
 result.data?.[0]?.b64_json;
 
+
 if(
-  !imageBase64
+!imageBase64
 ){
 
-  throw new Error(
-    "Image payload missing"
-  );
+throw new Error(
+"Image payload missing"
+);
 
 }
 
-    if(
-      !imageBase64
-    ){
 
-      throw new Error(
-        "Image payload missing"
-      );
+const uploadResult =
+await cloudinary
+.uploader
+.upload(
 
-    }
+`data:image/png;base64,${imageBase64}`,
 
-    const uploadResult =
-    await cloudinary
-    .uploader
-    .upload(
+{
 
-      `data:image/png;base64,${imageBase64}`,
+folder:
+"magicreel/create-ai"
 
-      {
+}
 
-        folder:
-        "magicreel/create-ai"
+);
 
-      }
 
-    );
+console.log(
 
-    console.log(
+"[CLOUDINARY HERO]",
 
-      "[CLOUDINARY HERO]",
+uploadResult.secure_url
 
-      uploadResult.secure_url
+);
 
-    );
 
-    return{
+return{
 
-      success:true,
+success:true,
 
-      engine:"openai",
+engine:"openai",
 
-      output:
-      uploadResult.secure_url
+output:
+uploadResult.secure_url
 
-    };
+};
 
-  }
+}
 
 }

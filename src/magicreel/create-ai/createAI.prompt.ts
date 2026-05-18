@@ -1,4 +1,26 @@
-export function buildCreateAIPrompt() {
+import { resolveGarment } from "../intelligence/resolveGarment";
+import { buildPromptRules } from "../intelligence/promptRules";
+
+export function buildCreateAIPrompt(
+  category?: string,
+  garmentName?: string
+) {
+
+  // =====================================
+  // GARMENT INTELLIGENCE
+  // =====================================
+
+  const garmentDNA =
+    resolveGarment(
+      category ?? "",
+      garmentName ?? ""
+    );
+
+  const intelligenceRules =
+    buildPromptRules(
+      garmentDNA
+    );
+
   return `
 Use the garment image as the PRIMARY source of truth.
 
@@ -88,5 +110,10 @@ Photography:
 - sharp textile details
 - realistic skin texture
 - premium DSLR quality
+
+Garment Intelligence Rules:
+
+${intelligenceRules}
+
 `;
 }
