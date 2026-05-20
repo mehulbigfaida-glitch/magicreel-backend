@@ -3,91 +3,151 @@
 import { PROMPT_REGISTRY_V1 } from "./promptRegistryV1";
 import { buildP2MPrompt } from "./promptBuilder";
 
-type AvatarGender = "male" | "female";
+type AvatarGender =
+  | "male"
+  | "female"
+  | "Men"
+  | "Women";
+
+function normalizeGender(
+  gender: AvatarGender
+): "male" | "female" {
+
+  const g = gender.toLowerCase();
+
+  if (
+    g === "women" ||
+    g === "female"
+  ) {
+    return "female";
+  }
+
+  return "male";
+}
 
 function resolveRegistryKey(
   categoryKey: string,
   avatarGender: AvatarGender
 ): string {
 
-  if (PROMPT_REGISTRY_V1[categoryKey]) {
+  const gender =
+    normalizeGender(
+      avatarGender
+    );
+
+  if (
+    PROMPT_REGISTRY_V1[
+      categoryKey
+    ]
+  ) {
     return categoryKey;
   }
 
-  const isBack = categoryKey.endsWith("_BACK");
+  const isBack =
+    categoryKey.endsWith(
+      "_BACK"
+    );
 
-  const baseKey = isBack
-    ? categoryKey.replace("_BACK", "")
-    : categoryKey;
+  const baseKey =
+    isBack
+      ? categoryKey.replace(
+          "_BACK",
+          ""
+        )
+      : categoryKey;
 
-  let registryKey: string | null = null;
+  let registryKey:
+    | string
+    | null = null;
 
-  if (avatarGender === "female") {
+  if (
+    gender === "female"
+  ) {
 
-    switch (baseKey) {
+    switch (
+      baseKey
+    ) {
 
       case "top":
-        registryKey = "WOMEN_TOP";
+        registryKey =
+          "WOMEN_TOP";
         break;
 
       case "tshirt":
-        registryKey = "WOMEN_TSHIRT";
+        registryKey =
+          "WOMEN_TSHIRT";
         break;
 
       case "shirt":
-        registryKey = "WOMEN_SHIRT_BLOUSE";
+        registryKey =
+          "WOMEN_SHIRT_BLOUSE";
         break;
 
       case "one_piece":
-        registryKey = "WOMEN_ONE_PIECE";
+        registryKey =
+          "WOMEN_ONE_PIECE";
         break;
 
       case "ethnic_set":
-        registryKey = "WOMEN_ETHNIC_SET";
+        registryKey =
+          "WOMEN_ETHNIC_SET";
         break;
 
       case "saree":
-        registryKey = "WOMEN_SAREE";
+        registryKey =
+          "WOMEN_SAREE";
         break;
 
       case "lehenga":
-        registryKey = "WOMEN_LEHENGA";
+        registryKey =
+          "WOMEN_LEHENGA";
         break;
 
       case "overlay":
-        registryKey = "WOMEN_OVERLAY";
+        registryKey =
+          "WOMEN_OVERLAY";
         break;
 
     }
 
   }
 
-  if (avatarGender === "male") {
+  if (
+    gender === "male"
+  ) {
 
-    switch (baseKey) {
+    switch (
+      baseKey
+    ) {
 
       case "tshirt":
-        registryKey = "MEN_TSHIRT";
+        registryKey =
+          "MEN_TSHIRT";
         break;
 
       case "shirt":
-        registryKey = "MEN_SHIRT";
+        registryKey =
+          "MEN_SHIRT";
         break;
 
       case "kurta":
-        registryKey = "MEN_KURTA";
+        registryKey =
+          "MEN_KURTA";
         break;
 
       case "kurta_set":
-        registryKey = "MEN_KURTA_SET";
+        registryKey =
+          "MEN_KURTA_SET";
         break;
 
       case "sherwani":
-        registryKey = "MEN_SHERWANI";
+        registryKey =
+          "MEN_SHERWANI";
         break;
 
       case "overlay":
-        registryKey = "MEN_OVERLAY";
+        registryKey =
+          "MEN_OVERLAY";
         break;
 
     }
@@ -95,14 +155,21 @@ function resolveRegistryKey(
   }
 
   if (!registryKey) {
-    throw new Error(`Hero prompt not found for ${categoryKey}`);
+    throw new Error(
+      `Hero prompt not found for ${categoryKey}`
+    );
   }
 
   if (isBack) {
 
-    const backKey = `${registryKey}_BACK`;
+    const backKey =
+      `${registryKey}_BACK`;
 
-    if (PROMPT_REGISTRY_V1[backKey]) {
+    if (
+      PROMPT_REGISTRY_V1[
+        backKey
+      ]
+    ) {
       return backKey;
     }
 
@@ -120,21 +187,30 @@ export function buildHeroPrompt(
   }
 ): string {
 
-  const { categoryKey, avatarGender } = input;
-
-  let styling = input.styling;
-
-  if (styling) {
-    styling = styling.trim().toLowerCase();
-  }
-
-  const registryKey = resolveRegistryKey(
+  const {
     categoryKey,
     avatarGender
-  );
+  } = input;
+
+  let styling =
+    input.styling;
+
+  if (styling) {
+    styling =
+      styling
+        .trim()
+        .toLowerCase();
+  }
+
+  const registryKey =
+    resolveRegistryKey(
+      categoryKey,
+      avatarGender
+    );
 
   return buildP2MPrompt({
-    category: registryKey,
+    category:
+      registryKey,
     styling
   });
 
