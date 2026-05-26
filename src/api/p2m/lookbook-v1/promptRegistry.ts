@@ -1,0 +1,2 @@
+export const LOCKED_LOOKBOOK_PROMPT =
+"The person in image 2 adopts the full body pose from image 1. Preserve exact facial identity, facial structure, hairstyle and garment details from image 2. Maintain natural body balance and authentic garment behavior during pose adaptation. Realistic studio fashion photography with natural skin texture, realistic body proportions, authentic garment draping and realistic fabric behavior.";

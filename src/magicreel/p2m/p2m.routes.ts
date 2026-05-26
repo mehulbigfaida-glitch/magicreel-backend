@@ -5,7 +5,7 @@ import { Router, Request, Response, NextFunction } from "express";
 
 import heroRoutes from "../../api/p2m/hero";
 import lookbookRoutes from "../../api/p2m/lookbook";
-
+import lookbookV1Routes from "../../api/p2m/lookbook-v1";
 import { billingGuard } from "../../billing/billing.middleware";
 
 import { generateReelV1Controller } from "../../api/p2m/reel/generate-v1";
@@ -119,6 +119,11 @@ router.use(
   "/lookbook",
   optionalBilling("LOOKBOOK_ECOM"),
   lookbookRoutes
+);
+
+router.use(
+"/lookbook-v1",
+lookbookV1Routes
 );
 
 export default router;
