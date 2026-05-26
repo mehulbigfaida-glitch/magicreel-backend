@@ -1,20 +1,31 @@
 import { Router } from "express";
 
-import { authenticate } from "../../../auth/jwt.middleware";
-
-import { billingGuard } from "../../../billing/billing.middleware";
-
 import {
 generateLookbookV1
 } from "./generate-v1";
+
+import { exportLookbook }
+from "../lookbook/export";
+
+import { authenticate }
+from "../../../auth/jwt.middleware";
 
 const router=Router();
 
 router.post(
 "/generate",
 authenticate,
-billingGuard("LOOKBOOK_ECOM"),
 generateLookbookV1
+);
+
+router.post(
+"/export",
+authenticate,
+(req,res)=>
+exportLookbook(
+req,
+res
+)
 );
 
 export default router;
