@@ -34,22 +34,23 @@ error:
 });
 
 }
-
+const poses = MALE_POSES;
 
 return res.json({
 
 success:true,
+
+runId:"lookbook-v1-test",
 
 message:
 "Lookbook V1 initialized",
 
 lookbookStyle,
 
-poseCount:
-MALE_POSES.length,
-
 prompt:
-LOCKED_LOOKBOOK_PROMPT
+LOCKED_LOOKBOOK_PROMPT,
+
+poses
 
 });
 
