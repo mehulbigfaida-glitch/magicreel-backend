@@ -1,8 +1,7 @@
 import { Request, Response } from "express";
 
 import {
-MALE_POSES,
-FEMALE_POSES
+MALE_POSES
 } from "./poseRegistry";
 
 import {
@@ -36,6 +35,14 @@ error:
 }
 const poses = MALE_POSES;
 
+const mockImages = poses.map(
+(_,i)=>({
+id:`pose-${i+1}`,
+imageUrl:heroImageUrl,
+status:"completed"
+})
+);
+
 console.log(
 "LOOKBOOK V1:",
 {
@@ -48,17 +55,15 @@ return res.json({
 
 success:true,
 
-runId: Date.now().toString(),
+runId:Date.now().toString(),
 
-message:
-"Lookbook V1 initialized",
+images:mockImages,
+
+message:"Lookbook V1 initialized",
 
 lookbookStyle,
 
-prompt:
-LOCKED_LOOKBOOK_PROMPT,
-
-poses
+prompt:LOCKED_LOOKBOOK_PROMPT
 
 });
 
