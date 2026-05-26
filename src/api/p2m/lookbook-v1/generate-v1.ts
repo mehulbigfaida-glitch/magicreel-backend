@@ -36,11 +36,19 @@ error:
 }
 const poses = MALE_POSES;
 
+console.log(
+"LOOKBOOK V1:",
+{
+style:lookbookStyle,
+poses:poses.length
+}
+);
+
 return res.json({
 
 success:true,
 
-runId:"lookbook-v1-test",
+runId: Date.now().toString(),
 
 message:
 "Lookbook V1 initialized",
