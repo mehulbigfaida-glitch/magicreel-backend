@@ -111,9 +111,6 @@ id:"garment-default-1"
 }
 },
 
-inputImageUrl:
-heroImageUrl,
-
 modelId:"default",
 
 presetId:

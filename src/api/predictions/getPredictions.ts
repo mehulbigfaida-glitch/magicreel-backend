@@ -81,10 +81,19 @@ const belongsToUser = (item: any, type: string) => {
           .map((r) => r.outputImageUrl)
           .filter((url) => !!url);
 
-        const heroImageUrl =
-          lb.inputImageUrl ||
-          lookbookImages[0] ||
-          "https://via.placeholder.com/300x450?text=Lookbook";
+
+const heroRender =
+renders.find(
+(r)=>r.pose==="hero"
+);
+
+const heroImageUrl=
+
+heroRender?.outputImageUrl ||
+
+lookbookImages[0] ||
+
+"https://via.placeholder.com/300x450?text=Lookbook";
 
         return {
           id: lb.id,
