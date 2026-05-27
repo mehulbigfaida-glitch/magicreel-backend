@@ -111,6 +111,9 @@ id:"garment-default-1"
 }
 },
 
+inputImageUrl:
+heroImageUrl,
+
 modelId:"default",
 
 presetId:
@@ -499,7 +502,6 @@ aspectRatio:
 await finalizeBilling(
 req
 );
-
 
 console.log({
 
