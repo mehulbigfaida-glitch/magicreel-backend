@@ -130,31 +130,7 @@ lookbookImages[0] ||
       return match?.credits ?? 0;
     };
 
-   // ========================
-// DEBUG
-// ========================
-
-console.log(
-  "LOOKBOOK COUNT:",
-  lookbookPredictions.length
-);
-
-console.log(
-  "LOOKBOOK AFTER FILTER:",
-  lookbookPredictions.filter(
-    (lb) => belongsToUser(lb, "lookbook")
-  ).length
-);
-
-console.log(
-  "LOOKBOOK IDS:",
-  lookbookPredictions.map((lb) => ({
-    id: lb.id,
-    createdAt: lb.createdAt,
-  }))
-);
-
-// ========================
+ // ========================
 // BUILD RESPONSE
 // ========================
 
