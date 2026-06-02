@@ -374,14 +374,17 @@ outputUrl,
 const uploaded=
 await uploadToCloudinary(
 
-localPath,
+  localPath,
 
-{
+  {
 
-folder:
-"magicreel/lookbooks"
+    folder:
+    "magicreel/lookbooks",
 
-}
+    public_id:
+    `${lookbook.id}_${pose.id}`
+
+  }
 
 );
 
