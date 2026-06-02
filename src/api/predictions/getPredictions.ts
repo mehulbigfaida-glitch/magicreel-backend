@@ -77,11 +77,6 @@ const belongsToUser = (item: any, type: string) => {
           orderBy: { createdAt: "asc" },
         });
 
-console.log(
-  "LOOKBOOK COUNT:",
-  lookbookPredictions.length
-);
-
         const lookbookImages = renders
           .map((r) => r.outputImageUrl)
           .filter((url) => !!url);
