@@ -164,15 +164,14 @@ const predictions = [
       })),
 
       // LOOKBOOK
-      ...lookbookPredictions
-  .filter((lb) => belongsToUser(lb, "lookbook"))
+...lookbookPredictions
   .map((lb) => ({
-        ...lb,
-        creditsUsed: getCredits({
-          type: "lookbook",
-          createdAt: lb.createdAt,
-        }),
-      })),
+    ...lb,
+    creditsUsed: getCredits({
+      type: "lookbook",
+      createdAt: lb.createdAt,
+    }),
+  })),
     ];
 
     // SORT
