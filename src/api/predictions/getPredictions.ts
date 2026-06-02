@@ -77,6 +77,11 @@ const belongsToUser = (item: any, type: string) => {
           orderBy: { createdAt: "asc" },
         });
 
+console.log(
+  "LOOKBOOK COUNT:",
+  lookbookPredictions.length
+);
+
         const lookbookImages = renders
           .map((r) => r.outputImageUrl)
           .filter((url) => !!url);
@@ -125,10 +130,35 @@ lookbookImages[0] ||
       return match?.credits ?? 0;
     };
 
-    // ========================
-    // BUILD RESPONSE
-    // ========================
-    const predictions = [
+   // ========================
+// DEBUG
+// ========================
+
+console.log(
+  "LOOKBOOK COUNT:",
+  lookbookPredictions.length
+);
+
+console.log(
+  "LOOKBOOK AFTER FILTER:",
+  lookbookPredictions.filter(
+    (lb) => belongsToUser(lb, "lookbook")
+  ).length
+);
+
+console.log(
+  "LOOKBOOK IDS:",
+  lookbookPredictions.map((lb) => ({
+    id: lb.id,
+    createdAt: lb.createdAt,
+  }))
+);
+
+// ========================
+// BUILD RESPONSE
+// ========================
+
+const predictions = [
       // HERO
       ...heroJobs
   .filter((job) => belongsToUser(job, "hero"))
@@ -142,8 +172,11 @@ lookbookImages[0] ||
           type: "hero",
           createdAt: job.createdAt,
         }),
+           
       })),
 
+
+      
       // REEL
       ...reelJobs
   .filter((job) => belongsToUser(job, "reel"))
