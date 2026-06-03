@@ -10,12 +10,22 @@ from "../lookbook/export";
 import { authenticate }
 from "../../../auth/jwt.middleware";
 
+import {
+testMultiAngle
+} from "./test-multiangle";
+
 const router=Router();
 
 router.post(
 "/generate",
 authenticate,
 generateLookbookV1
+);
+
+router.post(
+"/test-multiangle",
+authenticate,
+testMultiAngle
 );
 
 router.post(
