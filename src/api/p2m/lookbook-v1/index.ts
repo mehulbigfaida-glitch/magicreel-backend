@@ -17,9 +17,8 @@ testMultiAngle
 const router=Router();
 
 router.post(
-"/generate",
-authenticate,
-generateLookbookV1
+"/test-multiangle",
+testMultiAngle
 );
 
 router.post(
