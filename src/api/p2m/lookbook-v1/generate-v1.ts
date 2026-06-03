@@ -8,7 +8,10 @@ import { finalizeBilling } from "../../../billing/billing.middleware";
 import { uploadToCloudinary } from "../../../utils/cloudinary";
 import { supabase } from "../../../lib/supabase";
 
-import { FEMALE_POSES } from "./poseRegistry";
+import {
+FEMALE_POSES,
+MALE_POSES
+} from "./poseRegistry";
 import { LOCKED_LOOKBOOK_PROMPT } from "./promptRegistry";
 
 const { randomUUID } = require("crypto");
@@ -59,7 +62,11 @@ heroImageUrl,
 
 backHeroImageUrl,
 
-lookbookStyle
+lookbookStyle,
+
+gender,
+
+category
 
 }=req.body;
 
@@ -237,12 +244,20 @@ lookbook.id
 
 
 /* -------------------------
-   FEMALE OPENPOSES
+   POSE ROUTING
 -------------------------- */
+
+const poseSet =
+
+gender === "Men"
+
+? MALE_POSES
+
+: FEMALE_POSES;
 
 for(
 const pose
-of FEMALE_POSES
+of poseSet
 ){
 
 let finalUrl:string|null=null;
