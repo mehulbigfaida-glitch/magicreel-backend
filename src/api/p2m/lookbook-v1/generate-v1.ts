@@ -14,6 +14,11 @@ MALE_POSES
 } from "./poseRegistry";
 import { LOCKED_LOOKBOOK_PROMPT } from "./promptRegistry";
 
+import {
+  SAREE_2511_SHOTS,
+  QWEN_2511_SAREE_CONFIG
+} from "./sareeShots2511";
+
 const { randomUUID } = require("crypto");
 
 const REPLICATE_API_TOKEN =
@@ -247,6 +252,228 @@ lookbook.id
    POSE ROUTING
 -------------------------- */
 
+const isSaree =
+category === "saree";
+
+if(isSaree){
+
+console.log(
+"Saree 2511 branch enabled"
+);
+
+for(
+const shot
+of SAREE_2511_SHOTS
+){
+
+let finalUrl:string|null=null;
+
+try{
+
+console.log(
+"Generating:",
+shot.id
+);
+
+const response=
+await axios.post(
+
+QWEN_URL,
+
+{
+
+input:{
+
+image:[
+heroImageUrl
+],
+
+prompt:
+shot.prompt,
+
+aspect_ratio:
+QWEN_2511_SAREE_CONFIG.aspect_ratio,
+
+go_fast:
+QWEN_2511_SAREE_CONFIG.go_fast,
+
+lora_scale:
+QWEN_2511_SAREE_CONFIG.lora_scale,
+
+lora_weights:
+QWEN_2511_SAREE_CONFIG.lora_weights,
+
+output_format:
+QWEN_2511_SAREE_CONFIG.output_format,
+
+output_quality:
+QWEN_2511_SAREE_CONFIG.output_quality
+
+}
+
+},
+
+{
+
+headers:{
+
+Authorization:
+`Bearer ${REPLICATE_API_TOKEN}`
+
+}
+
+}
+
+);
+
+const predictionUrl=
+response.data.urls.get;
+
+let outputUrl=null;
+
+for(
+let i=0;
+i<60;
+i++
+){
+
+const poll=
+await axios.get(
+
+predictionUrl,
+
+{
+
+headers:{
+
+Authorization:
+`Bearer ${REPLICATE_API_TOKEN}`
+
+}
+
+}
+
+);
+
+if(
+poll.data.status==="succeeded"
+){
+
+outputUrl=
+poll.data.output[0];
+
+break;
+
+}
+
+if(
+poll.data.status==="failed"
+){
+
+break;
+
+}
+
+await new Promise(
+r=>setTimeout(
+r,
+1500
+)
+);
+
+}
+
+if(outputUrl){
+
+const localPath=
+await downloadImage(
+
+outputUrl,
+
+`${shot.id}.png`
+
+);
+
+const uploaded=
+await uploadToCloudinary(
+
+localPath,
+
+{
+
+folder:
+"magicreel/lookbooks",
+
+public_id:
+`${lookbook.id}_${shot.id}`
+
+}
+
+);
+
+finalUrl=
+uploaded.secure_url;
+
+}
+
+}catch(err){
+
+console.error(
+
+"Saree shot failed:",
+
+shot.id
+
+);
+
+}
+
+poses.push({
+
+poseId:
+shot.id,
+
+imageUrl:
+finalUrl || ""
+
+});
+
+await prisma.render.create({
+
+data:{
+
+pose:
+shot.id,
+
+engine:
+"QWEN_2511",
+
+type:
+"LOOKBOOK",
+
+status:
+"completed",
+
+modelImageUrl:
+heroImageUrl,
+
+garmentImageUrl:
+heroImageUrl,
+
+outputImageUrl:
+finalUrl,
+
+lookbookId:
+lookbook.id
+
+}
+
+});
+
+}
+
+}else{
+
 const poseSet =
 
 gender === "Men"
@@ -463,7 +690,7 @@ lookbook.id
 
 }
 
-});
+});}
 
 }
 
