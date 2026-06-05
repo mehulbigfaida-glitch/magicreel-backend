@@ -28,6 +28,12 @@ testMultiAngle
 );
 
 router.post(
+"/generate",
+authenticate,
+generateLookbookV1
+);
+
+router.post(
 "/export",
 authenticate,
 (req,res)=>
