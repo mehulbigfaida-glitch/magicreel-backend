@@ -480,13 +480,12 @@ lookbook.id
 
 const normalizedGender =
 String(gender || "")
+.trim()
 .toLowerCase();
 
 const isMale =
-
-normalizedGender.includes("men") ||
-
-normalizedGender.includes("male");
+normalizedGender === "men" ||
+normalizedGender === "male";
 
 const poseSet =
 isMale
