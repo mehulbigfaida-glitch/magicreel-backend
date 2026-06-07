@@ -481,12 +481,19 @@ lookbook.id
 
 }else{
 
+const normalizedGender =
+String(gender || "")
+.toLowerCase();
+
+const isMale =
+
+normalizedGender.includes("men") ||
+
+normalizedGender.includes("male");
+
 const poseSet =
-
-gender === "Men"
-
+isMale
 ? MALE_POSES
-
 : FEMALE_POSES;
 
 for(
