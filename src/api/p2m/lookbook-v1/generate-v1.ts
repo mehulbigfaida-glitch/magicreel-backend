@@ -19,6 +19,9 @@ import {
   QWEN_2511_SAREE_CONFIG
 } from "./sareeShots2511";
 
+import { LOOKBOOK_STYLE_REGISTRY }
+from "./lookbookStyleRegistry";
+
 const { randomUUID } = require("crypto");
 
 const REPLICATE_API_TOKEN =
@@ -75,6 +78,10 @@ category
 
 }=req.body;
 
+const stylePrompt =
+LOOKBOOK_STYLE_REGISTRY[
+  (lookbookStyle || "studio") as keyof typeof LOOKBOOK_STYLE_REGISTRY
+] || LOOKBOOK_STYLE_REGISTRY.studio;
 
 if(!heroImageUrl){
 
@@ -289,7 +296,7 @@ heroImageUrl
 ],
 
 prompt:
-shot.prompt,
+`${shot.prompt} ${stylePrompt}`,
 
 aspect_ratio:
 QWEN_2511_SAREE_CONFIG.aspect_ratio,
@@ -512,7 +519,7 @@ heroImageUrl
 ],
 
 prompt:
-LOCKED_LOOKBOOK_PROMPT,
+`${LOCKED_LOOKBOOK_PROMPT} ${stylePrompt}`,
 
 aspect_ratio:
 "match_input_image",
