@@ -78,10 +78,7 @@ category
 
 }=req.body;
 
-const stylePrompt =
-LOOKBOOK_STYLE_REGISTRY[
-  (lookbookStyle || "studio") as keyof typeof LOOKBOOK_STYLE_REGISTRY
-] || LOOKBOOK_STYLE_REGISTRY.studio;
+const stylePrompt = "";
 
 if(!heroImageUrl){
 
