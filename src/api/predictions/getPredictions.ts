@@ -68,43 +68,53 @@ const belongsToUser = (item: any, type: string) => {
   take: 50,
 });
 
-    const lookbookPredictions = await Promise.all(
-      lookbookJobs.map(async (lb: any) => {
-        const renders = await prisma.render.findMany({
-          where: {
-            lookbookId: lb.id,
-          },
-          orderBy: { createdAt: "asc" },
-        });
+    // Fetch all renders in a single query
+const allLookbookRenders = await prisma.render.findMany({
+  where: {
+    lookbookId: {
+      in: lookbookJobs.map((lb) => lb.id),
+    },
+  },
+  orderBy: { createdAt: "asc" },
+});
 
-        const lookbookImages = renders
-          .map((r) => r.outputImageUrl)
-          .filter((url) => !!url);
+// Group renders by lookbookId
+const rendersByLookbook = new Map<string, any[]>();
 
+for (const render of allLookbookRenders) {
+  if (!rendersByLookbook.has(render.lookbookId)) {
+    rendersByLookbook.set(render.lookbookId, []);
+  }
 
-const heroRender =
-renders.find(
-(r)=>r.pose==="hero"
-);
+  rendersByLookbook.get(render.lookbookId)!.push(render);
+}
 
-const heroImageUrl=
+// Build lookbook predictions without additional DB queries
+const lookbookPredictions = lookbookJobs.map((lb: any) => {
+  const renders = rendersByLookbook.get(lb.id) || [];
 
-heroRender?.outputImageUrl ||
+  const lookbookImages = renders
+    .map((r) => r.outputImageUrl)
+    .filter((url) => !!url);
 
-lookbookImages[0] ||
+  const heroRender = renders.find(
+    (r) => r.pose === "hero"
+  );
 
-"https://via.placeholder.com/300x450?text=Lookbook";
+  const heroImageUrl =
+    heroRender?.outputImageUrl ||
+    lookbookImages[0] ||
+    "https://via.placeholder.com/300x450?text=Lookbook";
 
-        return {
-          id: lb.id,
-          type: "lookbook",
-          status: "completed",
-          heroImageUrl,
-          lookbookImages,
-          createdAt: lb.createdAt,
-        };
-      })
-    );
+  return {
+    id: lb.id,
+    type: "lookbook",
+    status: "completed",
+    heroImageUrl,
+    lookbookImages,
+    createdAt: lb.createdAt,
+  };
+});
 
     // ========================
     // CREDIT MATCH FUNCTION
