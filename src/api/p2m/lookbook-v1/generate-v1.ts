@@ -78,6 +78,14 @@ category
 
 }=req.body;
 
+console.log("================================");
+console.log("LOOKBOOK INPUT HERO");
+console.log(
+  typeof heroImageUrl,
+  heroImageUrl?.substring?.(0, 120)
+);
+console.log("================================");
+
 const stylePrompt = "";
 
 if(!heroImageUrl){
