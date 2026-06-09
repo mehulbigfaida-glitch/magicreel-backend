@@ -74,6 +74,8 @@ export const carouselKenBurnsV2Service = {
         `⬇️ Downloading image ${i + 1}/${imageUrls.length}`
       );
 
+      console.log("🎬 REEL IMAGE URL:", imageUrl);
+      
       await downloadFile(
         imageUrl,
         imagePath

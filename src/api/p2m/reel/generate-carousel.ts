@@ -34,13 +34,18 @@ export async function generateCarouselReelController(
     }
 
     const imageUrls = renders
-      .map((r) => r.outputImageUrl)
-      .filter(Boolean) as string[];
+  .map((r) => r.outputImageUrl)
+  .filter(Boolean) as string[];
 
-    const result =
-      await carouselReelService.generate({
-        imageUrls,
-      });
+console.log(
+  "🎬 IMAGE URLS:",
+  imageUrls
+);
+
+const result =
+  await carouselReelService.generate({
+    imageUrls,
+  });
 
     return res.status(200).json({
       success: true,
