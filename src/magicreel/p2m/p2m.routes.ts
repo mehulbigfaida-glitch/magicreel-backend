@@ -10,6 +10,8 @@ import { billingGuard } from "../../billing/billing.middleware";
 
 import { generateReelV1Controller } from "../../api/p2m/reel/generate-v1";
 import { getReelStatus } from "../../api/p2m/reel/status";
+import { generateCarouselReelController } from "../../api/p2m/reel/generate-carousel";
+import { testKenBurnsController } from "../../api/p2m/reel/test-kenburns";
 import { heroQueue } from "../queue/hero.queue";
 
 // ✅ PUBLIC CONTROLLER (NO AUTH)
@@ -87,6 +89,16 @@ router.post(
 );
 
 router.get("/reel/status/:jobId", getReelStatus);
+
+router.post(
+  "/reel/carousel",
+  generateCarouselReelController
+);
+
+router.post(
+  "/reel/test-kenburns",
+  testKenBurnsController
+);
 
 /* ----------------------------------
    👗 HERO
