@@ -1,6 +1,7 @@
+// src/api/p2m/reel/generate-carousel.ts
+
 import { Request, Response } from "express";
 import { prisma } from "../../../magicreel/db/prisma";
-import { carouselReelService } from "../../../magicreel/services/carouselReel.service";
 
 export async function generateCarouselReelController(
   req: Request,
@@ -34,24 +35,14 @@ export async function generateCarouselReelController(
     }
 
     const imageUrls = renders
-  .map((r) => r.outputImageUrl)
-  .filter(Boolean) as string[];
-
-console.log(
-  "🎬 IMAGE URLS:",
-  imageUrls
-);
-
-const result =
-  await carouselReelService.generate({
-    imageUrls,
-  });
+      .map((r) => r.outputImageUrl)
+      .filter(Boolean) as string[];
 
     return res.status(200).json({
       success: true,
       lookbookId,
       imageCount: imageUrls.length,
-      reelVideoUrl: result.reelVideoUrl,
+      imageUrls,
     });
 
   } catch (error: any) {
