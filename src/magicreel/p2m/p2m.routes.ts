@@ -12,6 +12,8 @@ import { generateReelV1Controller } from "../../api/p2m/reel/generate-v1";
 import { getReelStatus } from "../../api/p2m/reel/status";
 import { generateCarouselReelController } from "../../api/p2m/reel/generate-carousel";
 import { testKenBurnsController } from "../../api/p2m/reel/test-kenburns";
+import { getReelById }
+from "../../api/p2m/reel/get-reel";
 import { heroQueue } from "../queue/hero.queue";
 
 // ✅ PUBLIC CONTROLLER (NO AUTH)
@@ -95,10 +97,17 @@ router.post(
   generateCarouselReelController
 );
 
+router.get(
+  "/reel/:renderId",
+  getReelById
+);
+
 router.post(
   "/reel/test-kenburns",
   testKenBurnsController
 );
+
+
 
 /* ----------------------------------
    👗 HERO
