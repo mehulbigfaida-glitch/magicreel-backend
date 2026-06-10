@@ -78,23 +78,24 @@ export async function generateCarouselReelController(
     // SAVE REEL TO DATABASE
     // =====================================
 
-    await prisma.render.create({
-      data: {
-        lookbookId,
+    const reelRender =
+await prisma.render.create({
+  data: {
+    lookbookId,
 
-        pose: "REEL",
-        engine: "FFMPEG",
+    pose: "REEL",
+    engine: "FFMPEG",
 
-        modelImageUrl: "",
-        garmentImageUrl: "",
+    modelImageUrl: "",
+    garmentImageUrl: "",
 
-        status: "completed",
+    status: "completed",
 
-        type: "REEL",
+    type: "REEL",
 
-        reelVideoUrl: uploaded.secure_url,
-      },
-    });
+    reelVideoUrl: uploaded.secure_url,
+  },
+});
 
     console.log(
       "✅ REEL SAVED TO DB:",
@@ -102,11 +103,16 @@ export async function generateCarouselReelController(
     );
 
     return res.status(200).json({
-      success: true,
-      lookbookId,
-      imageCount: imageUrls.length,
-      videoUrl: uploaded.secure_url,
-    });
+  success: true,
+
+  reelId: reelRender.id,
+
+  lookbookId,
+
+  imageCount: imageUrls.length,
+
+  videoUrl: uploaded.secure_url,
+});
 
   } catch (error: any) {
     console.error(
