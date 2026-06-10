@@ -1,6 +1,7 @@
 import { exec } from "child_process";
 import path from "path";
 import fs from "fs";
+import { ffmpegPath } from "../../utils/ffmpegPath";
 
 interface MagicReelConcatInput {
   clips: string[];
@@ -67,7 +68,7 @@ const clipDuration = 2.5;
     }
 
     const ffmpegCommand =
-      `ffmpeg -y ${inputs} ` +
+  `"${ffmpegPath}" -y ${inputs} ` +
       `-filter_complex "${filterParts.join(
         ";"
       )}" ` +
