@@ -14,6 +14,7 @@ export async function generateCarouselReelController(
   res: Response
 ) {
   try {
+
     const { lookbookId } = req.body;
 
     if (!lookbookId) {
@@ -40,18 +41,35 @@ export async function generateCarouselReelController(
       });
     }
 
+    // =====================================
+    // USE ONLY REAL CLOUDINARY LOOKBOOK IMAGES
+    // FILTER OUT HERO BASE64 ROWS
+    // =====================================
+
     const imageUrls = renders
       .map((r) => r.outputImageUrl)
-      .filter(Boolean) as string[];
+      .filter(
+        (url): url is string =>
+          typeof url === "string" &&
+          url.startsWith("https://")
+      );
 
-    console.log("IMAGE URLS");
-    console.log(imageUrls);
-    
     console.log("================================");
     console.log("🎬 CAROUSEL REEL START");
     console.log("LOOKBOOK:", lookbookId);
-    console.log("IMAGES:", imageUrls.length);
+    console.log("TOTAL RENDERS:", renders.length);
+    console.log("VALID IMAGES:", imageUrls.length);
     console.log("================================");
+
+    console.log("IMAGE URLS");
+    console.log(imageUrls);
+
+    if (!imageUrls.length) {
+      return res.status(400).json({
+        success: false,
+        error: "No valid Cloudinary images found",
+      });
+    }
 
     const reelResult =
       await carouselKenBurnsV2Service.generate({
@@ -77,28 +95,25 @@ export async function generateCarouselReelController(
       uploaded.secure_url
     );
 
-    // =====================================
-    // SAVE REEL TO DATABASE
-    // =====================================
-
     const reelRender =
-await prisma.render.create({
-  data: {
-    lookbookId,
+      await prisma.render.create({
+        data: {
+          lookbookId,
 
-    pose: "REEL",
-    engine: "FFMPEG",
+          pose: "REEL",
+          engine: "FFMPEG",
 
-    modelImageUrl: "",
-    garmentImageUrl: "",
+          modelImageUrl: "",
+          garmentImageUrl: "",
 
-    status: "completed",
+          status: "completed",
 
-    type: "REEL",
+          type: "REEL",
 
-    reelVideoUrl: uploaded.secure_url,
-  },
-});
+          reelVideoUrl:
+            uploaded.secure_url,
+        },
+      });
 
     console.log(
       "✅ REEL SAVED TO DB:",
@@ -106,18 +121,22 @@ await prisma.render.create({
     );
 
     return res.status(200).json({
-  success: true,
+      success: true,
 
-  reelId: reelRender.id,
+      reelId:
+        reelRender.id,
 
-  lookbookId,
+      lookbookId,
 
-  imageCount: imageUrls.length,
+      imageCount:
+        imageUrls.length,
 
-  videoUrl: uploaded.secure_url,
-});
+      videoUrl:
+        uploaded.secure_url,
+    });
 
   } catch (error: any) {
+
     console.error(
       "❌ Carousel Reel Error:",
       error
@@ -129,5 +148,6 @@ await prisma.render.create({
         error.message ||
         "Carousel reel failed",
     });
+
   }
 }
