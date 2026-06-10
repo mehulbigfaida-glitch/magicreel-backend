@@ -74,6 +74,33 @@ export async function generateCarouselReelController(
       uploaded.secure_url
     );
 
+    // =====================================
+    // SAVE REEL TO DATABASE
+    // =====================================
+
+    await prisma.render.create({
+      data: {
+        lookbookId,
+
+        pose: "REEL",
+        engine: "FFMPEG",
+
+        modelImageUrl: "",
+        garmentImageUrl: "",
+
+        status: "completed",
+
+        type: "REEL",
+
+        reelVideoUrl: uploaded.secure_url,
+      },
+    });
+
+    console.log(
+      "✅ REEL SAVED TO DB:",
+      uploaded.secure_url
+    );
+
     return res.status(200).json({
       success: true,
       lookbookId,
