@@ -44,6 +44,9 @@ export async function generateCarouselReelController(
       .map((r) => r.outputImageUrl)
       .filter(Boolean) as string[];
 
+    console.log("IMAGE URLS");
+    console.log(imageUrls);
+    
     console.log("================================");
     console.log("🎬 CAROUSEL REEL START");
     console.log("LOOKBOOK:", lookbookId);
