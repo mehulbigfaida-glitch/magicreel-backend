@@ -129,14 +129,15 @@ model Render {
   status          String
   lookbookId      String
 
-  // ✅ NEW (add below)
-  type            String   @default("HERO") // HERO | REEL
-  reelVideoUrl    String?  // for reel
+  type            String   @default("HERO")
+  reelVideoUrl    String?
 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
   lookbook        Lookbook @relation(fields: [lookbookId], references: [id])
+
+  @@index([lookbookId])
 }
 
 model LookbookEdit {
