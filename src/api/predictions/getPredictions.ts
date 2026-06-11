@@ -89,12 +89,22 @@ console.timeEnd("lookbookJobs");
 
 // Fetch all renders in a single query
 const allLookbookRenders = await prisma.render.findMany({
+  select: {
+    lookbookId: true,
+    pose: true,
+    outputImageUrl: true,
+    createdAt: true,
+  },
+
   where: {
     lookbookId: {
       in: lookbookJobs.map((lb) => lb.id),
     },
   },
-  orderBy: { createdAt: "asc" },
+
+  orderBy: {
+    createdAt: "asc",
+  },
 });
 
 console.timeEnd("allLookbookRenders");
