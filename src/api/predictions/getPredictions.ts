@@ -9,16 +9,21 @@ export const getPredictions = async (req: Request, res: Response) => {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
-    // ========================
-    // STEP 1: GET USER CREDIT TX
-    // ========================
-    const creditTx = await prisma.creditTransaction.findMany({
+// ========================
+// STEP 1: GET USER CREDIT TX
+// ========================
+
+console.time("creditTx");
+
+const creditTx = await prisma.creditTransaction.findMany({
   where: {
     status: "COMPLETED",
     userId: userId,
   },
   orderBy: { createdAt: "desc" },
 });
+
+console.timeEnd("creditTx");
 
 const belongsToUser = (item: any, type: string) => {
   const itemTime = new Date(item.createdAt).getTime();
@@ -47,28 +52,42 @@ const belongsToUser = (item: any, type: string) => {
     // STEP 3: FETCH ONLY USER JOBS
     // ========================
 
-    // HERO
-    const heroJobs = await prisma.productToModelJob.findMany({
+    console.time("heroJobs");
+
+// HERO
+const heroJobs = await prisma.productToModelJob.findMany({
   orderBy: { createdAt: "desc" },
   take: 50,
 });
 
-    // REEL
-    const reelJobs = await prisma.render.findMany({
-      where: {
-  type: "REEL",
-},
-      orderBy: { createdAt: "desc" },
-      take: 30,
-    });
+console.timeEnd("heroJobs");
 
-    // LOOKBOOK
-    const lookbookJobs = await prisma.lookbook.findMany({
+    console.time("reelJobs");
+
+// REEL
+const reelJobs = await prisma.render.findMany({
+  where: {
+    type: "REEL",
+  },
+  orderBy: { createdAt: "desc" },
+  take: 30,
+});
+
+console.timeEnd("reelJobs");
+
+    console.time("lookbookJobs");
+
+// LOOKBOOK
+const lookbookJobs = await prisma.lookbook.findMany({
   orderBy: { createdAt: "desc" },
   take: 50,
 });
 
-    // Fetch all renders in a single query
+console.timeEnd("lookbookJobs");
+
+    console.time("allLookbookRenders");
+
+// Fetch all renders in a single query
 const allLookbookRenders = await prisma.render.findMany({
   where: {
     lookbookId: {
@@ -77,6 +96,8 @@ const allLookbookRenders = await prisma.render.findMany({
   },
   orderBy: { createdAt: "asc" },
 });
+
+console.timeEnd("allLookbookRenders");
 
 // Group renders by lookbookId
 const rendersByLookbook = new Map<string, any[]>();
