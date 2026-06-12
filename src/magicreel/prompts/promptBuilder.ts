@@ -31,8 +31,8 @@ export function buildP2MPrompt({
     switch (s) {
 
       case "TUCKED":
-        stylingBlock =
-          "The shirt is fully tucked-in inside the trousers with a clean waistline. The waistband of the trousers is clearly visible with a belt worn. The shirt hem remains completely inside the trousers.";
+  stylingBlock =
+    "The shirt is worn neatly tucked into the trousers.";
         break;
 
       case "UNTUCKED":
