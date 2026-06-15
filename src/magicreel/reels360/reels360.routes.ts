@@ -9,14 +9,18 @@ const router = Router();
 
 router.post(
   "/generate",
-  (req, res) => reels360Controller.generate(req, res)
+  authenticate,
+  (req, res) =>
+    reels360Controller.generate(req, res)
 );
 
 /* ================= 360 REEL STATUS ================= */
 
 router.get(
   "/status/:runId",
-  (req, res) => reels360Controller.getStatus(req, res)
+  authenticate,
+  (req, res) =>
+    reels360Controller.getStatus(req, res)
 );
 
 export default router;
