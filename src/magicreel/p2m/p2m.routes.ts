@@ -15,6 +15,7 @@ import { testKenBurnsController } from "../../api/p2m/reel/test-kenburns";
 import { getReelById }
 from "../../api/p2m/reel/get-reel";
 import { heroQueue } from "../queue/hero.queue";
+import reels360Routes from "../reels360/reels360.routes";
 
 // ✅ PUBLIC CONTROLLER (NO AUTH)
 import { getLookbookById } from "../../api/p2m/lookbook/get-lookbook";
@@ -107,7 +108,14 @@ router.post(
   testKenBurnsController
 );
 
+/* ----------------------------------
+   🔄 360 REEL
+---------------------------------- */
 
+router.use(
+  "/reels360",
+  reels360Routes
+);
 
 /* ----------------------------------
    👗 HERO
