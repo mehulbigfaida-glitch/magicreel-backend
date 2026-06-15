@@ -200,8 +200,7 @@ const predictions = [
 
       
       // REEL
-      ...reelJobs
-  .filter((job) => belongsToUser(job, "reel"))
+...reelJobs
   .map((job) => ({
         id: job.id,
         type: "reel",
