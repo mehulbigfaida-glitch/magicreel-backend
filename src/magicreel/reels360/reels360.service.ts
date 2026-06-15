@@ -1,5 +1,5 @@
 import { fal } from "@fal-ai/client";
-
+import { prisma } from "../db/prisma";
 import {
   Generate360ReelRequest,
   Generate360ReelResponse,
@@ -81,19 +81,82 @@ export class Reels360Service {
   console.log("FAL STATUS:", status);
 
   if (status.status === "COMPLETED") {
-    const result = await fal.queue.result(
-      "fal-ai/kling-video/v3/standard/image-to-video",
-      {
-        requestId: runId,
-      }
-    );
 
-    return {
-      success: true,
-      status: "completed",
-      videoUrl: (result as any)?.data?.video?.url,
-    };
+  const result = await fal.queue.result(
+    "fal-ai/kling-video/v3/standard/image-to-video",
+    {
+      requestId: runId,
+    }
+  );
+
+  const videoUrl =
+    (result as any)?.data?.video?.url;
+
+  const reelJob =
+    await (prisma as any).reelJob.findUnique({
+      where: {
+        id: runId,
+      },
+    });
+
+  if (reelJob) {
+
+    await (prisma as any).reelJob.update({
+      where: {
+        id: runId,
+      },
+      data: {
+        status: "completed",
+        reelVideoUrl: videoUrl,
+      },
+    });
+
+    const existingRender =
+      await prisma.render.findFirst({
+        where: {
+          reelVideoUrl: videoUrl,
+        },
+      });
+
+    if (!existingRender) {
+
+      await prisma.render.create({
+        data: {
+          outputImageUrl: null,
+
+          reelVideoUrl: videoUrl,
+
+          type: "REEL",
+
+          status: "completed",
+
+          pose: "REEL_360",
+
+          engine: "KLING_V3",
+
+          modelImageUrl:
+            reelJob.inputImageUrl,
+
+          garmentImageUrl:
+            reelJob.inputImageUrl,
+
+          lookbook: {
+            connect: {
+              id: "lookbook-default-1",
+            },
+          },
+        },
+      });
+
+    }
   }
+
+  return {
+    success: true,
+    status: "completed",
+    videoUrl,
+  };
+}
 
   if ((status as any).status === "FAILED") {
   return {
