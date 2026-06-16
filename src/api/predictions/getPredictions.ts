@@ -73,16 +73,6 @@ const reelJobs = await prisma.render.findMany({
   take: 30,
 });
 
-console.log(
-  "REEL JOBS FOUND:",
-  reelJobs.length
-);
-
-console.log(
-  "LATEST REEL:",
-  reelJobs[0]
-);
-
 console.timeEnd("reelJobs");
 
     console.time("lookbookJobs");
@@ -231,25 +221,7 @@ const predictions = [
         new Date(a.createdAt).getTime()
     );
 
-    console.log(
-  "TOTAL PREDICTIONS:",
-  predictions.length
-);
-
-console.log(
-  "REEL PREDICTIONS:",
-  predictions.filter(
-    (p: any) => p.type === "reel"
-  ).length
-);
-
-console.log(
-  "FIRST REEL:",
-  predictions.find(
-    (p: any) => p.type === "reel"
-  )
-);
-    
+      
     return res.json(predictions);
   } catch (error) {
     console.error("❌ Predictions error:", error);
