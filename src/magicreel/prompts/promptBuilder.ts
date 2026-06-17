@@ -37,7 +37,7 @@ export function buildP2MPrompt({
 
       case "UNTUCKED":
         stylingBlock =
-          "The shirt is worn casually..";
+          "The shirt extends below the waistband and covers the upper hip area.";
         break;
 
       case "OPEN":
