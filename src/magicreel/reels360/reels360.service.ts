@@ -17,37 +17,39 @@ export class Reels360Service {
     console.log("================================");
 
     const result = await fal.queue.submit(
-      "fal-ai/kling-video/v3/standard/image-to-video",
-      {
-        input: {
-          prompt:
-            "A single-shot fashion turntable sequence in a professional studio. The camera performs a smooth continuous 360-degree orbit around the model at a constant speed. Begin at the exact front view of the subject. Rotate smoothly past the left side profile, fully reveal the back view matching the provided back-reference image exactly, continue past the right side profile, and return precisely to the original front view, completing a seamless full 360-degree loop. Maintain perfect identity consistency throughout the entire rotation. Preserve identical facial features, hairstyle, body proportions, skin tone, pose structure, and overall appearance from start to finish. Maintain complete garment consistency throughout the orbit. Preserve all garment details including fabric texture, stitching, embroidery, prints, logos, patterns, folds, draping, fit, silhouette, sleeve structure, hemline, and garment construction exactly as shown in the provided reference images. The back view must accurately match the provided back-reference image. Side profiles must appear as natural transitions between the front and back views without distortion, hallucination, or garment reconstruction errors. Use smooth cinematic motion with uniform rotational speed. Keep the subject centered throughout the entire orbit. Clean luxury fashion studio environment, neutral seamless backdrop, professional softbox lighting, stable shadows, premium commercial fashion photography quality, realistic fabric behavior, photorealistic rendering, high detail, 30fps. Seamless full-orbit motion, continuous single take, no cuts, no transitions, no scene changes, no black frames, no freeze frames, no duplicate frames, and no interruptions.",
+"fal-ai/kling-video/v3/standard/image-to-video",
+{
+input: {
+prompt:
+"Single-shot luxury fashion turntable. Smooth continuous full 360-degree orbit around the subject. Begin at the exact front view, reveal the left profile, full back view matching the reference image, right profile, and return to the identical front view, completing one full revolution. Stable studio lighting, consistent framing, seamless motion, luxury fashion catalog quality.",
 
-          start_image_url: payload.heroImageUrl,
+  start_image_url: payload.heroImageUrl,
 
-          duration: "6",
+  duration: "5",
 
-          generate_audio: false,
+  generate_audio: false,
 
-          elements: [
-            {
-              reference_image_urls: [
-                payload.backHeroImageUrl,
-              ],
-              frontal_image_url:
-                payload.heroImageUrl,
-            },
-          ],
+  elements: [
+    {
+      reference_image_urls: [
+        payload.backHeroImageUrl,
+      ],
+      frontal_image_url:
+        payload.heroImageUrl,
+    },
+  ],
 
-          shot_type: "customize",
+  shot_type: "customize",
 
-          negative_prompt:
-            "180-degree rotation only, incomplete orbit, stopping halfway, reversing direction, snap-back motion, teleporting, camera shake, camera drift, camera wobble, zooming, reframing, subject movement, walking, pose changes, face distortion, identity drift, hairstyle changes, body shape changes, garment warping, fabric melting, texture loss, logo distortion, embroidery distortion, sleeve deformation, silhouette changes, incorrect back view, inconsistent side views, flickering lighting, changing shadows, background flicker, scene changes, cuts, transitions, crossfades, black frames, duplicate frames, low detail, blur, artifacts",
+  negative_prompt:
+    "partial rotation, incomplete revolution, stopping halfway, reversing direction, pose changes, garment distortion, flicker, cuts, transitions",
 
-          cfg_scale: 0.5,
-        },
-      }
-    );
+  cfg_scale: 0.5,
+},
+
+
+}
+);
 
     console.log("================================");
     console.log("FAL REQUEST CREATED");
