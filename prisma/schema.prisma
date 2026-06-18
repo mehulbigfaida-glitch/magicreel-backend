@@ -65,7 +65,9 @@ model User {
   // ✅ ADD THESE 2 LINES ONLY
   profile           UserProfile?
   invoices          Invoice[]
-
+  
+  publishAccounts  PublishAccount[]
+  publishPosts     PublishPost[]
   @@map("users")
 }
 
@@ -282,3 +284,58 @@ model InvoiceSequence {
   updatedAt  DateTime @updatedAt
 }
 
+////////////////////////////////////////////////////////
+// PUBLISH
+////////////////////////////////////////////////////////
+
+model PublishAccount {
+  id                String   @id @default(uuid())
+
+  userId            String
+
+  platform          String
+  username          String?
+
+  zernioAccountId   String
+
+  connected         Boolean  @default(true)
+
+  connectedAt       DateTime @default(now())
+  disconnectedAt    DateTime?
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user              User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([platform])
+}
+
+model PublishPost {
+  id              String   @id @default(uuid())
+
+  userId          String
+
+  platform        String
+
+  assetType       String
+  assetUrl        String
+
+  caption         String?
+
+  status          String
+
+  zernioPostId    String?
+
+  publishedAt     DateTime @default(now())
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user            User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([platform])
+  @@index([publishedAt])
+}

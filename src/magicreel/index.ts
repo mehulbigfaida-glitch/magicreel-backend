@@ -22,6 +22,7 @@ import paymentRoutes from "../api/payments";
 import { upgradePlan } from "../billing/upgrade";
 import { authenticate } from "../auth/jwt.middleware";
 
+import publishRoutes from "../publish/publish.routes";
 // QUEUE
 // import { heroQueue } from "./queue/hero.queue";
 
@@ -83,6 +84,9 @@ app.use(express.json({ limit: "20mb" }));
 
 // AUTH
 app.use("/api/auth", authRoutes);
+
+// PUBLISH
+app.use("/api/publish", publishRoutes);
 
 // BILLING (PROTECTED)
 app.post("/api/billing/upgrade", authenticate, upgradePlan);
