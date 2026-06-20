@@ -6,6 +6,8 @@ const openai = new OpenAI({
 
 export interface GenerateContentInput {
   imageUrl: string;
+  assetType?: string;
+
   platform?: "instagram" | "facebook";
   garmentType?: string;
   tone?: string;
@@ -31,6 +33,23 @@ export class PublishAiService {
 
     const garmentType =
       input.garmentType || "fashion garment";
+
+if (input.assetType === "video") {
+
+  return {
+
+    caption:
+      "Premium fashion reel showcasing elegant craftsmanship, refined detailing, and timeless style. Discover the complete look and elevate your wardrobe with statement fashion.",
+
+    hashtags:
+      "#FashionReel #LuxuryFashion #DesignerWear #FashionInspiration #StyleStatement #PremiumFashion #FashionVideo #ElegantStyle #FashionCampaign #MagicReel",
+
+    cta:
+      "Tap to discover the full collection."
+
+  };
+
+}
 
     const response =
       await openai.chat.completions.create({
