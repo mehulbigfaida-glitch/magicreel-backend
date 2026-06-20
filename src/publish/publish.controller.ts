@@ -6,6 +6,13 @@ export class PublishController {
     try {
       const userId = (req as any).user?.id;
 
+      if (!userId) {
+        return res.status(401).json({
+          success: false,
+          error: "Unauthorized",
+        });
+      }
+
       const {
         platform,
         assetUrl,
@@ -28,12 +35,20 @@ export class PublishController {
       });
 
     } catch (error: any) {
-      console.error("PUBLISH ERROR:", error);
+
+      console.error(
+        "PUBLISH ERROR:",
+        error
+      );
 
       return res.status(400).json({
         success: false,
-        error: error?.message || "Unknown error",
-        details: error?.response?.data || error,
+        error:
+          error?.message ||
+          "Unknown error",
+        details:
+          error?.response?.data ||
+          error,
       });
     }
   }

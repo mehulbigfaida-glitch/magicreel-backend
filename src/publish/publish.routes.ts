@@ -7,8 +7,9 @@ const router = Router();
 router.post(
   "/publish",
   authenticate,
-  (req, res) =>
-    publishController.publish(req, res)
+  publishController.publish.bind(
+    publishController
+  )
 );
 
 export default router;

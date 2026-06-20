@@ -9,7 +9,8 @@ export class PublishService {
     assetType: "image" | "video";
     caption: string;
   }) {
-    const user = await prisma.user.findUnique({
+
+      const user = await prisma.user.findUnique({
       where: {
         id: params.userId,
       },
@@ -17,13 +18,6 @@ export class PublishService {
 
     if (!user) {
       throw new Error("USER_NOT_FOUND");
-    }
-
-    if (
-      user.plan !== "PRO" &&
-      user.plan !== "ADVANCE"
-    ) {
-      throw new Error("PLAN_NOT_ALLOWED");
     }
 
     const startOfDay = new Date();
@@ -42,10 +36,30 @@ export class PublishService {
     const dailyLimit =
       user.plan === "ADVANCE"
         ? 5
-        : 2;
+        : 20;
+
+    if (
+      user.plan !== "PRO" &&
+      user.plan !== "ADVANCE"
+    ) {
+      throw new Error("PLAN_NOT_ALLOWED");
+    }
 
     if (todayCount >= dailyLimit) {
-      throw new Error("DAILY_LIMIT_REACHED");
+
+      console.warn(
+  "DAILY_LIMIT_REACHED",
+  {
+    todayCount,
+    dailyLimit,
+    userId: params.userId,
+    plan: user.plan,
+  }
+);
+
+      throw new Error(
+        "DAILY_LIMIT_REACHED"
+      );
     }
 
     const account =
@@ -63,7 +77,7 @@ export class PublishService {
       );
     }
 
-    const result =
+      const result =
       await zernioProvider.publishMedia({
         accountId: account.zernioAccountId,
         platform: params.platform,
@@ -71,6 +85,15 @@ export class PublishService {
         assetType: params.assetType,
         caption: params.caption,
       });
+
+    console.info(
+  "ZERNIO RESULT:",
+  {
+    success: result?.success,
+    postId: result?.postId,
+    error: result?.error
+  }
+);
 
     const publishPost =
       await prisma.publishPost.create({

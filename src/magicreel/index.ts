@@ -23,6 +23,7 @@ import { upgradePlan } from "../billing/upgrade";
 import { authenticate } from "../auth/jwt.middleware";
 
 import publishRoutes from "../publish/publish.routes";
+import publishAiRoutes from "../publish/publishAi.routes";
 // QUEUE
 // import { heroQueue } from "./queue/hero.queue";
 
@@ -87,6 +88,7 @@ app.use("/api/auth", authRoutes);
 
 // PUBLISH
 app.use("/api/publish", publishRoutes);
+app.use("/api/publish", publishAiRoutes);
 
 // BILLING (PROTECTED)
 app.post("/api/billing/upgrade", authenticate, upgradePlan);

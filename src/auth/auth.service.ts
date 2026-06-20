@@ -84,9 +84,12 @@ export async function loginUser(email: string, password: string) {
 // JWT Generator
 // ----------------------------
 function generateToken(userId: string) {
-  return jwt.sign(
-    { id: userId }, // ✅ must match req.user.id usage
-    JWT_SECRET,
+
+  const token = jwt.sign(
+    { id: userId },
+    process.env.JWT_SECRET || "dev_secret",
     { expiresIn: "7d" }
   );
+
+  return token;
 }
