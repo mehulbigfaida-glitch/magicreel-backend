@@ -73,11 +73,6 @@ const reelJobs = await prisma.render.findMany({
   take: 30,
 });
 
-console.log(
-  "REEL SAMPLE",
-  JSON.stringify(reelJobs[0], null, 2)
-);
-
 console.timeEnd("reelJobs");
 
     console.time("lookbookJobs");
@@ -203,15 +198,16 @@ const predictions = [
     type: "reel",
     status: job.status || "completed",
 
-    TEST_CTO: "HELLO_MEHUL",
-    
+       
     mediaUrl: job.reelVideoUrl ?? null,
 
     // source image used to create reel
     heroImageUrl: job.modelImageUrl ?? null,
 
     createdAt: job.createdAt,
-    creditsUsed: getCredits({
+    creditsUsed: job.lookbookId
+  ? 0
+  : getCredits({
       type: "reel",
       createdAt: job.createdAt,
     }),
