@@ -73,6 +73,11 @@ const reelJobs = await prisma.render.findMany({
   take: 30,
 });
 
+console.log(
+  "REEL SAMPLE",
+  JSON.stringify(reelJobs[0], null, 2)
+);
+
 console.timeEnd("reelJobs");
 
     console.time("lookbookJobs");
