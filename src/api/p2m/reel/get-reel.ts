@@ -14,21 +14,48 @@ export async function getReelById(
         where: {
           id: renderId,
         },
+
+        include: {
+          lookbook: {
+            include: {
+              renders: true,
+            },
+          },
+        },
       });
 
     if (!reel) {
+
       return res.status(404).json({
         success: false,
         error: "Reel not found",
       });
+
     }
+
+    console.log(
+      "LOOKBOOK RENDERS:",
+      JSON.stringify(
+        reel.lookbook?.renders,
+        null,
+        2
+      )
+    );
 
     return res.json({
       success: true,
+
       reelVideoUrl:
         reel.reelVideoUrl,
+
       renderId:
         reel.id,
+
+      lookbookId:
+        reel.lookbookId,
+
+      lookbookRenders:
+        reel.lookbook?.renders || [],
     });
 
   } catch (error: any) {
