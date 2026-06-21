@@ -66,7 +66,7 @@ console.timeEnd("heroJobs");
 
 // REEL
 const reelJobs = await prisma.render.findMany({
-  where: {
+      where: {
     type: "REEL",
   },
   orderBy: { createdAt: "desc" },
@@ -137,7 +137,9 @@ const lookbookPredictions = lookbookJobs.map((lb: any) => {
     lookbookImages[0] ||
     "https://via.placeholder.com/300x450?text=Lookbook";
 
-  return {
+  
+  
+    return {
     id: lb.id,
     type: "lookbook",
     status: "completed",
@@ -192,16 +194,23 @@ const predictions = [
       // REEL
 ...reelJobs
   .map((job) => ({
-        id: job.id,
-        type: "reel",
-        status: job.status || "completed",
-        mediaUrl: job.reelVideoUrl ?? null,
-        createdAt: job.createdAt,
-        creditsUsed: getCredits({
-          type: "reel",
-          createdAt: job.createdAt,
-        }),
-      })),
+    id: job.id,
+    type: "reel",
+    status: job.status || "completed",
+
+    TEST_CTO: "HELLO_MEHUL",
+    
+    mediaUrl: job.reelVideoUrl ?? null,
+
+    // source image used to create reel
+    heroImageUrl: job.modelImageUrl ?? null,
+
+    createdAt: job.createdAt,
+    creditsUsed: getCredits({
+      type: "reel",
+      createdAt: job.createdAt,
+    }),
+  })),
 
       // LOOKBOOK
 ...lookbookPredictions
@@ -220,7 +229,13 @@ const predictions = [
         new Date(b.createdAt).getTime() -
         new Date(a.createdAt).getTime()
     );
-
+console.log(
+  JSON.stringify(
+    predictions.find((p: any) => p.type === "reel"),
+    null,
+    2
+  )
+);
       
     return res.json(predictions);
   } catch (error) {
