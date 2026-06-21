@@ -33,14 +33,12 @@ export async function getReelById(
 
     }
 
-    console.log(
-      "LOOKBOOK RENDERS:",
-      JSON.stringify(
-        reel.lookbook?.renders,
-        null,
-        2
-      )
-    );
+    const heroRender =
+      reel.lookbook?.renders?.find(
+        (render) =>
+          render.pose?.toLowerCase() ===
+          "hero"
+      );
 
     return res.json({
       success: true,
@@ -48,14 +46,14 @@ export async function getReelById(
       reelVideoUrl:
         reel.reelVideoUrl,
 
+      heroImageUrl:
+        heroRender?.outputImageUrl || "",
+
       renderId:
         reel.id,
 
       lookbookId:
         reel.lookbookId,
-
-      lookbookRenders:
-        reel.lookbook?.renders || [],
     });
 
   } catch (error: any) {
