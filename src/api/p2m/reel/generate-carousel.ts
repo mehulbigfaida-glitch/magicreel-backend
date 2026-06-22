@@ -95,6 +95,15 @@ export async function generateCarouselReelController(
       uploaded.secure_url
     );
 
+    const heroRender = renders.find(
+  (r) => r.pose?.toLowerCase() === "hero"
+);
+
+const heroImageUrl =
+  heroRender?.outputImageUrl ||
+  imageUrls[0] ||
+  "";
+    
     const reelRender =
       await prisma.render.create({
         data: {
@@ -103,7 +112,7 @@ export async function generateCarouselReelController(
           pose: "REEL",
           engine: "FFMPEG",
 
-          modelImageUrl: "",
+          modelImageUrl: heroImageUrl,
           garmentImageUrl: "",
 
           status: "completed",
