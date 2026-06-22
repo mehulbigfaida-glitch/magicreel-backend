@@ -195,20 +195,25 @@ const predictions = [
 ...reelJobs
   .map((job) => ({
     id: job.id,
+
     type: "reel",
+
     status: job.status || "completed",
 
-       
     mediaUrl: job.reelVideoUrl ?? null,
 
-    // source image used to create reel
+    // source image used for caption generation
     heroImageUrl: job.modelImageUrl ?? null,
 
     createdAt: job.createdAt,
-    creditsUsed: getCredits({
-  type: "reel",
-  createdAt: job.createdAt,
-}),
+
+    creditsUsed:
+      job.pose === "REEL"
+        ? 0
+        : getCredits({
+            type: "reel",
+            createdAt: job.createdAt,
+          }),
   })),
 
       // LOOKBOOK
