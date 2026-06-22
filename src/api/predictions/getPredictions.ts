@@ -205,12 +205,10 @@ const predictions = [
     heroImageUrl: job.modelImageUrl ?? null,
 
     createdAt: job.createdAt,
-    creditsUsed: job.lookbookId
-  ? 0
-  : getCredits({
-      type: "reel",
-      createdAt: job.createdAt,
-    }),
+    creditsUsed: getCredits({
+  type: "reel",
+  createdAt: job.createdAt,
+}),
   })),
 
       // LOOKBOOK
