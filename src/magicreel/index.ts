@@ -13,6 +13,7 @@ import analyticsRoutes from "../api/analytics";
 import adminRoutes from "../api/admin";
 import editorialRoutes from "../api/editorial/editorial.routes";
 import editorialV1Routes from "../api/editorial-v1";
+import editorialV2Routes from "./editorial-v2/editorial.routes";
 
 // ✅ PAYMENT IMPORTS (ADD THIS)
 import { createOrder } from "../api/payments/create-order";
@@ -101,6 +102,8 @@ app.use("/api/payments", paymentRoutes);
 import socialPackRoutes from "../api/social-pack/socialPack.routes";
 import cinematicRoutes from "../api/cinematic";
 import createAIRoutes from "./create-ai/createAI.routes";
+import campaignGenerationRoutes
+  from "./campaign-v2/routes/campaignGeneration.routes";
 
 // CORE APIs
 app.use("/api/predictions", predictionsRoutes);
@@ -114,8 +117,8 @@ app.use(
 );
 
 app.use(
-  "/api/editorial-v1",
-  editorialV1Routes
+  "/api/editorial-v2",
+  editorialV2Routes
 );
 
 app.use(
@@ -131,6 +134,11 @@ app.use(
 app.use(
   "/api/create-ai",
   createAIRoutes
+);
+
+app.use(
+  "/api/campaign-v2",
+  campaignGenerationRoutes
 );
 
 /* ---------------------------------- */

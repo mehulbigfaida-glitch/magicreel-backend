@@ -80,11 +80,16 @@ return CINEMATIC_CLUSTERS.find(
 
 // fallback
 const directionMap: Record<CreativeDirection, string[]> = {
-"High Fashion": ["Runway Dramatic", "Editorial Architectural"],
-"Luxury Editorial": ["Editorial Architectural", "Minimal Luxury"],
-"Minimal Fashion": ["Minimal Luxury"],
-"Streetwear": ["Urban Cinematic"],
-"Festive Couture": ["Runway Dramatic", "Editorial Architectural"],
+  "High Fashion": ["Runway Dramatic", "Editorial Architectural"],
+  "Luxury Editorial": ["Editorial Architectural", "Minimal Luxury"],
+  "Minimal Fashion": ["Minimal Luxury"],
+  "Streetwear": ["Urban Cinematic"],
+  "Festive Couture": ["Runway Dramatic", "Editorial Architectural"],
+
+  "Product Focus": ["Minimal Luxury"],
+  "Lifestyle Focus": ["Urban Cinematic"],
+  "Engagement Focus": ["Urban Cinematic"],
+  "Offer Focus": ["Minimal Luxury"],
 };
 
 const allowed =

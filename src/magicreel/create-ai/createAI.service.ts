@@ -5,14 +5,22 @@ import { OpenAIProvider } from "./providers/openai.provider";
 const openai = new OpenAIProvider();
 
 export class CreateAIService {
-  async generate(input: CreateAIRequest) {
+
+  async generate(
+    input: CreateAIRequest
+  ) {
+
     const muse =
-      MUSE_REGISTRY[input.museId];
+      MUSE_REGISTRY[
+        input.museId
+      ];
 
     if (!muse) {
+
       throw new Error(
         "Muse not found"
       );
+
     }
 
     const result =
@@ -22,10 +30,28 @@ export class CreateAIService {
           input.garmentImageUrl,
 
         processingImageUrl:
-          muse.processingImageUrl
+          muse.processingImageUrl,
+
+        // ======================
+        // GARMENT INTELLIGENCE
+        // ======================
+
+        category:
+          input.category,
+
+        garmentName:
+          input.garmentName,
+
+        fit:
+          input.fit,
+
+        tuckState:
+          input.tuckState
 
       });
 
     return result;
+
   }
+
 }

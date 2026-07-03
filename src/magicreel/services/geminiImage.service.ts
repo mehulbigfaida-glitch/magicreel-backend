@@ -104,6 +104,10 @@ export async function generateGeminiCampaignImage(
      HERO IMAGE
   ========================================= */
 
+  console.log("===== HERO IMAGE URL =====");
+console.log(args.heroImageUrl);
+console.log("==========================");
+  
   const heroImage =
     await imageUrlToBase64(
       args.heroImageUrl
@@ -144,6 +148,11 @@ export async function generateGeminiCampaignImage(
       console.log(
         `🔥 GEMINI ATTEMPT ${attempt}/${MAX_RETRIES}`
       );
+
+console.log(
+  "PROMPT LENGTH:",
+  args.prompt.length
+);
 
       const response =
         await ai.models.generateContent({
@@ -196,12 +205,39 @@ export async function generateGeminiCampaignImage(
           ],
 
           config: {
-            responseModalities: [
-              Modality.IMAGE,
-              Modality.TEXT,
-            ],
-          },
+  responseModalities: [
+    Modality.TEXT,
+    Modality.IMAGE,
+  ],
+}
         });
+
+console.log(
+  "===== GEMINI RESPONSE ====="
+);
+
+console.dir(
+  response,
+  { depth: null }
+);
+
+console.log(
+  "response keys:",
+  Object.keys(response)
+);
+
+console.log(
+  "response.text:",
+  response.text
+);
+
+console.dir(
+  response.candidates,
+  { depth: null }
+);
+console.log(
+  "==========================="
+);
 
       const candidates =
         response.candidates || [];
@@ -237,6 +273,19 @@ export async function generateGeminiCampaignImage(
         }
       }
 
+      console.log(
+  "===== GEMINI RAW RESPONSE ====="
+);
+
+console.dir(
+  response.data,
+  { depth: null }
+);
+
+console.log(
+  "==============================="
+);
+      
       throw new Error(
         "Gemini did not return image output"
       );
@@ -255,15 +304,11 @@ export async function generateGeminiCampaignImage(
       );
 
       const isRetryable =
-        errorMessage.includes(
-          "503"
-        ) ||
-        errorMessage.includes(
-          "429"
-        ) ||
-        errorMessage.includes(
-          "UNAVAILABLE"
-        );
+  errorMessage.includes("500") ||
+  errorMessage.includes("503") ||
+  errorMessage.includes("429") ||
+  errorMessage.includes("UNAVAILABLE") ||
+  errorMessage.includes('"status":"INTERNAL"');
 
       if (
         !isRetryable ||

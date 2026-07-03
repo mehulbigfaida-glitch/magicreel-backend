@@ -1,6 +1,5 @@
 import { buildSocialPackPrompt } from "./socialPackPromptBuilder";
-import { generateGeminiCampaignImage } from "../../../magicreel/services/geminiImage.service";
-
+import { imageGenerationService } from "../../services/image-generation/imageGeneration.service";
 type Args = {
   outputs: string[];
   inputs: any;
@@ -58,19 +57,17 @@ ${userPrompt}
           prompt
         );
 
-        const imageUrl =
-  await generateGeminiCampaignImage({
-
-    heroImageUrl:
-      inputs.heroImage,
-
-    logoImageUrl:
-      inputs.logo,
-
+        const response =
+  await imageGenerationService.generateEditedImages({
+    heroImageUrl: inputs.heroImage,
+    logoImageUrl: inputs.logo,
     prompt,
+    quality: "medium",
+    numImages: 1,
+    outputFormat: "png",
   });
 
-        results[goal] = imageUrl;
+results[goal] = response.images[0]?.url;
 
         successCount++;
 

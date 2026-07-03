@@ -215,7 +215,7 @@ NEGATIVE:
 
 `,
 
-quality:"high",
+quality:"medium",
 
 size:"1024x1280"
 

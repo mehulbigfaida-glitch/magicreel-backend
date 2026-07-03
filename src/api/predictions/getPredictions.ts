@@ -2,6 +2,9 @@ import { Request, Response } from "express";
 import { prisma } from "../../magicreel/db/prisma";
 
 export const getPredictions = async (req: Request, res: Response) => {
+
+  console.log("===== GET PREDICTIONS HIT =====");
+
   try {
     const userId = (req as any).user?.id;
 
@@ -66,10 +69,24 @@ console.timeEnd("heroJobs");
 
 // REEL
 const reelJobs = await prisma.render.findMany({
-      where: {
+  select: {
+    id: true,
+    pose: true,
+    type: true,
+    status: true,
+    reelVideoUrl: true,
+    modelImageUrl: true,
+    createdAt: true,
+  },
+
+  where: {
     type: "REEL",
   },
-  orderBy: { createdAt: "desc" },
+
+  orderBy: {
+    createdAt: "desc",
+  },
+
   take: 30,
 });
 
@@ -85,7 +102,24 @@ const lookbookJobs = await prisma.lookbook.findMany({
 
 console.timeEnd("lookbookJobs");
 
-    console.time("allLookbookRenders");
+// ========================
+// CAMPAIGN
+// ========================
+
+console.time("campaignJobs");
+
+const campaignJobs = await prisma.campaign.findMany({
+  orderBy: { createdAt: "desc" },
+  take: 50,
+});
+
+console.timeEnd("campaignJobs");
+
+console.log("===== CAMPAIGN JOBS =====");
+console.log("Count:", campaignJobs.length);
+console.dir(campaignJobs, { depth: null });    
+
+console.time("allLookbookRenders");
 
 // Fetch all renders in a single query
 const allLookbookRenders = await prisma.render.findMany({
@@ -225,9 +259,33 @@ const predictions = [
       createdAt: lb.createdAt,
     }),
   })),
-    ];
 
-    // SORT
+// CAMPAIGN
+...campaignJobs
+  .filter((job) => job.userId === userId)
+  .map((job) => ({
+    id: job.id,
+
+    type: "campaign",
+
+    status: job.status || "completed",
+
+    mediaUrl: job.outputImageUrl,
+
+    heroImageUrl: job.heroImageUrl,
+
+    createdAt: job.createdAt,
+
+    creditsUsed: getCredits({
+      type: "campaign",
+      createdAt: job.createdAt,
+    }),
+  })),
+];
+
+    
+
+// SORT
     predictions.sort(
       (a, b) =>
         new Date(b.createdAt).getTime() -

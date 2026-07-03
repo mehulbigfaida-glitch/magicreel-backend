@@ -5,6 +5,7 @@ export type FeatureType =
   | "HERO"
   | "LOOKBOOK_ECOM"
   | "REEL"
+  | "CAMPAIGN_ENGINE"
   | "CINEMATIC_LOOKBOOK"
   | "CINEMATIC_REEL_10S"
   | "CINEMATIC_REEL_20S";
@@ -13,6 +14,7 @@ const featureCredits: Record<FeatureType, number> = {
   HERO: 1,
   LOOKBOOK_ECOM: 2,
   REEL: 3,
+  CAMPAIGN_ENGINE: 1,
   CINEMATIC_LOOKBOOK: 3,
   CINEMATIC_REEL_10S: 5,
   CINEMATIC_REEL_20S: 10,

@@ -10,7 +10,11 @@ export type CreativeDirection =
 | "Streetwear"
 | "Minimal Fashion"
 | "Festive Couture"
-| "High Fashion";
+| "High Fashion"
+| "Product Focus"
+| "Lifestyle Focus"
+| "Engagement Focus"
+| "Offer Focus";
 
 export type SocialElement =
 | "Handbag"

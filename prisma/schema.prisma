@@ -61,6 +61,7 @@ model User {
   p2mJobs           ProductToModelJob[]
   transactions      CreditTransaction[]
   cinematicLookbooks CinematicLookbook[]
+  campaigns Campaign[]
 
   // ✅ ADD THESE 2 LINES ONLY
   profile           UserProfile?
@@ -128,6 +129,7 @@ model Render {
   modelImageUrl   String
   garmentImageUrl String
   outputImageUrl  String?
+  outputImageUrls Json?
   status          String
   lookbookId      String
 
@@ -338,4 +340,31 @@ model PublishPost {
   @@index([userId])
   @@index([platform])
   @@index([publishedAt])
+}
+
+model Campaign {
+  id                 String   @id @default(uuid())
+
+  userId             String
+
+  heroImageUrl       String
+  assetImageUrl      String?
+  logoImageUrl       String?
+
+  campaignType       String
+
+  backgroundStrategy String
+  campaignCopy       String?
+
+  tone               String
+
+  outputImageUrl     String?
+  outputImageUrls    Json?
+
+  status             String
+
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt 
+
+  user User @relation(fields: [userId], references: [id])
 }
