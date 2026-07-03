@@ -59,14 +59,16 @@ ${userPrompt}
 
         const response =
   await imageGenerationService.generateEditedImages({
-    heroImageUrl: inputs.heroImage,
-    logoImageUrl: inputs.logo,
+    referenceImages: [
+      inputs.heroImage,
+      inputs.logo,
+    ].filter((url): url is string => !!url),
     prompt,
     quality: "medium",
     numImages: 1,
     outputFormat: "png",
   });
-
+  
 results[goal] = response.images[0]?.url;
 
         successCount++;

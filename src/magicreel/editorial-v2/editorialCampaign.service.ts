@@ -59,15 +59,17 @@ ${shot.instruction}`;
   console.log("EDITORIAL GPT PROMPT");
   console.log(prompt);
 
-  const response =
-    await imageGenerationService.generateEditedImages({
-      heroImageUrl: input.heroImageUrl,
-      logoImageUrl: input.logoImageUrl,
-      prompt,
-      quality: "medium",
-      numImages: 1,
-      outputFormat: "png",
-    });
+ const response =
+  await imageGenerationService.generateEditedImages({
+    referenceImages: [
+      input.heroImageUrl,
+      input.logoImageUrl,
+    ].filter((url): url is string => !!url),
+    prompt,
+    quality: "medium",
+    numImages: 1,
+    outputFormat: "png",
+  });
 
   if (!response.images.length) {
     throw new Error(
