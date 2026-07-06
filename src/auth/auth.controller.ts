@@ -5,7 +5,12 @@ import { prisma } from "../magicreel/db/prisma";
 // ---------------- REGISTER ----------------
 export async function register(req: Request, res: Response) {
   try {
-    const { email, password } = req.body;
+    const {
+  fullName,
+  email,
+  mobileNumber,
+  password,
+} = req.body;
 
     // ✅ Basic validation
     if (!email || !password) {
@@ -13,7 +18,12 @@ export async function register(req: Request, res: Response) {
     }
 
     // ✅ Create user + get token
-    const token = await registerUser(email, password);
+    const token = await registerUser({
+  fullName,
+  email,
+  mobileNumber,
+  password,
+});
 
     const user = await prisma.user.findUnique({
       where: { email },

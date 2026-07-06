@@ -2,6 +2,7 @@ import { Router } from "express";
 import { generateHeroV2 } from "./generate-v2";
 import { pollHeroGeneration } from "./poll";
 import { authenticate } from "../../../auth/jwt.middleware";
+import { subscriptionMiddleware } from "../../../subscription/subscription.middleware";
 import { billingGuard } from "../../../billing/billing.middleware";
 
 const router = Router();
@@ -11,6 +12,7 @@ const router = Router();
 router.post(
   "/generate-v2",
   authenticate,
+  subscriptionMiddleware,
   billingGuard("HERO"),
   generateHeroV2
 );

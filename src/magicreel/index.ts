@@ -6,6 +6,7 @@ import { prisma } from "./db/prisma";
 
 // ROUTES
 import authRoutes from "../auth/auth.routes";
+import businessProfileRoutes from "../business-profile/businessProfile.routes";
 import predictionsRoutes from "../api/predictions";
 import shareRoutes from "../api/share/share.routes";
 import p2mRoutes from "./p2m/p2m.routes";
@@ -86,6 +87,11 @@ app.use(express.json({ limit: "20mb" }));
 
 // AUTH
 app.use("/api/auth", authRoutes);
+// BUSINESS PROFILE
+app.use(
+  "/api/business-profile",
+  businessProfileRoutes
+);
 
 // PUBLISH
 app.use("/api/publish", publishRoutes);

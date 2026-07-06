@@ -42,33 +42,57 @@ enum TransactionStatus {
 
 model User {
   id                String   @id @default(uuid())
+
+  // ============================================
+  // ACCOUNT
+  // ============================================
+  fullName          String
+  mobileNumber      String?  @map("mobile_number")
+
   email             String   @unique
   passwordHash      String   @map("password_hash")
-  plan              Plan     @default(FREE)
-  subscriptionType  BillingCycle? @map("subscription_type")
-  subscriptionStart DateTime? @map("subscription_start")
-  subscriptionEnd   DateTime? @map("subscription_end")
 
+  // ============================================
+  // SUBSCRIPTION
+  // ============================================
+  plan              Plan     @default(FREE)
+
+  subscriptionType  BillingCycle? @map("subscription_type")
+  subscriptionStart DateTime?      @map("subscription_start")
+  subscriptionEnd   DateTime?      @map("subscription_end")
+
+  // ============================================
+  // CREDITS
+  // ============================================
   creditsAvailable  Float    @default(0) @map("credits_available")
   rolloverCredits   Float    @default(0) @map("rollover_credits")
 
   freeHeroUsed      Boolean  @default(false) @map("free_hero_used")
+
+  // ============================================
+  // TIMESTAMPS
+  // ============================================
   createdAt         DateTime @default(now()) @map("created_at")
-  updatedAt         DateTime @updatedAt @map("updated_at")
+  updatedAt         DateTime @updatedAt      @map("updated_at")
 
-  garments          Garment[]
-  lookbooks         Lookbook[]
-  p2mJobs           ProductToModelJob[]
-  transactions      CreditTransaction[]
+  // ============================================
+  // RELATIONS
+  // ============================================
+  garments           Garment[]
+  lookbooks          Lookbook[]
+  p2mJobs            ProductToModelJob[]
+  transactions       CreditTransaction[]
   cinematicLookbooks CinematicLookbook[]
-  campaigns Campaign[]
+  campaigns          Campaign[]
 
-  // ✅ ADD THESE 2 LINES ONLY
-  profile           UserProfile?
-  invoices          Invoice[]
-  
-  publishAccounts  PublishAccount[]
-  publishPosts     PublishPost[]
+  profile            UserProfile?
+  businessProfile    BusinessProfile?
+
+  invoices           Invoice[]
+
+  publishAccounts    PublishAccount[]
+  publishPosts       PublishPost[]
+
   @@map("users")
 }
 
@@ -367,4 +391,38 @@ model Campaign {
   updatedAt          DateTime @updatedAt 
 
   user User @relation(fields: [userId], references: [id])
+}
+
+model BusinessProfile {
+  id String @id @default(uuid())
+
+  userId String @unique
+
+  brandName   String @default("")
+  companyName String?
+
+  logoUrl String?
+
+  website String?
+  tagline String?
+
+  businessCategory String?
+  industry         String?
+
+  instagram String?
+  facebook  String?
+  youtube   String?
+  linkedin  String?
+  pinterest String?
+  twitter   String?
+
+  onboardingStep Int @default(1)
+  completed Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("BusinessProfile")
 }
