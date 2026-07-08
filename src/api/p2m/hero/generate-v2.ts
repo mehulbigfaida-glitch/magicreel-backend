@@ -9,14 +9,14 @@ const fashn = new FashnService();
 export async function generateHeroV2(req: Request, res: Response) {
   try {
     const {
-      categoryKey,
-      avatarGender,
-      avatarFaceImageUrl,
-      garmentFrontImageUrl,
-      styling,
-      avatarBackImageUrl,
-      garmentBackImageUrl,
-    } = req.body;
+  categoryKey,
+  avatarGender,
+  avatarFaceImageUrl,
+  garmentFrontImageUrl,
+  styling,
+  avatarBackImageUrl,
+  garmentBackImageUrl,
+} = req.body;
 
     if (
       !categoryKey ||
@@ -68,12 +68,20 @@ if (dbUser.creditsAvailable <= 0) {
 /* =========================
    FRONT HERO
 ========================= */
+console.log("=== HERO REQUEST ===", {
+  categoryKey,
+  avatarGender,
+  styling,
+  });
+
 
     const frontPrompt = buildHeroPrompt({
-      categoryKey,
-      avatarGender,
-      styling,
-    });
+  categoryKey,
+  avatarGender,
+  styling,
+  });
+
+console.log("✅ Front prompt built");
 
     const frontJob = await prisma.productToModelJob.create({
   data: {
@@ -112,10 +120,11 @@ if (dbUser.creditsAvailable <= 0) {
       const backCategoryKey = `${categoryKey}_BACK`;
 
       const backPrompt = buildHeroPrompt({
-        categoryKey: backCategoryKey,
-        avatarGender,
-        styling,
-      });
+  categoryKey: backCategoryKey,
+  avatarGender,
+  styling,
+  
+});
 
       const backJob = await prisma.productToModelJob.create({
         data: {

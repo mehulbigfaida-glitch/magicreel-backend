@@ -108,6 +108,11 @@ function resolveRegistryKey(
           "WOMEN_OVERLAY";
         break;
 
+        case "bottom":
+case "bottoms":
+  registryKey = "WOMEN_BOTTOM";
+  break;
+
     }
 
   }
@@ -150,6 +155,11 @@ function resolveRegistryKey(
           "MEN_OVERLAY";
         break;
 
+      case "bottom":
+case "bottoms":
+  registryKey = "MEN_BOTTOM";
+  break;
+
     }
 
   }
@@ -181,16 +191,18 @@ function resolveRegistryKey(
 
 export function buildHeroPrompt(
   input: {
-    categoryKey: string;
-    avatarGender: AvatarGender;
-    styling?: string;
-  }
+  categoryKey: string;
+  avatarGender: AvatarGender;
+  styling?: string;
+  
+}
 ): string {
 
   const {
-    categoryKey,
-    avatarGender
-  } = input;
+  categoryKey,
+  avatarGender,
+  
+} = input;
 
   let styling =
     input.styling;
@@ -209,9 +221,9 @@ export function buildHeroPrompt(
     );
 
   return buildP2MPrompt({
-    category:
-      registryKey,
-    styling
-  });
+  category: registryKey,
+  styling,
+  
+});
 
 }

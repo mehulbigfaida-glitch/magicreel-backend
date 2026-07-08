@@ -2,8 +2,8 @@ import { PROMPT_REGISTRY_V1 } from "./promptRegistryV1";
 
 type BuildPromptInput = {
   category: string;
-  avatarGender?: "male" | "female"; // ✅ already added
-  styling?: any;                    // ✅ ADD THIS
+  avatarGender?: "male" | "female";
+  styling?: any;
   attributes?: any;
 };
 
