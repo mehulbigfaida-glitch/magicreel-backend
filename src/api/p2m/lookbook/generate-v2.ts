@@ -153,9 +153,16 @@ export async function generateLookbookV2(req: Request, res: Response) {
           finalUrl = uploaded.secure_url;
         }
 
-      } catch (err) {
-        console.error("Pose failed:", pose.id);
-      }
+      } catch (err: any) {
+
+  console.error(`❌ Pose failed: ${pose.id}`);
+  console.error(err);
+
+  if (err?.response?.data) {
+    console.error(err.response.data);
+  }
+
+}
 
       poses.push({
         poseId: pose.id,

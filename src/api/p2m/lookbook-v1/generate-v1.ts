@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import axios from "axios";
 import fs from "fs";
 import path from "path";
+import os from "os";
 
 import { prisma } from "../../../magicreel/db/prisma";
 import { finalizeBilling } from "../../../billing/billing.middleware";
@@ -32,28 +33,25 @@ const QWEN_URL =
 
 
 async function downloadImage(
-url:string,
-filename:string
-){
+  url: string,
+  filename: string
+) {
 
-const filePath=
-path.join("/tmp",filename);
+  const tempDir = os.tmpdir();
 
-const response=
-await axios.get(
-url,
-{
-responseType:"arraybuffer"
-}
-);
+  if (!fs.existsSync(tempDir)) {
+    fs.mkdirSync(tempDir, { recursive: true });
+  }
 
-fs.writeFileSync(
-filePath,
-response.data
-);
+  const filePath = path.join(tempDir, filename);
 
-return filePath;
+  const response = await axios.get(url, {
+    responseType: "arraybuffer",
+  });
 
+  fs.writeFileSync(filePath, response.data);
+
+  return filePath;
 }
 
 
@@ -77,14 +75,6 @@ gender,
 category
 
 }=req.body;
-
-console.log("================================");
-console.log("LOOKBOOK INPUT HERO");
-console.log(
-  typeof heroImageUrl,
-  heroImageUrl?.substring?.(0, 120)
-);
-console.log("================================");
 
 const stylePrompt = "";
 
@@ -367,22 +357,17 @@ Authorization:
 
 );
 
-if(
-poll.data.status==="succeeded"
-){
+if (poll.data.status === "succeeded") {
 
-outputUrl=
-poll.data.output[0];
+  outputUrl = poll.data.output[0];
 
-break;
+  break;
 
 }
 
-if(
-poll.data.status==="failed"
-){
+if (poll.data.status === "failed") {
 
-break;
+  break;
 
 }
 
@@ -514,7 +499,6 @@ console.log(
 pose.id
 );
 
-
 const response=
 await axios.post(
 
@@ -588,14 +572,11 @@ Authorization:
 );
 
 
-if(
-poll.data.status==="succeeded"
-){
+if (poll.data.status === "succeeded") {
 
-outputUrl=
-poll.data.output[0];
+  outputUrl = poll.data.output[0];
 
-break;
+  break;
 
 }
 
@@ -654,15 +635,14 @@ uploaded.secure_url;
 
 }
 
-}catch(err){
+}catch(err: any){
 
-console.error(
-
-"Pose failed:",
-
-pose.id
-
-);
+console.error("================================");
+console.error("POSE FAILED:", pose.id);
+console.error("MESSAGE:", err?.message);
+console.error("STACK:", err?.stack);
+console.error("FULL ERROR:", err);
+console.error("================================");
 
 }
 
@@ -712,6 +692,7 @@ lookbook.id
 
 }
 
+console.log("✅ ALL POSES GENERATED");
 
 /* -------------------------
    SHARE ASSET
@@ -754,14 +735,18 @@ aspectRatio:
 
 }]);
 
+console.log("✅ SHARE ASSET INSERTED");
 
 /* -------------------------
    FINAL BILLING
 -------------------------- */
+console.log("✅ STARTING BILLING");
 
 await finalizeBilling(
 req
 );
+
+console.log("✅ BILLING COMPLETE");
 
 console.log({
 
@@ -773,6 +758,7 @@ poses.length
 
 });
 
+console.log("✅ RETURNING SUCCESS RESPONSE");
 
 return res.json({
 
@@ -787,16 +773,14 @@ shareId
 
 });
 
-}catch(error){
+} catch (error: any) {
 
-console.error(error);
+  console.error("❌ Lookbook generation failed");
+  console.error(error);
 
-return res.status(500).json({
-
-error:
-"Lookbook failed"
-
-});
+  return res.status(500).json({
+    error: "Lookbook failed",
+  });
 
 }
 
