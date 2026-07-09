@@ -28,24 +28,6 @@ const creditTx = await prisma.creditTransaction.findMany({
 
 console.timeEnd("creditTx");
 
-const belongsToUser = (item: any, type: string) => {
-  const itemTime = new Date(item.createdAt).getTime();
-
-  const match = creditTx.find((tx: any) => {
-    const txTime = new Date(tx.createdAt).getTime();
-
-    const isSameType = tx.feature
-      ?.toLowerCase()
-      .includes(type.toLowerCase());
-
-    const isCloseInTime = Math.abs(txTime - itemTime) < 15000; // 🔥 15 sec window
-
-    return isSameType && isCloseInTime;
-  });
-
-  return !!match;
-};
-
     // ========================
     // STEP 2: GROUP IDs BY TYPE
     // ========================
@@ -59,7 +41,12 @@ const belongsToUser = (item: any, type: string) => {
 
 // HERO
 const heroJobs = await prisma.productToModelJob.findMany({
-  orderBy: { createdAt: "desc" },
+  where: {
+    userId,
+  },
+  orderBy: {
+    createdAt: "desc",
+  },
   take: 50,
 });
 
@@ -80,8 +67,11 @@ const reelJobs = await prisma.render.findMany({
   },
 
   where: {
-    type: "REEL",
+  type: "REEL",
+  lookbook: {
+    userId,
   },
+},
 
   orderBy: {
     createdAt: "desc",
@@ -96,7 +86,12 @@ console.timeEnd("reelJobs");
 
 // LOOKBOOK
 const lookbookJobs = await prisma.lookbook.findMany({
-  orderBy: { createdAt: "desc" },
+  where: {
+    userId,
+  },
+  orderBy: {
+    createdAt: "desc",
+  },
   take: 50,
 });
 
@@ -109,7 +104,12 @@ console.timeEnd("lookbookJobs");
 console.time("campaignJobs");
 
 const campaignJobs = await prisma.campaign.findMany({
-  orderBy: { createdAt: "desc" },
+  where: {
+    userId,
+  },
+  orderBy: {
+    createdAt: "desc",
+  },
   take: 50,
 });
 
@@ -208,9 +208,7 @@ const lookbookPredictions = lookbookJobs.map((lb: any) => {
 
 const predictions = [
       // HERO
-      ...heroJobs
-  .filter((job) => belongsToUser(job, "hero"))
-  .map((job) => ({
+      ...heroJobs.map((job) => ({
         id: job.id,
         type: "hero",
         status: job.status,
@@ -261,9 +259,7 @@ const predictions = [
   })),
 
 // CAMPAIGN
-...campaignJobs
-  .filter((job) => job.userId === userId)
-  .map((job) => ({
+...campaignJobs.map((job) => ({
     id: job.id,
 
     type: "campaign",
