@@ -38,12 +38,17 @@ export class PublishService {
         ? 5
         : 20;
 
-    if (
-      user.plan !== "PRO" &&
-      user.plan !== "ADVANCE"
-    ) {
-      throw new Error("PLAN_NOT_ALLOWED");
-    }
+    const publishAllowed =
+  (
+    user.plan === "PRO" ||
+    user.plan === "ADVANCE" ||
+    user.plan === "ENTERPRISE"
+  ) &&
+  user.isPaid;
+
+if (!publishAllowed) {
+  throw new Error("PLAN_NOT_ALLOWED");
+}
 
     if (todayCount >= dailyLimit) {
 

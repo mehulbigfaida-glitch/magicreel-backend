@@ -56,7 +56,7 @@ model User {
   // SUBSCRIPTION
   // ============================================
   plan Plan @default(FREE)
-
+  isPaid Boolean @default(false)
   subscriptionType  BillingCycle? @map("subscription_type")
   subscriptionStart DateTime?     @map("subscription_start")
   subscriptionEnd   DateTime?     @map("subscription_end")
