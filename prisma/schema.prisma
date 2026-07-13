@@ -41,39 +41,39 @@ enum TransactionStatus {
 ////////////////////////////////////////////////////////
 
 model User {
-  id                String   @id @default(uuid())
+  id String @id @default(uuid())
 
   // ============================================
   // ACCOUNT
   // ============================================
-  fullName          String
-  mobileNumber      String?  @map("mobile_number")
+  fullName     String
+  mobileNumber String? @map("mobile_number")
 
-  email             String   @unique
-  passwordHash      String   @map("password_hash")
+  email        String @unique
+  passwordHash String @map("password_hash")
 
   // ============================================
   // SUBSCRIPTION
   // ============================================
-  plan              Plan     @default(FREE)
+  plan Plan @default(FREE)
 
   subscriptionType  BillingCycle? @map("subscription_type")
-  subscriptionStart DateTime?      @map("subscription_start")
-  subscriptionEnd   DateTime?      @map("subscription_end")
+  subscriptionStart DateTime?     @map("subscription_start")
+  subscriptionEnd   DateTime?     @map("subscription_end")
 
   // ============================================
   // CREDITS
   // ============================================
-  creditsAvailable  Float    @default(0) @map("credits_available")
-  rolloverCredits   Float    @default(0) @map("rollover_credits")
+  creditsAvailable Float @default(0) @map("credits_available")
+  rolloverCredits  Float @default(0) @map("rollover_credits")
 
-  freeHeroUsed      Boolean  @default(false) @map("free_hero_used")
+  freeHeroUsed Boolean @default(false) @map("free_hero_used")
 
   // ============================================
   // TIMESTAMPS
   // ============================================
-  createdAt         DateTime @default(now()) @map("created_at")
-  updatedAt         DateTime @updatedAt      @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // ============================================
   // RELATIONS
@@ -85,30 +85,30 @@ model User {
   cinematicLookbooks CinematicLookbook[]
   campaigns          Campaign[]
 
-  profile            UserProfile?
-  businessProfile    BusinessProfile?
+  profile         UserProfile?
+  businessProfile BusinessProfile?
 
-  invoices           Invoice[]
+  invoices Invoice[]
 
-  publishAccounts    PublishAccount[]
-  publishPosts       PublishPost[]
+  publishAccounts PublishAccount[]
+  publishPosts    PublishPost[]
 
   @@map("users")
 }
 
 model CreditTransaction {
-  id           String   @id @default(uuid())
-  userId       String   @map("user_id")
-  feature      String
-  credits      Int
-  type         TransactionType @default(DEBIT)
-  status       TransactionStatus @default(COMPLETED)
-  referenceId  String?  @map("reference_id")
-  createdAt    DateTime @default(now()) @map("created_at")
+  id          String            @id @default(uuid())
+  userId      String            @map("user_id")
+  feature     String
+  credits     Int
+  type        TransactionType   @default(DEBIT)
+  status      TransactionStatus @default(COMPLETED)
+  referenceId String?           @map("reference_id")
+  createdAt   DateTime          @default(now()) @map("created_at")
 
-  predictionId String?  @map("prediction_id")  // ✅ ADD THIS
+  predictionId String? @map("prediction_id") // ✅ ADD THIS
 
-  user         User     @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id])
 
   @@map("credit_transaction")
 }
@@ -118,16 +118,16 @@ model CreditTransaction {
 ////////////////////////////////////////////////////////
 
 model Garment {
-  id            String     @id @default(uuid())
+  id            String   @id @default(uuid())
   userId        String
   frontImageUrl String
   backImageUrl  String?
   category      String
-  validated     Boolean    @default(true)
-  createdAt     DateTime   @default(now())
+  validated     Boolean  @default(true)
+  createdAt     DateTime @default(now())
 
-  user          User       @relation(fields: [userId], references: [id])
-  lookbooks     Lookbook[]
+  user      User       @relation(fields: [userId], references: [id])
+  lookbooks Lookbook[]
 }
 
 model Lookbook {
@@ -140,14 +140,14 @@ model Lookbook {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user      User     @relation(fields: [userId], references: [id])
-  garment   Garment  @relation(fields: [garmentId], references: [id])
-  renders   Render[]
-  edits     LookbookEdit[]
+  user    User           @relation(fields: [userId], references: [id])
+  garment Garment        @relation(fields: [garmentId], references: [id])
+  renders Render[]
+  edits   LookbookEdit[]
 }
 
 model Render {
-  id              String   @id @default(uuid())
+  id              String  @id @default(uuid())
   pose            String
   engine          String
   modelImageUrl   String
@@ -157,42 +157,42 @@ model Render {
   status          String
   lookbookId      String
 
-  type            String   @default("HERO")
-  reelVideoUrl    String?
+  type         String  @default("HERO")
+  reelVideoUrl String?
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  lookbook        Lookbook @relation(fields: [lookbookId], references: [id])
+  lookbook Lookbook @relation(fields: [lookbookId], references: [id])
 
   @@index([lookbookId])
 }
 
 model LookbookEdit {
-  id           String   @id @default(uuid())
-  lookbookId   String
-  elementType  String
-  sourceImage  String
-  resultImage  String
-  createdAt    DateTime @default(now())
+  id          String   @id @default(uuid())
+  lookbookId  String
+  elementType String
+  sourceImage String
+  resultImage String
+  createdAt   DateTime @default(now())
 
-  lookbook     Lookbook @relation(fields: [lookbookId], references: [id])
+  lookbook Lookbook @relation(fields: [lookbookId], references: [id])
 }
 
 model ProductToModelJob {
-  id               String   @id @default(uuid())
-  userId           String
-  productImageUrl  String
-  modelImageUrl    String
-  engine           String
-  engineJobId      String
-  status           String
-  error            String?
-  resultImageUrl   String?
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id              String   @id @default(uuid())
+  userId          String
+  productImageUrl String
+  modelImageUrl   String
+  engine          String
+  engineJobId     String
+  status          String
+  error           String?
+  resultImageUrl  String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
-  user             User     @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id])
 
   @@index([status])
   @@index([createdAt])
@@ -203,16 +203,16 @@ model ProductToModelJob {
 ////////////////////////////////////////////////////////
 
 model CinematicLookbook {
-  id             String   @id @default(uuid())
-  userId         String
-  heroImageUrl   String
-  theme          String
-  seed           Int
-  worldConfig    Json
-  frames         Json
-  createdAt      DateTime @default(now())
+  id           String   @id @default(uuid())
+  userId       String
+  heroImageUrl String
+  theme        String
+  seed         Int
+  worldConfig  Json
+  frames       Json
+  createdAt    DateTime @default(now())
 
-  user           User     @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id])
 
   @@index([userId])
 }
@@ -241,64 +241,64 @@ model Payment {
 }
 
 model UserProfile {
-  id            String   @id @default(uuid())
-  userId        String   @unique
+  id     String @id @default(uuid())
+  userId String @unique
 
-  fullName      String
-  companyName   String
-  addressLine1  String
-  addressLine2  String?
-  city          String
-  state         String
-  postalCode    String
-  country       String   @default("India")
+  fullName     String
+  companyName  String
+  addressLine1 String
+  addressLine2 String?
+  city         String
+  state        String
+  postalCode   String
+  country      String  @default("India")
 
-  gstin         String?
-  phone         String
-  email         String
+  gstin String?
+  phone String
+  email String
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  user          User     @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id])
 }
 
 model Invoice {
-  id              String   @id @default(uuid())
+  id String @id @default(uuid())
 
-  userId          String
-  paymentId       String   @unique
+  userId    String
+  paymentId String @unique
 
-  invoiceNumber   String   @unique
-  invoiceDate     DateTime @default(now())
+  invoiceNumber String   @unique
+  invoiceDate   DateTime @default(now())
 
-  fullName        String
-  companyName     String
-  addressLine1    String
-  addressLine2    String?
-  city            String
-  state           String
-  postalCode      String
-  country         String
+  fullName     String
+  companyName  String
+  addressLine1 String
+  addressLine2 String?
+  city         String
+  state        String
+  postalCode   String
+  country      String
 
-  gstin           String?
+  gstin String?
 
-  planName        String
-  amount          Int
-  currency        String   @default("INR")
+  planName String
+  amount   Int
+  currency String @default("INR")
 
-  gstRate         Float
-  cgst            Int?
-  sgst            Int?
-  igst            Int?
+  gstRate Float
+  cgst    Int?
+  sgst    Int?
+  igst    Int?
 
-  totalAmount     Int
+  totalAmount Int
 
-  pdfUrl         String?
-  
-  createdAt       DateTime @default(now())
+  pdfUrl String?
 
-  user            User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
 
   @@index([userId])
 }
@@ -315,51 +315,58 @@ model InvoiceSequence {
 ////////////////////////////////////////////////////////
 
 model PublishAccount {
-  id                String   @id @default(uuid())
+  id String @id @default(uuid())
 
-  userId            String
+  userId String
 
-  platform          String
-  username          String?
+  // Platform
+  platform String
 
-  zernioAccountId   String
+  // Display information
+  username  String?
+  socialProfileId String?
 
-  connected         Boolean  @default(true)
+  // Zernio account identifier
+  zernioAccountId String
 
-  connectedAt       DateTime @default(now())
-  disconnectedAt    DateTime?
+  // Connection state
+  connected Boolean @default(true)
 
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  connectedAt    DateTime  @default(now())
+  disconnectedAt DateTime?
 
-  user              User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, platform])
   @@index([userId])
   @@index([platform])
 }
 
 model PublishPost {
-  id              String   @id @default(uuid())
+  id String @id @default(uuid())
 
-  userId          String
+  userId String
 
-  platform        String
+  platform String
 
-  assetType       String
-  assetUrl        String
+  assetType String
+  assetUrl  String
 
-  caption         String?
+  caption String?
 
-  status          String
+  status String
 
-  zernioPostId    String?
+  zernioPostId String?
 
-  publishedAt     DateTime @default(now())
+  publishedAt DateTime @default(now())
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  user            User     @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id])
 
   @@index([userId])
   @@index([platform])
@@ -367,28 +374,28 @@ model PublishPost {
 }
 
 model Campaign {
-  id                 String   @id @default(uuid())
+  id String @id @default(uuid())
 
-  userId             String
+  userId String
 
-  heroImageUrl       String
-  assetImageUrl      String?
-  logoImageUrl       String?
+  heroImageUrl  String
+  assetImageUrl String?
+  logoImageUrl  String?
 
-  campaignType       String
+  campaignType String
 
   backgroundStrategy String
   campaignCopy       String?
 
-  tone               String
+  tone String
 
-  outputImageUrl     String?
-  outputImageUrls    Json?
+  outputImageUrl  String?
+  outputImageUrls Json?
 
-  status             String
+  status String
 
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id])
 }
@@ -398,7 +405,7 @@ model BusinessProfile {
 
   userId String @unique
 
-  brandName   String @default("")
+  brandName   String  @default("")
   companyName String?
 
   logoUrl String?
@@ -409,6 +416,8 @@ model BusinessProfile {
   businessCategory String?
   industry         String?
 
+  zernioProfileId String? @unique
+
   instagram String?
   facebook  String?
   youtube   String?
@@ -416,8 +425,8 @@ model BusinessProfile {
   pinterest String?
   twitter   String?
 
-  onboardingStep Int @default(1)
-  completed Boolean @default(false)
+  onboardingStep Int     @default(1)
+  completed      Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -426,3 +435,4 @@ model BusinessProfile {
 
   @@map("BusinessProfile")
 }
+

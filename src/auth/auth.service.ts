@@ -2,7 +2,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { prisma } from "../magicreel/db/prisma";
 import { SubscriptionService } from "../subscription/subscription.service";
-
+import { zernioProvider } from "../publish/providers/zernio.provider";
 const JWT_SECRET = process.env.JWT_SECRET || "dev_secret";
 
 export interface RegisterUserInput {
@@ -75,11 +75,20 @@ export async function registerUser(
     );
 
     // ------------------------------------------------
-    // Create Empty Business Profile
-    // ------------------------------------------------
-    await tx.businessProfile.create({
+// Create Zernio Profile
+// ------------------------------------------------
+const zernioProfile = await zernioProvider.createProfile(fullName);
+
+// TEMP: log response
+console.log("Zernio Profile Response:", zernioProfile);
+
+// ------------------------------------------------
+// Create Business Profile
+// ------------------------------------------------
+await tx.businessProfile.create({
   data: {
     userId: createdUser.id,
+    zernioProfileId: zernioProfile.data.profile._id,
   },
 });
 

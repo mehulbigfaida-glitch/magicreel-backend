@@ -1,7 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
-
+import cookieParser from "cookie-parser";
 import { prisma } from "./db/prisma";
 
 // ROUTES
@@ -26,6 +26,7 @@ import { authenticate } from "../auth/jwt.middleware";
 
 import publishRoutes from "../publish/publish.routes";
 import publishAiRoutes from "../publish/publishAi.routes";
+import socialRoutes from "../social/social.routes";
 // QUEUE
 // import { heroQueue } from "./queue/hero.queue";
 
@@ -81,6 +82,7 @@ app.use(
 
 app.use(express.json({ limit: "20mb" }));
 
+app.use(cookieParser());
 /* ---------------------------------- */
 /* ROUTES */
 /* ---------------------------------- */
@@ -96,7 +98,7 @@ app.use(
 // PUBLISH
 app.use("/api/publish", publishRoutes);
 app.use("/api/publish", publishAiRoutes);
-
+app.use("/api/social", socialRoutes);
 // BILLING (PROTECTED)
 app.post("/api/billing/upgrade", authenticate, upgradePlan);
 

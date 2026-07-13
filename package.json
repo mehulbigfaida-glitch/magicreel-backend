@@ -22,6 +22,7 @@
     "bull": "^4.16.5",
     "bullmq": "^5.73.4",
     "cloudinary": "^2.9.0",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^4.21.2",
@@ -45,6 +46,7 @@
   "devDependencies": {
     "@types/archiver": "^7.0.0",
     "@types/bcrypt": "^6.0.0",
+    "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.5",
     "@types/jsonwebtoken": "^9.0.10",

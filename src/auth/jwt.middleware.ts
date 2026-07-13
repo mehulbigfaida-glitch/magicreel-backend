@@ -7,20 +7,26 @@ export function authenticate(
   next: NextFunction
 ) {
   try {
-    const authHeader =
-      req.headers.authorization;
+    const authHeader = req.headers.authorization;
 
-    if (
-      !authHeader ||
-      !authHeader.startsWith("Bearer ")
-    ) {
-      return res.status(401).json({
-        error: "No token",
-      });
-    }
+let token: string | undefined;
 
-    const token =
-  authHeader.split(" ")[1];
+if (
+  authHeader &&
+  authHeader.startsWith("Bearer ")
+) {
+  token = authHeader.split(" ")[1];
+} else if (
+  typeof req.query.token === "string"
+) {
+  token = req.query.token;
+}
+
+if (!token) {
+  return res.status(401).json({
+    error: "No token",
+  });
+}
 
 // TEMP DEBUG
 const decoded: any =
