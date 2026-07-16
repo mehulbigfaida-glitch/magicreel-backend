@@ -13,24 +13,49 @@ export const getPaymentHistory = async (req: Request, res: Response) => {
 
     const payments = await prisma.payment.findMany({
       where: {
-        userId: String(userId), // 🔥 FORCE STRING MATCH
+        userId: String(userId),
       },
       orderBy: {
         createdAt: "desc",
       },
     });
 
+    const invoices = await prisma.invoice.findMany({
+      where: {
+        userId: String(userId),
+      },
+      select: {
+        paymentId: true,
+        pdfUrl: true,
+      },
+    });
+
+    const invoiceMap = new Map(
+      invoices.map((i) => [i.paymentId, i.pdfUrl])
+    );
+
+    console.log("Payments:", payments);
+
+    console.log("Invoices:", invoices);
+
+    console.log("Invoice Map:", [...invoiceMap.entries()]);
+    
     console.log("✅ Payments found:", payments.length);
+    console.log("✅ Invoices found:", invoices.length);
 
     const safePayments = payments.map((p) => ({
-  ...p,
-  amount: Number(p.amount), // 🔥 FIX BigInt
-}));
+      ...p,
+      amount: Number(p.amount),
+      invoiceUrl:
+  p.razorpayPaymentId
+    ? invoiceMap.get(p.razorpayPaymentId) ?? null
+    : null,
+    }));
 
-return res.json({
-  success: true,
-  data: safePayments,
-});
+    return res.json({
+      success: true,
+      data: safePayments,
+    });
   } catch (error: any) {
     console.error("❌ Payment history error:", error.message);
     return res.status(500).json({ error: "Failed to fetch payments" });

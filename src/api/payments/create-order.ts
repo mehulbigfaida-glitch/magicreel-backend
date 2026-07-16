@@ -39,6 +39,12 @@ export const createOrder = async (req: Request, res: Response) => {
 
     console.log("💰 Amount:", amount);
 
+    console.log("KEY ID:", process.env.RAZORPAY_KEY_ID);
+console.log(
+  "SECRET LENGTH:",
+  process.env.RAZORPAY_KEY_SECRET?.length
+);
+    
     const order = await razorpay.orders.create({
       amount,
       currency: "INR",

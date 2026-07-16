@@ -1,5 +1,6 @@
 import puppeteer from "puppeteer";
 import { uploadInvoicePdf } from "../../utils/uploadInvoicePdf";
+import { buildInvoiceHtml } from "../templates/invoice.html";
 
 interface InvoiceData {
   invoiceNo: string;
@@ -17,43 +18,7 @@ interface InvoiceData {
 }
 
 export async function generateInvoicePDF(data: InvoiceData) {
-  const html = `
-    <html>
-      <body style="font-family: Arial; padding:40px;">
-        <h2>MagicReel (by AMJIS)</h2>
-        <p>
-          AMJIS<br/>
-          129-B, AWCL Complex, VIT College Road,<br/>
-          Wadala (East), Mumbai - 400037<br/>
-          GSTIN: 27AASHM8403M1ZI
-        </p>
-
-        <h3>TAX INVOICE</h3>
-        <p>Invoice No: ${data.invoiceNo}</p>
-        <p>Date: ${data.date}</p>
-
-        <hr/>
-
-        <h4>Bill To:</h4>
-        <p>${data.customerName}</p>
-
-        <table width="100%" border="1" cellspacing="0" cellpadding="8">
-          <tr>
-            <th>Description</th>
-            <th>SAC</th>
-            <th>Amount</th>
-          </tr>
-          <tr>
-            <td>${data.description}</td>
-            <td>998314</td>
-            <td>₹${data.amount}</td>
-          </tr>
-        </table>
-
-        <h3>Total: ₹${data.total}</h3>
-      </body>
-    </html>
-  `;
+  const html = buildInvoiceHtml(data);
 
   const browser = await puppeteer.launch({
     headless: true,

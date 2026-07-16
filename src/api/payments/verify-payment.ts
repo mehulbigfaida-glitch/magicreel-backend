@@ -68,11 +68,14 @@ export const verifyPayment = async (req: Request, res: Response) => {
     await prisma.user.update({
       where: { id: userId },
       data: {
-        creditsAvailable: {
-          increment: creditsToAdd,
-        },
-        plan: plan,
-      },
+    creditsAvailable: {
+        increment: creditsToAdd,
+    },
+
+    plan: plan,
+
+    isPaid: true,
+}
     });
 
     // ✅ LOG CREDIT TRANSACTION (optional but good)

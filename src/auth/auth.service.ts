@@ -92,6 +92,34 @@ await tx.businessProfile.create({
   },
 });
 
+// ------------------------------------------------
+// Create Billing Profile (UserProfile)
+// ------------------------------------------------
+await tx.userProfile.create({
+  data: {
+    userId: createdUser.id,
+
+    fullName: createdUser.fullName,
+
+    companyName: null,
+
+    addressLine1: null,
+    addressLine2: null,
+
+    city: null,
+    state: null,
+    postalCode: null,
+
+    country: "India",
+
+    gstin: null,
+
+    phone: createdUser.mobileNumber,
+
+    email: createdUser.email,
+  },
+});
+
     return createdUser;
   });
 

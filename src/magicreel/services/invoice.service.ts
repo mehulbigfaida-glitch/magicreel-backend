@@ -11,6 +11,7 @@ export async function generateInvoiceForPayment({
   userId: string;
   razorpayPaymentId: string;
 }) {
+  
   // 1. Prevent duplicate invoice
   const existing = await prisma.invoice.findUnique({
     where: {
@@ -113,14 +114,15 @@ export async function generateInvoiceForPayment({
       invoiceNumber,
 
       fullName: profile.fullName,
-      companyName: profile.companyName,
+      companyName: profile.companyName ?? "",
 
-      addressLine1: profile.addressLine1,
+      addressLine1: profile.addressLine1 ?? "",
+
       addressLine2: profile.addressLine2,
 
-      city: profile.city,
-      state: profile.state,
-      postalCode: profile.postalCode,
+      city: profile.city ?? "",
+      state: profile.state ?? "",
+      postalCode: profile.postalCode ?? "",
       country: profile.country,
 
       gstin: profile.gstin,
