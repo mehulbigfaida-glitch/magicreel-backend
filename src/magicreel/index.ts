@@ -23,10 +23,12 @@ import paymentRoutes from "../api/payments";
 // BILLING
 import { upgradePlan } from "../billing/upgrade";
 import { authenticate } from "../auth/jwt.middleware";
+import mailRoutes from "../mail/mail.routes";
 
 import publishRoutes from "../publish/publish.routes";
 import publishAiRoutes from "../publish/publishAi.routes";
 import socialRoutes from "../social/social.routes";
+
 // QUEUE
 // import { heroQueue } from "./queue/hero.queue";
 
@@ -89,6 +91,7 @@ app.use(cookieParser());
 
 // AUTH
 app.use("/api/auth", authRoutes);
+app.use("/api/mail", mailRoutes);
 // BUSINESS PROFILE
 app.use(
   "/api/business-profile",
@@ -99,6 +102,8 @@ app.use(
 app.use("/api/publish", publishRoutes);
 app.use("/api/publish", publishAiRoutes);
 app.use("/api/social", socialRoutes);
+
+
 // BILLING (PROTECTED)
 app.post("/api/billing/upgrade", authenticate, upgradePlan);
 

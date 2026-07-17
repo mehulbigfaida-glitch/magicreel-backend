@@ -1,5 +1,10 @@
 import { Request, Response } from "express";
-import { registerUser, loginUser } from "./auth.service";
+import {
+  registerUser,
+  loginUser,
+  forgotPassword as forgotPasswordService,
+  resetPassword as resetPasswordService,
+} from "./auth.service";
 import { prisma } from "../magicreel/db/prisma";
 
 // ---------------- REGISTER ----------------
@@ -101,5 +106,53 @@ export async function getMe(req: Request, res: Response) {
   } catch (err) {
     console.error("GetMe error:", err);
     res.status(500).json({ error: "Failed to fetch user" });
+  }
+}
+
+// ---------------- FORGOT PASSWORD ----------------
+export async function forgotPassword(req: Request, res: Response) {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        error: "Email is required",
+      });
+    }
+
+    await forgotPasswordService(email);
+
+    return res.json({
+      success: true,
+      message: "If an account exists for this email, a password reset link will be sent.",
+    });
+  } catch (err: any) {
+    return res.status(400).json({
+      error: err.message,
+    });
+  }
+}
+
+// ---------------- RESET PASSWORD ----------------
+export async function resetPassword(req: Request, res: Response) {
+  try {
+    const { token, password } = req.body;
+
+    if (!token || !password) {
+      return res.status(400).json({
+        error: "Token and password are required",
+      });
+    }
+
+    await resetPasswordService(token, password);
+
+    return res.json({
+      success: true,
+      message: "Password reset successful.",
+    });
+  } catch (err: any) {
+    return res.status(400).json({
+      error: err.message,
+    });
   }
 }

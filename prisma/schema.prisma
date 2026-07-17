@@ -52,6 +52,9 @@ model User {
   email        String @unique
   passwordHash String @map("password_hash")
 
+  passwordResetToken      String?
+  passwordResetExpiresAt  DateTime?
+
   // ============================================
   // SUBSCRIPTION
   // ============================================

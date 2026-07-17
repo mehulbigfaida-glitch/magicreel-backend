@@ -34,15 +34,7 @@ export const getPaymentHistory = async (req: Request, res: Response) => {
       invoices.map((i) => [i.paymentId, i.pdfUrl])
     );
 
-    console.log("Payments:", payments);
-
-    console.log("Invoices:", invoices);
-
-    console.log("Invoice Map:", [...invoiceMap.entries()]);
     
-    console.log("✅ Payments found:", payments.length);
-    console.log("✅ Invoices found:", invoices.length);
-
     const safePayments = payments.map((p) => ({
       ...p,
       amount: Number(p.amount),

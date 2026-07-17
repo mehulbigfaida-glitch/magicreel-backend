@@ -1,8 +1,11 @@
 import bcrypt from "bcrypt";
+import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import { prisma } from "../magicreel/db/prisma";
 import { SubscriptionService } from "../subscription/subscription.service";
 import { zernioProvider } from "../publish/providers/zernio.provider";
+import { MailService } from "../mail/mail.service";
+
 const JWT_SECRET = process.env.JWT_SECRET || "dev_secret";
 
 export interface RegisterUserInput {
@@ -171,4 +174,121 @@ function generateToken(userId: string) {
       expiresIn: "7d",
     }
   );
+}
+
+export async function forgotPassword(email: string) {
+  
+const users = await prisma.user.findMany({
+  select: {
+    email: true,
+  },
+});
+
+const user = await prisma.user.findUnique({
+  where: {
+    email,
+  },
+});
+
+  // Prevent email enumeration
+  if (!user) {
+    return {
+      success: true,
+    };
+  }
+
+  const resetToken = crypto.randomBytes(32).toString("hex");
+
+  const expiresAt = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
+
+  await prisma.user.update({
+    where: {
+      id: user.id,
+    },
+    data: {
+      passwordResetToken: resetToken,
+      passwordResetExpiresAt: expiresAt,
+    },
+  });
+
+const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+
+console.log("📧 Sending password reset email to:", user.email);
+console.log("🔗 Reset URL:", resetUrl);
+
+try {
+  const result = await MailService.sendEmail(
+  user.email,
+  "Reset your MagicReel password",
+  `
+    <h2>Reset your password</h2>
+
+    <p>We received a request to reset your MagicReel password.</p>
+
+    <p>
+      <a href="${resetUrl}">
+        Click here to reset your password
+      </a>
+    </p>
+
+    <p>This link will expire in 30 minutes.</p>
+
+    <p>If you didn't request this, you can safely ignore this email.</p>
+  `
+);
+
+if (result.error) {
+  console.error("❌ Resend error:", result.error);
+  throw new Error(result.error.message);
+}
+
+console.log("✅ Password reset email sent successfully.");
+
+} catch (err) {
+  console.error("❌ Failed to send password reset email:", err);
+  throw err;
+}
+
+  return {
+  success: true,
+};
+}
+
+export async function resetPassword(
+  token: string,
+  newPassword: string
+) {
+  const user = await prisma.user.findFirst({
+    where: {
+      passwordResetToken: token,
+    },
+  });
+
+  if (!user) {
+    throw new Error("Invalid or expired reset token.");
+  }
+
+  if (
+    !user.passwordResetExpiresAt ||
+    user.passwordResetExpiresAt < new Date()
+  ) {
+    throw new Error("Reset token has expired.");
+  }
+
+  const passwordHash = await bcrypt.hash(newPassword, 10);
+
+await prisma.user.update({
+  where: {
+    id: user.id,
+  },
+  data: {
+    passwordHash,
+    passwordResetToken: null,
+    passwordResetExpiresAt: null,
+  },
+});
+
+return {
+  success: true,
+};
 }
