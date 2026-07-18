@@ -258,9 +258,18 @@ export async function resetPassword(
   token: string,
   newPassword: string
 ) {
+  // Hash the incoming token (matches Forgot Password storage)
+  const hashedToken = crypto
+    .createHash("sha256")
+    .update(token)
+    .digest("hex");
+
   const user = await prisma.user.findFirst({
     where: {
-      passwordResetToken: token,
+      passwordResetToken: hashedToken,
+      passwordResetExpiresAt: {
+        gt: new Date(),
+      },
     },
   });
 
@@ -268,27 +277,20 @@ export async function resetPassword(
     throw new Error("Invalid or expired reset token.");
   }
 
-  if (
-    !user.passwordResetExpiresAt ||
-    user.passwordResetExpiresAt < new Date()
-  ) {
-    throw new Error("Reset token has expired.");
-  }
-
   const passwordHash = await bcrypt.hash(newPassword, 10);
 
-await prisma.user.update({
-  where: {
-    id: user.id,
-  },
-  data: {
-    passwordHash,
-    passwordResetToken: null,
-    passwordResetExpiresAt: null,
-  },
-});
+  await prisma.user.update({
+    where: {
+      id: user.id,
+    },
+    data: {
+      passwordHash,
+      passwordResetToken: null,
+      passwordResetExpiresAt: null,
+    },
+  });
 
-return {
-  success: true,
-};
+  return {
+    success: true,
+  };
 }
