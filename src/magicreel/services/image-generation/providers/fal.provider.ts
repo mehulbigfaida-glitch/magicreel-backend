@@ -51,7 +51,7 @@ export class FalImageProvider {
 
   output_format: request.outputFormat ?? "png",
 
-  quality: request.quality ?? "medium",
+  quality: request.quality ?? "low",
 };
 
 

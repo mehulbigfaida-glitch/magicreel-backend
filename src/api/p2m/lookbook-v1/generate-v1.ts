@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import axios from "axios";
+import { fal } from "@fal-ai/client";
 import fs from "fs";
 import path from "path";
 import os from "os";
@@ -9,28 +10,11 @@ import { finalizeBilling } from "../../../billing/billing.middleware";
 import { uploadToCloudinary } from "../../../utils/cloudinary";
 import { supabase } from "../../../lib/supabase";
 
-import {
-FEMALE_POSES,
-MALE_POSES
-} from "./poseRegistry";
-import { LOCKED_LOOKBOOK_PROMPT } from "./promptRegistry";
-
-import {
-  SAREE_2511_SHOTS,
-  QWEN_2511_SAREE_CONFIG
-} from "./sareeShots2511";
-
-import { LOOKBOOK_STYLE_REGISTRY }
-from "./lookbookStyleRegistry";
+fal.config({
+  credentials: process.env.FAL_KEY!,
+});
 
 const { randomUUID } = require("crypto");
-
-const REPLICATE_API_TOKEN =
-process.env.REPLICATE_API_TOKEN as string;
-
-const QWEN_URL =
-"https://api.replicate.com/v1/models/qwen/qwen-image-edit-plus/predictions";
-
 
 async function downloadImage(
   url: string,
@@ -54,7 +38,6 @@ async function downloadImage(
   return filePath;
 }
 
-
 export async function generateLookbookV1(
 req:Request,
 res:Response
@@ -72,11 +55,9 @@ lookbookStyle,
 
 gender,
 
-category
+category,
 
 }=req.body;
-
-const stylePrompt = "";
 
 if(!heroImageUrl){
 
@@ -88,7 +69,6 @@ error:
 });
 
 }
-
 
 const userId=
 (req as any).user?.id;
@@ -102,7 +82,6 @@ error:"Unauthorized"
 });
 
 }
-
 
 /* -------------------------
    LOOKBOOK ROW
@@ -138,7 +117,6 @@ status:"completed"
 
 });
 
-
 /* -------------------------
    BILLING OBJECT
 -------------------------- */
@@ -156,9 +134,7 @@ lookbook.id
 
 };
 
-
 const poses:any[]=[];
-
 
 /* -------------------------
    HERO
@@ -172,7 +148,6 @@ imageUrl:
 heroImageUrl
 
 });
-
 
 await prisma.render.create({
 
@@ -202,7 +177,6 @@ lookbook.id
 
 });
 
-
 /* -------------------------
    BACK HERO
 -------------------------- */
@@ -217,7 +191,6 @@ imageUrl:
 backHeroImageUrl
 
 });
-
 
 await prisma.render.create({
 
@@ -249,450 +222,144 @@ lookbook.id
 
 }
 
-
 /* -------------------------
-   POSE ROUTING
+   GPT IMAGE 2.0 LOOKBOOK V3
 -------------------------- */
 
-const isSaree =
-category === "saree";
+const UNIVERSAL_EDITORIAL_PROMPT = `
+A professional high-resolution luxury fashion lookbook studio photograph.
 
-if(isSaree){
+The subject is the single model from the source image wearing the exact same garment, accessories, hairstyle and makeup.
 
-console.log(
-"Saree 2511 branch enabled"
-);
+Preserve the garment design, fabric, colour, drape, silhouette, fit and all garment details exactly.
 
-for(
-const shot
-of SAREE_2511_SHOTS
-){
+Preserve the model identity exactly.
 
-let finalUrl:string|null=null;
+The background must remain a clean minimalist luxury fashion studio.
 
-try{
+Choose a natural premium editorial fashion pose that best showcases this specific garment category.
 
-console.log(
-"Generating:",
-shot.id
-);
+The pose should maximise the visibility, elegance and presentation of the garment while remaining realistic and suitable for a professional luxury fashion campaign.
 
-const response=
-await axios.post(
+If the garment is flowing, draped or layered, choose a pose that naturally enhances the movement and structure of the garment.
 
-QWEN_URL,
+If the garment is structured or tailored, choose a pose that highlights the silhouette and craftsmanship.
 
-{
+Every generated image should represent a distinctly different premium editorial fashion pose and composition.
 
-input:{
+Do not repeat the Hero pose.
 
-image:[
-heroImageUrl
-],
+Do not generate duplicate poses.
 
-prompt:
-`${shot.prompt} ${stylePrompt}`,
+Allow the pose selection to be driven by the garment itself while maintaining premium luxury fashion photography standards.
 
-aspect_ratio:
-QWEN_2511_SAREE_CONFIG.aspect_ratio,
+The output must be one single full-body image.
 
-go_fast:
-QWEN_2511_SAREE_CONFIG.go_fast,
+Absolutely no grids, no collage panels, no splits, and only one person in frame.
+`;
 
-lora_scale:
-QWEN_2511_SAREE_CONFIG.lora_scale,
+console.log("🎨 Generating Lookbook V3...");
 
-lora_weights:
-QWEN_2511_SAREE_CONFIG.lora_weights,
-
-output_format:
-QWEN_2511_SAREE_CONFIG.output_format,
-
-output_quality:
-QWEN_2511_SAREE_CONFIG.output_quality
-
-}
-
-},
-
-{
-
-headers:{
-
-Authorization:
-`Bearer ${REPLICATE_API_TOKEN}`
-
-}
-
-}
-
-);
-
-const predictionUrl=
-response.data.urls.get;
-
-let outputUrl=null;
-
-for(
-let i=0;
-i<60;
-i++
-){
-
-const poll=
-await axios.get(
-
-predictionUrl,
-
-{
-
-headers:{
-
-Authorization:
-`Bearer ${REPLICATE_API_TOKEN}`
-
-}
-
-}
-
-);
-
-if (poll.data.status === "succeeded") {
-
-  outputUrl = poll.data.output[0];
-
-  break;
-
-}
-
-if (poll.data.status === "failed") {
-
-  break;
-
-}
-
-await new Promise(
-r=>setTimeout(
-r,
-1500
-)
-);
-
-}
-
-if(outputUrl){
-
-const localPath=
-await downloadImage(
-
-outputUrl,
-
-`${shot.id}.png`
-
-);
-
-const uploaded=
-await uploadToCloudinary(
-
-localPath,
-
-{
-
-folder:
-"magicreel/lookbooks",
-
-public_id:
-`${lookbook.id}_${shot.id}`
-
-}
-
-);
-
-finalUrl=
-uploaded.secure_url;
-
-}
-
-}catch(err){
-
-console.error(
-
-"Saree shot failed:",
-
-shot.id
-
-);
-
-}
-
-poses.push({
-
-poseId:
-shot.id,
-
-imageUrl:
-finalUrl || ""
-
-});
-
-await prisma.render.create({
-
-data:{
-
-pose:
-shot.id,
-
-engine:
-"QWEN_2511",
-
-type:
-"LOOKBOOK",
-
-status:
-"completed",
-
-modelImageUrl:
-heroImageUrl,
-
-garmentImageUrl:
-heroImageUrl,
-
-outputImageUrl:
-finalUrl,
-
-lookbookId:
-lookbook.id
-
-}
-
-});
-
-}
-
-}else{
-
-const normalizedGender =
-String(gender || "")
-.trim()
-.toLowerCase();
-
-const isMale =
-normalizedGender === "men" ||
-normalizedGender === "male";
-
-const poseSet =
-isMale
-? MALE_POSES
-: FEMALE_POSES;
-
-for(
-const pose
-of poseSet
-){
-
-let finalUrl:string|null=null;
-
-try{
-
-console.log(
-"Generating:",
-pose.id
-);
-
-const response=
-await axios.post(
-
-QWEN_URL,
-
-{
-
-input:{
-
-image:[
-pose.url,
-heroImageUrl
-],
-
-prompt:
-`${LOCKED_LOOKBOOK_PROMPT} ${stylePrompt}`,
-
-aspect_ratio:
-"match_input_image",
-
-output_format:
-"png"
-
-}
-
-},
-
-{
-
-headers:{
-
-Authorization:
-`Bearer ${REPLICATE_API_TOKEN}`
-
-}
-
-}
-
-);
-
-
-const predictionUrl=
-response.data.urls.get;
-
-
-let outputUrl=null;
-
-
-for(
-let i=0;
-i<60;
-i++
-){
-
-const poll=
-await axios.get(
-
-predictionUrl,
-
-{
-
-headers:{
-
-Authorization:
-`Bearer ${REPLICATE_API_TOKEN}`
-
-}
-
-}
-
-);
-
-
-if (poll.data.status === "succeeded") {
-
-  outputUrl = poll.data.output[0];
-
-  break;
-
-}
-
-
-if(
-poll.data.status==="failed"
-){
-
-break;
-
-}
-
-
-await new Promise(
-r=>setTimeout(
-r,
-1500
-)
-);
-
-}
-
-
-if(outputUrl){
-
-const localPath=
-await downloadImage(
-
-outputUrl,
-
-`${pose.id}.png`
-
-);
-
-
-const uploaded=
-await uploadToCloudinary(
-
-  localPath,
-
+const result = await fal.subscribe(
+  "openai/gpt-image-2/edit",
   {
+    input: {
+      prompt: UNIVERSAL_EDITORIAL_PROMPT,
+      image_urls: [heroImageUrl],
+      num_images: 4, // four independent output images
+      quality: "medium",
+      output_format: "png",
+    },
+    logs: true,
+  }
+);
 
-    folder:
-    "magicreel/lookbooks",
+const generatedImages =
+  result?.data?.images ?? [];
 
-    public_id:
-    `${lookbook.id}_${pose.id}`
+if (!generatedImages.length) {
+  throw new Error("GPT Image 2.0 returned no images.");
+}
+
+console.log(`✅ GPT returned ${generatedImages.length} editorial images`);
+
+/* -------------------------
+   CLOUDINARY + RENDER RECORDS
+-------------------------- */
+
+for (let i = 0; i < generatedImages.length; i++) {
+
+  const image = generatedImages[i];
+
+  let finalUrl: string | null = null;
+
+  try {
+
+    const outputUrl = image?.url;
+
+    if (!outputUrl) {
+      console.warn(`⚠️ Editorial image ${i + 1} missing URL`);
+      continue;
+    }
+
+    const localPath = await downloadImage(
+      outputUrl,
+      `editorial_${i + 1}.png`
+    );
+
+    const uploaded = await uploadToCloudinary(
+      localPath,
+      {
+        folder: "magicreel/lookbooks",
+        public_id: `${lookbook.id}_editorial_${i + 1}`,
+      }
+    );
+
+    finalUrl = uploaded.secure_url;
+
+    poses.push({
+      poseId: `editorial_${i + 1}`,
+      imageUrl: finalUrl,
+    });
+
+    await prisma.render.create({
+
+      data: {
+
+        pose: `editorial_${i + 1}`,
+
+        engine: "GPT_IMAGE_2_MEDIUM",
+
+        type: "LOOKBOOK",
+
+        status: "completed",
+
+        modelImageUrl: heroImageUrl,
+
+        garmentImageUrl: heroImageUrl,
+
+        outputImageUrl: finalUrl,
+
+        lookbookId: lookbook.id,
+
+      },
+
+    });
+
+    console.log(`✅ Editorial ${i + 1} uploaded`);
+
+  } catch (err) {
+
+    console.error(
+      `❌ Editorial ${i + 1} failed`,
+      err
+    );
 
   }
 
-);
-
-
-finalUrl=
-uploaded.secure_url;
-
 }
 
-}catch(err: any){
-
-console.error("================================");
-console.error("POSE FAILED:", pose.id);
-console.error("MESSAGE:", err?.message);
-console.error("STACK:", err?.stack);
-console.error("FULL ERROR:", err);
-console.error("================================");
-
-}
-
-
-poses.push({
-
-poseId:
-pose.id,
-
-imageUrl:
-finalUrl || ""
-
-});
-
-
-await prisma.render.create({
-
-data:{
-
-pose:
-pose.id,
-
-engine:
-"QWEN",
-
-type:
-"LOOKBOOK",
-
-status:
-"completed",
-
-modelImageUrl:
-heroImageUrl,
-
-garmentImageUrl:
-heroImageUrl,
-
-outputImageUrl:
-finalUrl,
-
-lookbookId:
-lookbook.id
-
-}
-
-});}
-
-}
-
-console.log("✅ ALL POSES GENERATED");
+console.log("✅ LOOKBOOK V3 COMPLETE");
 
 /* -------------------------
    SHARE ASSET
@@ -700,7 +367,6 @@ console.log("✅ ALL POSES GENERATED");
 
 const shareId=
 randomUUID();
-
 
 await supabase
 .from("share_assets")
