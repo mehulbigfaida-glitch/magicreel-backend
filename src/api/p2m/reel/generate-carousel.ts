@@ -46,13 +46,36 @@ export async function generateCarouselReelController(
     // FILTER OUT HERO BASE64 ROWS
     // =====================================
 
-    const imageUrls = renders
-      .map((r) => r.outputImageUrl)
-      .filter(
-        (url): url is string =>
-          typeof url === "string" &&
-          url.startsWith("https://")
-      );
+    // =====================================
+// BUILD FIXED CAROUSEL SEQUENCE
+// hero -> back -> editorial_1..4
+// =====================================
+
+const heroFront = renders.find(
+  (r) => r.pose === "hero"
+);
+
+const heroBack = renders.find(
+  (r) => r.pose === "back"
+);
+
+const editorialPoses = renders
+  .filter(
+    (r) =>
+      r.pose?.startsWith("editorial_") &&
+      r.outputImageUrl?.startsWith("https://")
+  )
+  .sort((a, b) => a.pose.localeCompare(b.pose));
+
+const imageUrls = [
+  heroFront?.outputImageUrl,
+  heroBack?.outputImageUrl,
+  ...editorialPoses.map((p) => p.outputImageUrl),
+].filter(
+  (url): url is string =>
+    typeof url === "string" &&
+    url.startsWith("https://")
+);
 
     console.log("================================");
     console.log("🎬 CAROUSEL REEL START");

@@ -54,6 +54,8 @@ export class FalImageProvider {
   quality: request.quality ?? "low",
 };
 
+console.log("=== FAL INPUT ===");
+console.dir(input, { depth: null });
 
 const result = await fal.subscribe(
         "openai/gpt-image-2/edit",
