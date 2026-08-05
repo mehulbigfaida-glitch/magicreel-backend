@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
 
 import {
-  buildCampaignOutputs,
-} from "../../magicreel/editorial/campaignOutputBuilder";
+  finalizeBilling,
+} from "../../billing/billing.middleware";
 
 import {
   generateEditorialDirection,
@@ -15,15 +15,15 @@ export async function generateCampaign(
   try {
     const {
       editorialWorld,
-      outputs,
+      output,
       heroImageUrl,
       logoImageUrl,
     } = req.body;
 
     if (
-  !editorialWorld ||
-  !heroImageUrl
-) {
+      !editorialWorld ||
+      !heroImageUrl
+    ) {
       return res.status(400).json({
         error:
           "Missing editorialWorld, outputs, or heroImageUrl",
@@ -31,38 +31,43 @@ export async function generateCampaign(
     }
 
     const promptAssets = [
-  {
-    output: "instagram-post",
-  },
-];
+      {
+        output,
+      },
+    ];
 
-    const generatedAssets =
-      [];
+    const generatedAssets = [];
 
     for (const asset of promptAssets) {
-  const generated =
-    await generateEditorialDirection({
-      heroImageUrl,
+      const generated =
+        await generateEditorialDirection({
+          heroImageUrl,
 
-      logoImageUrl,
+          logoImageUrl,
 
-      editorialWorld,
+          additionalImageUrls:
+            req.body.additionalImageUrls,
 
-      output:
-        asset.output,
-    });
+          editorialWorld,
 
-  generatedAssets.push({
-    output:
-      asset.output,
+          output:
+            asset.output,
+        });
 
-    imageUrl:
-      generated.imageUrl,
+      generatedAssets.push({
+        output:
+          asset.output,
 
-    prompt:
-      generated.prompt,
-  });
-}
+        imageUrl:
+          generated.imageUrl,
+
+        prompt:
+          generated.prompt,
+      });
+    }
+
+    // Deduct credits only after successful generation
+    await finalizeBilling(req);
 
     return res.json({
       success: true,

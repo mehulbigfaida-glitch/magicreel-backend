@@ -1,3 +1,8 @@
+export interface ImageDimensions {
+  width: number;
+  height: number;
+}
+
 export type ImageGenerationQuality =
   | "low"
   | "medium"
@@ -40,6 +45,16 @@ export interface GenerateEditedImageRequest {
   numImages?: number;
 
   outputFormat?: "png" | "jpeg" | "webp";
+
+  imageSize?:
+    | "square_hd"
+    | "square"
+    | "portrait_4_3"
+    | "portrait_16_9"
+    | "landscape_4_3"
+    | "landscape_16_9"
+    | "auto"
+    | ImageDimensions;
 }
 
 export interface GeneratedImage {

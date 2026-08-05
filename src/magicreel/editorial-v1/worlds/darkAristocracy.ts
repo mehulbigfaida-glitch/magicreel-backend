@@ -3,7 +3,7 @@ import { EditorialWorld } from '../types/editorial.types'
 export const darkAristocracyWorld: EditorialWorld = {
   id: 'dark-aristocracy-v1',
 
-  name: 'Dark Aristocracy V1',
+  name: 'Heritage Manor V1',
 
   atmosphere:
     'emotionally restrained aristocratic cinematic atmosphere with psychological distance',

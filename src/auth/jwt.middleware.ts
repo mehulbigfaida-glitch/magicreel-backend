@@ -7,7 +7,13 @@ export function authenticate(
   next: NextFunction
 ) {
   try {
-    const authHeader = req.headers.authorization;
+    console.log(
+  "ALL HEADERS:",
+  req.headers
+);
+
+const authHeader =
+  req.headers.authorization;
 
 let token: string | undefined;
 

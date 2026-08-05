@@ -1,15 +1,21 @@
 import {
-  buildEditorialDraftPrompt,
-} from "./editorialDraftPrompt";
+  EditorialPromptBuilder,
+} from "./builder/EditorialPromptBuilder";
 
 import {
-  generateGeminiCampaignImage,
-} from "../services/geminiImage.service";
+  getOutputProfile,
+} from "./registry/outputProfiles";
+
+import {
+  falImageProvider,
+} from "../services/image-generation/providers/fal.provider";
 
 interface GenerateEditorialDirectionInput {
   heroImageUrl: string;
 
   logoImageUrl?: string;
+
+  additionalImageUrls?: string[];
 
   editorialWorld: string;
 
@@ -20,26 +26,49 @@ export async function generateEditorialDirection(
   input: GenerateEditorialDirectionInput
 ) {
 
-  const prompt =
-    buildEditorialDraftPrompt({
-      editorialWorld:
-        input.editorialWorld,
+  const builder =
+  new EditorialPromptBuilder();
 
-      output:
-        input.output,
-    });
+const outputProfile =
+  getOutputProfile(
+    input.output
+  );
 
-  const imageUrl =
-    await generateGeminiCampaignImage({
+const prompt =
+  builder.build({
 
-      heroImageUrl:
-        input.heroImageUrl,
+    worldId:
+      input.editorialWorld,
 
-      logoImageUrl:
-        input.logoImageUrl,
+    output:
+      outputProfile,
 
-      prompt,
-    });
+  });
+
+  const result =
+  await falImageProvider.generateEditedImages({
+
+    prompt,
+
+    referenceImages: [
+
+  input.heroImageUrl,
+
+  ...(input.additionalImageUrls ?? []),
+
+],
+
+    numImages: 1,
+
+    outputFormat: "png",
+
+imageSize: outputProfile.imageSize,
+
+quality: "medium",
+  });
+
+const imageUrl =
+  result.images[0].url;
 
   return {
     imageUrl,

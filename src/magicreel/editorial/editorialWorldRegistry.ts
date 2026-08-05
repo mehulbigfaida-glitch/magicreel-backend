@@ -32,7 +32,7 @@ export const editorialWorldRegistry: EditorialWorld[] = [
   {
     id: "dark-aristocracy",
 
-    label: "Dark Aristocracy",
+    label: "Heritage Aristocracy",
 
     emotionalThesis:
       "Emotionally restrained couture portraiture with sculptural authority and museum-grade darkness.",

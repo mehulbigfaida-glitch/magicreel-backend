@@ -126,6 +126,7 @@ app.use("/api/analytics", analyticsRoutes);
 app.use("/api/admin", adminRoutes);
 app.use(
   "/api/editorial",
+  authenticate,
   editorialRoutes
 );
 

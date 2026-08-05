@@ -1,8 +1,8 @@
 import crypto from "crypto";
 
 import {
-  generateGeminiCampaignImage,
-} from "../services/geminiImage.service";
+  falImageProvider,
+} from "../services/image-generation/providers/fal.provider";
 
 /* ------------------------------------------------------- */
 
@@ -52,29 +52,37 @@ export async function generateCinematicImage({
 
   const generationId = crypto.randomUUID();
 
-  /*
-    ----------------------------------------------------
-    GEMINI GENERATION
-    ----------------------------------------------------
-  */
-
-  const imageUrl =
-    await generateGeminiCampaignImage({
-      heroImageUrl,
-
-      logoImageUrl: logoUrl,
-
+  const result =
+    await falImageProvider.generateEditedImages({
       prompt,
+
+      referenceImages: [
+        heroImageUrl,
+
+        ...(logoUrl ? [logoUrl] : []),
+      ],
+
+      numImages: 1,
+
+      outputFormat: "png",
+
+      quality: "medium",
     });
+
+  const image = result.images[0];
+
+  if (!image) {
+    throw new Error("Fal returned no generated images.");
+  }
 
   return {
     success: true,
 
-    imageUrl,
+    imageUrl: image.url,
 
     generationId,
 
-    provider: "gemini-2.5-flash-image",
+    provider: "openai/gpt-image-2",
 
     prompt,
 

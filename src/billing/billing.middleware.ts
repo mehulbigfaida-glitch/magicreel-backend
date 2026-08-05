@@ -6,6 +6,7 @@ export type FeatureType =
   | "LOOKBOOK_ECOM"
   | "REEL"
   | "CAMPAIGN_ENGINE"
+  | "EDITORIAL"
   | "CINEMATIC_LOOKBOOK"
   | "CINEMATIC_REEL_10S"
   | "CINEMATIC_REEL_20S";
@@ -15,6 +16,7 @@ const featureCredits: Record<FeatureType, number> = {
   LOOKBOOK_ECOM: 2,
   REEL: 3,
   CAMPAIGN_ENGINE: 1,
+  EDITORIAL: 1,
   CINEMATIC_LOOKBOOK: 3,
   CINEMATIC_REEL_10S: 5,
   CINEMATIC_REEL_20S: 10,
@@ -59,13 +61,19 @@ export const billingGuard = (feature: FeatureType) => {
 
       // ✅ IMPORTANT: billing object (we will attach predictionId here)
       (req as any).billing = {
-        userId: user.id,
-        feature,
-        creditsRequired,
-        predictionId: null, // ✅ NEW
-      };
+  userId: user.id,
+  feature,
+  creditsRequired,
+  predictionId: null,
+};
 
-      next();
+console.log("✅ BILLING GUARD HIT", {
+  userId: user.id,
+  feature,
+  creditsRequired,
+});
+
+next();
     } catch (error: any) {
       console.error("BILLING ERROR:", error);
       return next();
@@ -79,13 +87,38 @@ export const billingGuard = (feature: FeatureType) => {
 
 export const finalizeBilling = async (req: Request) => {
   try {
+    console.log("🔥 FINALIZE BILLING CALLED");
+
     const user = (req as any).user;
-    if (!user || !user.id) return;
+
+    console.log("👤 USER:", user);
+
+    if (!user || !user.id) {
+      console.log("❌ NO USER FOUND");
+      return;
+    }
 
     const billing = (req as any).billing;
-    if (!billing) return;
 
-    const { feature, creditsRequired, predictionId } = billing;
+    console.log("📦 BILLING:", billing);
+
+    if (!billing) {
+      console.log("❌ NO BILLING OBJECT");
+      return;
+    }
+
+    const {
+      feature,
+      creditsRequired,
+      predictionId,
+    } = billing;
+
+    console.log("💳 DEDUCTING:", {
+      userId: user.id,
+      feature,
+      creditsRequired,
+      predictionId,
+    });
 
     await prisma.$transaction([
       prisma.user.update({
@@ -96,6 +129,7 @@ export const finalizeBilling = async (req: Request) => {
           },
         },
       }),
+
       prisma.creditTransaction.create({
         data: {
           userId: user.id,
@@ -103,10 +137,13 @@ export const finalizeBilling = async (req: Request) => {
           credits: creditsRequired,
           type: "DEBIT",
           status: "COMPLETED",
-          predictionId: predictionId, // ✅ FIXED SOURCE
+          predictionId,
         },
       }),
     ]);
+
+    console.log("✅ BILLING COMPLETED");
+
   } catch (err) {
     console.error("❌ FINAL BILLING FAILED:", err);
   }

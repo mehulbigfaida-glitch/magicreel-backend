@@ -106,7 +106,7 @@ export const cinematicWorldRegistry: CinematicWorld[] = [
   {
     id: "dark-aristocracy",
 
-    title: "Dark Aristocracy",
+    title: "Heritage Manor",
 
     shortDescription:
       "Silent old-world power wrapped in shadow, restraint, and aristocratic stillness.",

@@ -1,5 +1,9 @@
 import { Router } from "express";
 
+import {
+  billingGuard,
+} from "../../billing/billing.middleware";
+
 import { recommendEditorialWorld } from "./recommend";
 
 import { generateCampaign } from "./generateCampaign";
@@ -13,6 +17,7 @@ router.post(
 
 router.post(
   "/generate-campaign",
+  billingGuard("EDITORIAL"),
   generateCampaign
 );
 

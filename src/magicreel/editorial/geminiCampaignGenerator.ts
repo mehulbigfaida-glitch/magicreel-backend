@@ -1,6 +1,6 @@
-import axios from "axios";
-
-import { uploadBufferToCloudinary } from "../services/cloudinary.service";
+import {
+  falImageProvider,
+} from "../services/image-generation/providers/fal.provider";
 
 interface GenerateGeminiCampaignImageInput {
   prompt: string;
@@ -16,135 +16,44 @@ export interface GeneratedCampaignImage {
   prompt: string;
 }
 
-async function imageUrlToBase64(
-  imageUrl: string
-) {
-  const response =
-    await axios.get(imageUrl, {
-      responseType: "arraybuffer",
-    });
-
-  return Buffer.from(
-    response.data
-  ).toString("base64");
-}
-
 export async function generateGeminiCampaignImage(
   input: GenerateGeminiCampaignImageInput
 ): Promise<GeneratedCampaignImage> {
-  const GEMINI_API_KEY =
-    process.env.GEMINI_API_KEY;
 
-  if (!GEMINI_API_KEY) {
-    throw new Error(
-      "Missing GEMINI_API_KEY"
-    );
-  }
+  const result =
+    await falImageProvider.generateEditedImages({
 
-  const heroBase64 =
-    await imageUrlToBase64(
-      input.heroImageUrl
-    );
+      prompt: input.prompt,
 
-  let logoBase64:
-    | string
-    | null = null;
+      referenceImages: [
 
-  if (input.logoImageUrl) {
-    logoBase64 =
-      await imageUrlToBase64(
-        input.logoImageUrl
-      );
-  }
+        input.heroImageUrl,
 
-  const parts: any[] = [
-    {
-  text: input.prompt,
-},
+        ...(input.logoImageUrl
+          ? [input.logoImageUrl]
+          : []),
 
-    {
-      inlineData: {
-        mimeType: "image/png",
-
-        data: heroBase64,
-      },
-    },
-  ];
-
-  if (logoBase64) {
-  parts.push({
-    inlineData: {
-      mimeType: "image/png",
-      data: logoBase64,
-    },
-  });
-}
-
-  const response = await axios.post(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${GEMINI_API_KEY}`,
-
-    {
-      contents: [
-        {
-          role: "user",
-
-          parts,
-        },
       ],
 
-      generationConfig: {
-        responseModalities: [
-          "TEXT",
-          "IMAGE",
-        ],
-      },
-    },
+      numImages: 1,
 
-    {
-      headers: {
-        "Content-Type":
-          "application/json",
-      },
-    }
-  );
+      outputFormat: "png",
 
-  const responseParts =
-    response.data?.candidates?.[0]
-      ?.content?.parts || [];
+      quality: "medium",
+    });
 
-  const imagePart =
-    responseParts.find(
-      (part: any) =>
-        part.inlineData?.data
-    );
+  const image =
+    result.images[0];
 
-  if (!imagePart) {
-    console.error(
-      JSON.stringify(
-        response.data,
-        null,
-        2
-      )
-    );
-
+  if (!image) {
     throw new Error(
-      "Gemini did not return image data"
+      "Fal returned no generated images."
     );
   }
 
-  const buffer = Buffer.from(
-    imagePart.inlineData.data,
-    "base64"
-  );
-
-  const uploadResult =
-    await uploadBufferToCloudinary(
-      buffer
-    );
-
   return {
-    imageUrl:
-      uploadResult.secure_url,
+
+    imageUrl: image.url,
 
     prompt: input.prompt,
   };

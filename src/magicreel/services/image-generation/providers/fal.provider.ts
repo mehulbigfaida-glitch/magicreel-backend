@@ -43,21 +43,18 @@ export class FalImageProvider {
       );
 
       const input: Record<string, unknown> = {
-  prompt: request.prompt,
+        prompt: request.prompt,
+        image_urls: request.referenceImages,
+        num_images: request.numImages ?? 1,
+        output_format: request.outputFormat ?? "png",
+        quality: request.quality ?? "medium",
+        image_size: request.imageSize ?? "auto",
+      };
 
-  image_urls: request.referenceImages,
+      console.log("========== FAL INPUT ==========");
+      console.dir(input, { depth: null });
 
-  num_images: request.numImages ?? 1,
-
-  output_format: request.outputFormat ?? "png",
-
-  quality: request.quality ?? "low",
-};
-
-console.log("=== FAL INPUT ===");
-console.dir(input, { depth: null });
-
-const result = await fal.subscribe(
+      const result = await fal.subscribe(
         "openai/gpt-image-2/edit",
         {
           input,
@@ -106,21 +103,58 @@ const result = await fal.subscribe(
       return {
         images: uploadedImages,
       };
-    } catch (error) {
+
+    } catch (error: any) {
+
       console.error(
-        "[FalImageProvider] Image generation failed",
-        error
+        "========== FAL ERROR =========="
       );
+
+      console.dir(error, {
+        depth: null,
+        colors: true,
+      });
+
+      if (error?.body) {
+        console.log(
+          "========== FAL BODY =========="
+        );
+
+        console.log(
+          JSON.stringify(
+            error.body,
+            null,
+            2
+          )
+        );
+      }
+
+      if (error?.response) {
+        console.log(
+          "========== FAL RESPONSE =========="
+        );
+
+        console.dir(
+          error.response,
+          {
+            depth: null,
+            colors: true,
+          }
+        );
+      }
 
       throw error instanceof Error
         ? error
-        : new Error("Image generation failed.");
+        : new Error(
+            "Image generation failed."
+          );
     }
   }
 
   private async uploadImage(
     imageUrl: string
   ): Promise<string> {
+
     const extension =
       this.getExtension(imageUrl);
 
@@ -130,6 +164,7 @@ const result = await fal.subscribe(
     );
 
     try {
+
       const response =
         await axios.get<ArrayBuffer>(
           imageUrl,
@@ -145,31 +180,31 @@ const result = await fal.subscribe(
       );
 
       const uploaded =
-        await uploadToCloudinary(tempFile, {
-          folder: CLOUDINARY_FOLDER,
-        });
+        await uploadToCloudinary(
+          tempFile,
+          {
+            folder:
+              CLOUDINARY_FOLDER,
+          }
+        );
 
       return uploaded.secure_url;
-    } catch (error) {
+
+    } finally {
+
       if (fs.existsSync(tempFile)) {
         fs.unlinkSync(tempFile);
       }
 
-      console.error(
-        "[FalImageProvider] Cloudinary upload failed",
-        error
-      );
-
-      throw error instanceof Error
-        ? error
-        : new Error("Cloudinary upload failed.");
     }
   }
 
   private getExtension(
     url: string
   ): string {
+
     try {
+
       const pathname =
         new URL(url).pathname;
 
@@ -180,6 +215,7 @@ const result = await fal.subscribe(
       if (ext) {
         return ext;
       }
+
     } catch {
       // Ignore malformed URL.
     }
