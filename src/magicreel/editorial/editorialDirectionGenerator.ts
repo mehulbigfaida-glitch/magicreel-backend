@@ -43,6 +43,9 @@ const prompt =
     output:
       outputProfile,
 
+    heroCount:
+      1 + (input.additionalImageUrls?.length ?? 0),
+
   });
 
   const result =
