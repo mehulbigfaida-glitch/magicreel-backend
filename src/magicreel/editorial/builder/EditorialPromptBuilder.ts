@@ -5,6 +5,7 @@ import { EditorialWorld } from "../types/editorial.types";
 export interface EditorialPromptInput {
   worldId: string;
   output: OutputProfile;
+  heroCount: number;
 }
 
 export class EditorialPromptBuilder {
@@ -19,23 +20,31 @@ export class EditorialPromptBuilder {
 
     return [
 
-      this.introductionSection(),
+  this.introductionSection(input.heroCount),
 
-      this.primaryFashionModelSection(),
+  this.primaryFashionModelSection(),
 
-      this.additionalFashionModelsSection(),
+  this.additionalFashionModelsSection(),
 
-      this.editorialWorldSection(world),
+  this.chemistrySection(
+      input.heroCount,
+      world
+  ),
 
-      this.editorialDirectionSection(world),
+  this.editorialWorldSection(world),
 
-      this.outputSection(input.output),
+  this.editorialDirectionSection(world),
 
-      this.importantSection(),
+  this.outputSection(input.output),
 
-      this.avoidSection(world),
+  this.importantSection(),
 
-    ].join("\n\n");
+  this.avoidSection(
+      world,
+      input.heroCount
+  ),
+
+].join("\n\n");
 
   }
 
@@ -43,15 +52,28 @@ export class EditorialPromptBuilder {
   // INTRODUCTION
   // ===========================================================================
 
-  private introductionSection(): string {
+  private introductionSection(
+    heroCount: number
+): string {
 
     return `
 
-Create an entirely new luxury fashion editorial campaign inspired by the supplied Fashion Models and the selected Editorial World. Produce a premium magazine-quality photograph with authentic storytelling, refined composition, and exceptional garment presentation while preserving the identity of every supplied Fashion Model.
+Create an entirely new luxury fashion editorial campaign inspired by the supplied Fashion Models and the selected Editorial World.
+
+The final editorial composition MUST visibly contain all ${heroCount} supplied Fashion Models.
+
+Every supplied Fashion Model must appear exactly once.
+
+No supplied Fashion Model may be omitted.
+
+No additional Fashion Models may be created.
+
+Produce a premium magazine-quality photograph with authentic storytelling, refined composition and exceptional garment presentation while preserving the identity of every supplied Fashion Model.
 
 `.trim();
 
   }
+
 
   // ===========================================================================
   // PRIMARY FASHION MODEL
@@ -83,7 +105,7 @@ Never recreate the supplied reference photograph. Create an entirely new editori
 
   private additionalFashionModelsSection(): string {
 
-    return `
+  return `
 
 ====================================================
 ADDITIONAL FASHION MODELS
@@ -97,7 +119,67 @@ Do not introduce additional Fashion Models that were not supplied.
 
 `.trim();
 
+}
+
+private chemistrySection(
+  heroCount: number,
+  world: EditorialWorld
+): string {
+
+  if (heroCount < 2) {
+    return "";
   }
+
+  return `
+
+====================================================
+CHEMISTRY
+====================================================
+
+Treat every supplied Fashion Model as a real individual naturally sharing the same moment inside the selected Editorial World.
+
+Their relationship should emerge organically from the world's mood, atmosphere and editorial direction rather than appearing staged or artificially posed.
+
+World Mood
+
+${world.dna.mood
+  .slice(0, 3)
+  .map(x => `- ${x}`)
+  .join("\n")}
+
+World Behaviours
+
+${world.behaviours
+  .slice(0, 3)
+  .map(x => `- ${x}`)
+  .join("\n")}
+
+Editorial Interaction
+
+${world.interactions
+  .slice(0, 3)
+  .map(x => `- ${x}`)
+  .join("\n")}
+
+Preserve every supplied Fashion Model exactly as provided.
+
+Maintain identity, facial structure, hairstyle, garments, body proportions and styling.
+
+Never merge identities.
+
+Never duplicate Fashion Models.
+
+Every supplied Fashion Model is an equally important participant in the editorial narrative.
+
+The composition is considered incomplete unless every supplied Fashion Model is clearly visible exactly once.
+
+Allocate balanced visual importance to every supplied Fashion Model so that no individual becomes visually insignificant or omitted.
+
+Ensure every Fashion Model contributes naturally to the editorial narrative while the garments remain the primary visual subject.
+
+`.trim();
+
+}
 
     // ===========================================================================
   // EDITORIAL WORLD
@@ -250,8 +332,9 @@ Produce a premium medium-format fashion photograph with authentic human anatomy,
   // ===========================================================================
 
   private avoidSection(
-    world: EditorialWorld
-  ): string {
+    world: EditorialWorld,
+    heroCount: number
+): string {
 
     return `
 
@@ -259,9 +342,7 @@ Produce a premium medium-format fashion photograph with authentic human anatomy,
 AVOID
 ====================================================
 
-${world.negativePrompts
-  .map(x => `- ${x}`)
-  .join("\n")}
+${world.negativePrompts}
 
 - Do not create additional Fashion Models.
 
@@ -270,6 +351,22 @@ ${world.negativePrompts
 - Do not recreate the supplied reference photographs.
 
 - Avoid unrealistic anatomy, distorted faces, poor fabric rendering, low-quality lighting or artificial-looking editorial scenes.
+
+====================================================
+FINAL REQUIREMENTS
+====================================================
+
+Before completing the image, verify that:
+
+- Exactly ${heroCount} supplied Fashion Models are clearly visible.
+
+- Every Fashion Model appears exactly once.
+
+- Every supplied garment is preserved.
+
+- The Editorial World is respected.
+
+- The garments remain the primary visual subject.
 
 `.trim();
 
