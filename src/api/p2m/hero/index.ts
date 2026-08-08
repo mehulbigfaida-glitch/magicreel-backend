@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { generateHeroV2 } from "./generate-v2";
+import { generateHeroV3 } from "./generate-v3";
 import { pollHeroGeneration } from "./poll";
 import { authenticate } from "../../../auth/jwt.middleware";
 import { subscriptionMiddleware } from "../../../subscription/subscription.middleware";
@@ -14,7 +14,7 @@ router.post(
   authenticate,
   subscriptionMiddleware,
   billingGuard("HERO"),
-  generateHeroV2
+  generateHeroV3
 );
 
 /* ================= HERO POLLING ================= */
