@@ -70,11 +70,13 @@ app.use(
       if (!origin) return callback(null, true);
 
       if (
-        origin.includes("vercel.app") ||
-        origin.includes("localhost")
-      ) {
-        return callback(null, true);
-      }
+  origin.includes("vercel.app") ||
+  origin.includes("localhost") ||
+  origin === "https://magicreel.in" ||
+  origin === "https://www.magicreel.in"
+) {
+  return callback(null, true);
+}
 
       return callback(new Error("Not allowed by CORS"));
     },
