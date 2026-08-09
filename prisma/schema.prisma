@@ -52,14 +52,14 @@ model User {
   email        String @unique
   passwordHash String @map("password_hash")
 
-  passwordResetToken      String?
-  passwordResetExpiresAt  DateTime?
+  passwordResetToken     String?
+  passwordResetExpiresAt DateTime?
 
   // ============================================
   // SUBSCRIPTION
   // ============================================
-  plan Plan @default(FREE)
-  isPaid Boolean @default(false)
+  plan              Plan          @default(FREE)
+  isPaid            Boolean       @default(false)
   subscriptionType  BillingCycle? @map("subscription_type")
   subscriptionStart DateTime?     @map("subscription_start")
   subscriptionEnd   DateTime?     @map("subscription_end")
@@ -90,7 +90,7 @@ model User {
 
   profile         UserProfile?
   businessProfile BusinessProfile?
-  billingProfile BillingProfile?
+  billingProfile  BillingProfile?
 
   invoices Invoice[]
 
@@ -255,7 +255,7 @@ model UserProfile {
   city         String?
   state        String?
   postalCode   String?
-  country      String @default("India")
+  country      String  @default("India")
 
   gstin String?
   phone String?
@@ -327,7 +327,7 @@ model PublishAccount {
   platform String
 
   // Display information
-  username  String?
+  username        String?
   socialProfileId String?
 
   // Zernio account identifier
@@ -456,8 +456,8 @@ model BillingProfile {
   addressLine1 String
   addressLine2 String?
 
-  city String
-  state String
+  city       String
+  state      String
   postalCode String
 
   country String @default("India")
@@ -474,3 +474,23 @@ model BillingProfile {
   @@index([userId])
 }
 
+model TestingCreditRequest {
+  id String @id @default(uuid())
+
+  name        String
+  designation String
+  company     String
+  email       String
+  mobile      String?
+  instagram   String?
+
+  requestedFeatures Json?
+
+  status String @default("PENDING")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+  @@index([status])
+}

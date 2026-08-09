@@ -6,6 +6,7 @@ import { prisma } from "./db/prisma";
 
 // ROUTES
 import authRoutes from "../auth/auth.routes";
+import testingCreditRoutes from "../api/testing-credits";
 import businessProfileRoutes from "../business-profile/businessProfile.routes";
 import predictionsRoutes from "../api/predictions";
 import shareRoutes from "../api/share/share.routes";
@@ -124,6 +125,10 @@ import campaignGenerationRoutes
 app.use("/api/predictions", predictionsRoutes);
 app.use("/api/share", shareRoutes);
 app.use("/api/p2m", p2mRoutes);
+app.use(
+  "/api/testing-credits",
+  testingCreditRoutes
+);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/admin", adminRoutes);
 app.use(
