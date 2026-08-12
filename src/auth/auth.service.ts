@@ -206,7 +206,10 @@ const user = await prisma.user.findUnique({
       id: user.id,
     },
     data: {
-      passwordResetToken: resetToken,
+      passwordResetToken: crypto
+  .createHash("sha256")
+  .update(resetToken)
+  .digest("hex"),
       passwordResetExpiresAt: expiresAt,
     },
   });
