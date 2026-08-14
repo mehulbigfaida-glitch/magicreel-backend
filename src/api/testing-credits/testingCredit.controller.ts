@@ -358,45 +358,15 @@ export async function approveTestingCreditRequest(
     const existingUserByEmail =
       await prisma.user.findUnique({
         where: { email },
-        select: {
-          id: true,
-          email: true,
-        },
       });
-
-    if (existingUserByEmail) {
-      return res.status(409).json({
-        success: false,
-        error:
-          "A MagicReel account already exists with this email address.",
-      });
-    }
 
     // ============================================
     // DUPLICATE MOBILE CHECK
     // ============================================
 
-    if (mobile) {
-      const existingUserByMobile =
-        await prisma.user.findFirst({
-          where: {
-            mobileNumber: mobile,
-          },
-          select: {
-            id: true,
-            email: true,
-            mobileNumber: true,
-          },
-        });
-
-      if (existingUserByMobile) {
-        return res.status(409).json({
-          success: false,
-          error:
-            "A MagicReel account already exists with this mobile number.",
-        });
-      }
-    }
+    // Existing users are allowed to submit testing
+    // credit requests. No duplicate-mobile rejection
+    // is performed here.
 
     // ============================================
     // COMPANY CHECK
@@ -487,6 +457,79 @@ export async function approveTestingCreditRequest(
     const createdUser =
       await prisma.$transaction(
         async (tx) => {
+
+          // --------------------------------------
+          // EXISTING USER
+          // --------------------------------------
+
+          if (existingUserByEmail) {
+            const previousTestingCredit =
+              await tx.creditTransaction.findFirst({
+                where: {
+                  userId: existingUserByEmail.id,
+                  feature: "TESTING_CREDIT_APPROVAL",
+                  type: "CREDIT",
+                  status: "COMPLETED",
+                },
+              });
+
+            if (previousTestingCredit) {
+              throw new Error(
+                "This user has already received testing credits."
+              );
+            }
+
+            const user =
+              await tx.user.update({
+                where: {
+                  id: existingUserByEmail.id,
+                },
+                data: {
+                  plan: Plan.BASIC,
+                  isPaid: false,
+                  creditsAvailable: {
+                    increment: 10,
+                  },
+                  freeHeroUsed: true,
+                  ...((
+                    !existingUserByEmail.subscriptionEnd ||
+                    existingUserByEmail.subscriptionEnd <= new Date()
+                  )
+                    ? {
+                        subscriptionType:
+                          BillingCycle.MONTHLY,
+                        subscriptionStart:
+                          subscriptionStart,
+                        subscriptionEnd:
+                          subscriptionEnd,
+                      }
+                    : {}),
+                },
+              });
+
+            await tx.creditTransaction.create({
+              data: {
+                userId: user.id,
+                credits: 10,
+                feature: "TESTING_CREDIT_APPROVAL",
+                type: "CREDIT",
+                status: "COMPLETED",
+                referenceId: request.id,
+              },
+            });
+
+            await tx.testingCreditRequest.update({
+              where: {
+                id: request.id,
+              },
+              data: {
+                userId: user.id,
+              },
+            });
+
+            return user;
+          }
+
           // --------------------------------------
           // USER
           // --------------------------------------
@@ -672,6 +715,20 @@ export async function approveTestingCreditRequest(
               <strong>Plan:</strong> BASIC
             </p>
 
+                        ${
+              existingUserByEmail
+                ? `
+            <p>
+              Your existing MagicReel account has been
+              upgraded to <strong>BASIC</strong> for testing.
+            </p>
+
+            <p>
+              You can log in to MagicReel using your existing
+              email address and password.
+            </p>
+            `
+                : `
             <p>
               Set your MagicReel password using the
               link below:
@@ -692,6 +749,8 @@ export async function approveTestingCreditRequest(
                 Set Your MagicReel Password
               </a>
             </p>
+            `
+            }
 
             <p>
               Before you begin, please read:
