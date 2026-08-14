@@ -23,8 +23,8 @@ export const SubscriptionService = {
         subscriptionType: BillingCycle.MONTHLY,
         subscriptionStart: start,
         subscriptionEnd: end,
-        creditsAvailable: 1,
-        freeHeroUsed: false,
+        creditsAvailable: 0,
+        freeHeroUsed: true,
       },
     });
   },
@@ -108,30 +108,6 @@ export const SubscriptionService = {
     });
   },
 
-  /**
-   * Grants the Welcome Credit.
-   * Intended for first-time onboarding only.
-   */
-  async grantWelcomeCredit(userId: string) {
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-    });
-
-    if (!user) {
-      throw new Error("User not found");
-    }
-
-    if (user.creditsAvailable > 0) {
-      return user;
-    }
-
-    return prisma.user.update({
-      where: { id: userId },
-      data: {
-        creditsAvailable: 1,
-      },
-    });
-  },
 
   /**
    * Validates subscription before allowing
