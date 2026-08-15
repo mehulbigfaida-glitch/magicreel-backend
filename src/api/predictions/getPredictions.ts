@@ -142,6 +142,29 @@ console.log("===== EDITORIAL JOBS =====");
 console.log("Count:", editorialJobs.length);
 console.dir(editorialJobs, { depth: null });
 
+// ========================
+// SOCIAL
+// ========================
+
+console.time("socialJobs");
+
+const socialJobs =
+  await prisma.socialGeneration.findMany({
+    where: {
+      userId,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    take: 50,
+  });
+
+console.timeEnd("socialJobs");
+
+console.log("===== SOCIAL JOBS =====");
+console.log("Count:", socialJobs.length);
+console.dir(socialJobs, { depth: null });
+
 console.time("allLookbookRenders");
 
 // Fetch all renders in a single query
@@ -297,6 +320,28 @@ const predictions = [
 
     creditsUsed: getCredits({
       type: "campaign",
+      createdAt: job.createdAt,
+    }),
+  })),
+
+// SOCIAL
+...socialJobs.map((job) => ({
+    id: job.id,
+
+    type: "social",
+
+    status: job.status || "completed",
+
+    mediaUrl: job.imageUrl,
+
+    heroImageUrl: job.heroImageUrl,
+
+    creativeGoal: job.creativeGoal,
+
+    createdAt: job.createdAt,
+
+    creditsUsed: getCredits({
+      type: "social",
       createdAt: job.createdAt,
     }),
   })),
