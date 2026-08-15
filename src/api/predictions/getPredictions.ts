@@ -117,7 +117,30 @@ console.timeEnd("campaignJobs");
 
 console.log("===== CAMPAIGN JOBS =====");
 console.log("Count:", campaignJobs.length);
-console.dir(campaignJobs, { depth: null });    
+console.dir(campaignJobs, { depth: null });
+
+// ========================
+// EDITORIAL
+// ========================
+
+console.time("editorialJobs");
+
+const editorialJobs =
+  await prisma.editorialGeneration.findMany({
+    where: {
+      userId,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    take: 50,
+  });
+
+console.timeEnd("editorialJobs");
+
+console.log("===== EDITORIAL JOBS =====");
+console.log("Count:", editorialJobs.length);
+console.dir(editorialJobs, { depth: null });
 
 console.time("allLookbookRenders");
 
@@ -274,6 +297,30 @@ const predictions = [
 
     creditsUsed: getCredits({
       type: "campaign",
+      createdAt: job.createdAt,
+    }),
+  })),
+
+// EDITORIAL
+...editorialJobs.map((job) => ({
+    id: job.id,
+
+    type: "editorial",
+
+    status: job.status || "completed",
+
+    mediaUrl: job.imageUrl,
+
+    heroImageUrl: job.heroImageUrl,
+
+    editorialWorld: job.editorialWorld,
+
+    output: job.output,
+
+    createdAt: job.createdAt,
+
+    creditsUsed: getCredits({
+      type: "editorial",
       createdAt: job.createdAt,
     }),
   })),
