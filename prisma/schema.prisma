@@ -87,6 +87,7 @@ model User {
   transactions       CreditTransaction[]
   cinematicLookbooks CinematicLookbook[]
   campaigns          Campaign[]
+  editorialGenerations EditorialGeneration[]
 
   profile         UserProfile?
   businessProfile BusinessProfile?
@@ -402,6 +403,30 @@ model Campaign {
   updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id])
+}
+
+model EditorialGeneration {
+  id             String   @id @default(uuid())
+
+  userId         String
+
+  editorialWorld String
+  output         String
+
+  heroImageUrl   String?
+  imageUrl       String
+
+  prompt         String?
+
+  status         String   @default("COMPLETED")
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([createdAt])
 }
 
 model BusinessProfile {

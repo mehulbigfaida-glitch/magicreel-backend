@@ -8,6 +8,8 @@ import {
   generateEditorialDirection,
 } from "../../magicreel/editorial/editorialDirectionGenerator";
 
+import { prisma } from "../../magicreel/db/prisma";
+
 export async function generateCampaign(
   req: Request,
   res: Response
@@ -66,11 +68,49 @@ export async function generateCampaign(
       });
     }
 
-    // Deduct credits only after successful generation
+    // ============================================
+    // PERSIST EDITORIAL GENERATION
+    // ============================================
+
+    const userId =
+      (req as any).user?.id;
+
+    if (!userId) {
+      return res.status(401).json({
+        error: "Unauthorized",
+      });
+    }
+
+    const editorialGeneration =
+      await prisma.editorialGeneration.create({
+        data: {
+          userId,
+
+          editorialWorld,
+
+          output,
+
+          heroImageUrl,
+
+          imageUrl:
+            generatedAssets[0].imageUrl,
+
+          prompt:
+            generatedAssets[0].prompt,
+
+          status: "COMPLETED",
+        },
+      });
+
+    // Deduct credits only after successful
+    // generation and persistence.
     await finalizeBilling(req);
 
     return res.json({
       success: true,
+
+      generationId:
+        editorialGeneration.id,
 
       editorialWorld,
 
