@@ -1,3 +1,7 @@
+import {
+  getFashionPromptRule,
+} from "./FashionPromptRegistry";
+
 export interface BuildGptHeroPromptRequest {
   categoryKey: string;
   avatarGender: string;
@@ -17,6 +21,12 @@ export function buildGptHeroPrompt(
   } = request;
 
   const sections: string[] = [];
+
+  const fashionRule =
+    getFashionPromptRule(
+      categoryKey,
+      avatarGender
+    );
 
   /* ==========================================================
      SOURCE OF TRUTH
@@ -287,6 +297,93 @@ The styling must not alter the garment's original construction, proportions, des
   }
 
   /* ==========================================================
+     FASHION INTELLIGENCE
+  ========================================================== */
+
+  function buildFashionIntelligenceSection(): string {
+
+    if (!fashionRule) {
+      return "";
+    }
+
+    const rule = fashionRule.rule;
+    const lines: string[] = [];
+
+    lines.push(
+      `FASHION CATEGORY: ${fashionRule.category}`
+    );
+
+    lines.push(
+      `\n${rule.description}`
+    );
+
+    if (rule.garmentRules?.length) {
+      lines.push(
+        "\nGARMENT CATEGORY RULES:\n" +
+        rule.garmentRules
+          .map((item) => `• ${item}`)
+          .join("\n")
+      );
+    }
+
+    if (heroView === "front" && rule.frontRules?.length) {
+      lines.push(
+        "\nFRONT VIEW CATEGORY RULES:\n" +
+        rule.frontRules
+          .map((item) => `• ${item}`)
+          .join("\n")
+      );
+    }
+
+    if (heroView === "back" && rule.backRules?.length) {
+      lines.push(
+        "\nBACK VIEW CATEGORY RULES:\n" +
+        rule.backRules
+          .map((item) => `• ${item}`)
+          .join("\n")
+      );
+    }
+
+    if (rule.displayRules?.length) {
+      lines.push(
+        "\nDISPLAY RULES:\n" +
+        rule.displayRules
+          .map((item) => `• ${item}`)
+          .join("\n")
+      );
+    }
+
+    if (rule.footwearRules?.length) {
+      lines.push(
+        "\nFOOTWEAR RULES:\n" +
+        rule.footwearRules
+          .map((item) => `• ${item}`)
+          .join("\n")
+      );
+    }
+
+    if (rule.jewelleryRules?.length) {
+      lines.push(
+        "\nJEWELLERY RULES:\n" +
+        rule.jewelleryRules
+          .map((item) => `• ${item}`)
+          .join("\n")
+      );
+    }
+
+    if (rule.negativeRules?.length) {
+      lines.push(
+        "\nCATEGORY-SPECIFIC NEGATIVE RULES:\n" +
+        rule.negativeRules
+          .map((item) => `• ${item}`)
+          .join("\n")
+      );
+    }
+
+    return lines.join("\n").trim();
+  }
+
+  /* ==========================================================
      HERO VIEW
   ========================================================== */
 
@@ -424,6 +521,10 @@ The output should be suitable for luxury fashion catalogues, premium e-commerce 
 
   sections.push(
     buildStylingSection(styling)
+  );
+
+  sections.push(
+    buildFashionIntelligenceSection()
   );
 
   sections.push(

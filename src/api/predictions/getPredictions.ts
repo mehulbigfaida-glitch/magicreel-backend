@@ -31,7 +31,7 @@ console.timeEnd("creditTx");
     // ========================
     // STEP 2: GROUP IDs BY TYPE
     // ========================
-    
+
 
     // ========================
     // STEP 3: FETCH ONLY USER JOBS
@@ -217,8 +217,8 @@ const lookbookPredictions = lookbookJobs.map((lb: any) => {
     lookbookImages[0] ||
     "https://via.placeholder.com/300x450?text=Lookbook";
 
-  
-  
+
+
     return {
     id: lb.id,
     type: "lookbook",
@@ -259,16 +259,18 @@ const predictions = [
         type: "hero",
         status: job.status,
         mediaUrl: job.resultImageUrl,
+        avatarGender: job.avatarGender,
+        categoryKey: job.categoryKey,
         createdAt: job.createdAt,
         creditsUsed: getCredits({
           type: "hero",
           createdAt: job.createdAt,
         }),
-           
+
       })),
 
 
-      
+
       // REEL
 ...reelJobs
   .map((job) => ({
@@ -371,7 +373,7 @@ const predictions = [
   })),
 ];
 
-    
+
 
 // SORT
     predictions.sort(
@@ -386,7 +388,7 @@ console.log(
     2
   )
 );
-      
+
     return res.json(predictions);
   } catch (error) {
     console.error("❌ Predictions error:", error);

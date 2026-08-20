@@ -88,6 +88,9 @@ console.log(
   "characters"
 );
 
+console.log("=== FRONT HERO PROMPT ===");
+console.log(frontPrompt);
+
     const frontJob = await prisma.productToModelJob.create({
   data: {
     userId,
@@ -96,6 +99,8 @@ console.log(
     engine: "gpt-image-2",
     engineJobId: "pending",
     status: "running",
+    avatarGender,
+    categoryKey,
   },
 });
 
@@ -143,6 +148,8 @@ const frontRunId = frontJob.id;
           engine: "gpt-image-2",
           engineJobId: "pending",
           status: "running",
+          avatarGender,
+          categoryKey,
         },
       });
 

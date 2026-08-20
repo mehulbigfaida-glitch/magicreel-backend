@@ -10,6 +10,13 @@ import { finalizeBilling } from "../../../billing/billing.middleware";
 import { uploadToCloudinary } from "../../../utils/cloudinary";
 import { supabase } from "../../../lib/supabase";
 
+import {
+  buildLookbookPrompt,
+} from "./lookbookPromptComposer";
+import {
+  getLookbookCategoryPoses,
+} from "./lookbookPoseRegistry";
+
 fal.config({
   credentials: process.env.FAL_KEY!,
 });
@@ -51,7 +58,7 @@ heroImageUrl,
 
 backHeroImageUrl,
 
-lookbookStyle,
+lookbookWorld,
 
 gender,
 
@@ -65,6 +72,42 @@ return res.status(400).json({
 
 error:
 "heroImageUrl required"
+
+});
+
+}
+
+if(!lookbookWorld){
+
+return res.status(400).json({
+
+error:
+"lookbookWorld required"
+
+});
+
+}
+
+if(!gender || !category){
+
+return res.status(400).json({
+
+error:
+"gender and category required"
+
+});
+
+}
+
+const categoryPosePlan =
+getLookbookCategoryPoses(category);
+
+if(!categoryPosePlan){
+
+return res.status(400).json({
+
+error:
+`Unsupported Lookbook category: ${category}`
 
 });
 
@@ -107,7 +150,7 @@ id:"garment-default-1"
 modelId:"default",
 
 presetId:
-lookbookStyle ||
+lookbookWorld ||
 
 "default",
 
@@ -137,224 +180,194 @@ lookbook.id
 const poses:any[]=[];
 
 /* -------------------------
-   HERO
+   LOOKBOOK SHOT GENERATOR
 -------------------------- */
 
-poses.push({
+async function generateShot(
+  poseId: string,
+  shotType: "front" | "back" | "pose",
+  referenceImages: string[],
+  pose?: any
+) {
 
-poseId:"hero",
+  const prompt =
+    buildLookbookPrompt({
+      category,
+      gender,
+      worldId: lookbookWorld,
+      shotType,
+      pose,
+    });
 
-imageUrl:
-heroImageUrl
+  console.log("🎨 LOOKBOOK SHOT:", {
+    poseId,
+    shotType,
+    world: lookbookWorld,
+    category,
+  });
 
-});
+  const result = await fal.subscribe(
+    "openai/gpt-image-2/edit",
+    {
+      input: {
+        prompt,
+        image_urls: referenceImages,
+        num_images: 1,
+        quality: "medium",
+        output_format: "png",
+        image_size: {
+          width: 1856,
+          height: 2304,
+        },
+      },
+      logs: true,
+    }
+  );
 
-await prisma.render.create({
+  const image =
+    result?.data?.images?.[0];
 
-data:{
+  if (!image?.url) {
+    throw new Error(
+      `GPT Image 2 returned no image for ${poseId}`
+    );
+  }
 
-pose:"hero",
+  const localPath =
+    await downloadImage(
+      image.url,
+      `${lookbook.id}_${poseId}.png`
+    );
 
-engine:"QWEN",
+  const uploaded =
+    await uploadToCloudinary(
+      localPath,
+      {
+        folder: "magicreel/lookbooks",
+        public_id:
+          `${lookbook.id}_${poseId}`,
+      }
+    );
 
-type:"LOOKBOOK",
+  const finalUrl =
+    uploaded.secure_url;
 
-status:"completed",
+  poses.push({
+    poseId,
+    imageUrl: finalUrl,
+  });
 
-modelImageUrl:
-heroImageUrl,
+  await prisma.render.create({
 
-garmentImageUrl:
-heroImageUrl,
+    data: {
 
-outputImageUrl:
-heroImageUrl,
+      pose: poseId,
 
-lookbookId:
-lookbook.id
+      engine: "GPT_IMAGE_2_MEDIUM",
 
+      type: "LOOKBOOK",
+
+      status: "completed",
+
+      modelImageUrl:
+        referenceImages[0],
+
+      garmentImageUrl:
+        referenceImages[0],
+
+      outputImageUrl:
+        finalUrl,
+
+      lookbookId:
+        lookbook.id,
+
+    },
+
+  });
+
+  console.log(
+    `✅ LOOKBOOK ${poseId} complete`
+  );
+
+  return finalUrl;
 }
 
-});
+/* -------------------------
+   FRONT REGENERATION
+-------------------------- */
+
+let lookbookFrontUrl: string;
+
+try {
+
+  lookbookFrontUrl =
+    await generateShot(
+      "front",
+      "front",
+      [heroImageUrl]
+    );
+
+} catch (err) {
+
+  console.error(
+    "❌ LOOKBOOK FRONT FAILED",
+    err
+  );
+
+  throw err;
+}
 
 /* -------------------------
-   BACK HERO
+   BACK REGENERATION
 -------------------------- */
 
 if(backHeroImageUrl){
 
-poses.push({
-
-poseId:"back",
-
-imageUrl:
-backHeroImageUrl
-
-});
-
-await prisma.render.create({
-
-data:{
-
-pose:"back",
-
-engine:"QWEN",
-
-type:"LOOKBOOK",
-
-status:"completed",
-
-modelImageUrl:
-backHeroImageUrl,
-
-garmentImageUrl:
-backHeroImageUrl,
-
-outputImageUrl:
-backHeroImageUrl,
-
-lookbookId:
-lookbook.id
-
-}
-
-});
-
-}
-
-/* -------------------------
-   GPT IMAGE 2.0 LOOKBOOK V3
--------------------------- */
-
-const UNIVERSAL_EDITORIAL_PROMPT = `
-A professional high-resolution luxury fashion lookbook studio photograph.
-
-The subject is the single model from the source image wearing the exact same garment, accessories, hairstyle and makeup.
-
-Preserve the garment design, fabric, colour, drape, silhouette, fit and all garment details exactly.
-
-Preserve the model identity exactly.
-
-The background must remain a clean minimalist luxury fashion studio.
-
-Choose a natural premium editorial fashion pose that best showcases this specific garment category.
-
-The pose should maximise the visibility, elegance and presentation of the garment while remaining realistic and suitable for a professional luxury fashion campaign.
-
-If the garment is flowing, draped or layered, choose a pose that naturally enhances the movement and structure of the garment.
-
-If the garment is structured or tailored, choose a pose that highlights the silhouette and craftsmanship.
-
-Every generated image should represent a distinctly different premium editorial fashion pose and composition.
-
-Do not repeat the Hero pose.
-
-Do not generate duplicate poses.
-
-Allow the pose selection to be driven by the garment itself while maintaining premium luxury fashion photography standards.
-
-The output must be one single full-body image.
-
-Absolutely no grids, no collage panels, no splits, and only one person in frame.
-`;
-
-console.log("🎨 Generating Lookbook V3...");
-
-const result = await fal.subscribe(
-  "openai/gpt-image-2/edit",
-  {
-    input: {
-      prompt: UNIVERSAL_EDITORIAL_PROMPT,
-      image_urls: [heroImageUrl],
-      num_images: 4, // four independent output images
-      quality: "medium",
-      output_format: "png",
-    },
-    logs: true,
-  }
-);
-
-const generatedImages =
-  result?.data?.images ?? [];
-
-if (!generatedImages.length) {
-  throw new Error("GPT Image 2.0 returned no images.");
-}
-
-console.log(`✅ GPT returned ${generatedImages.length} editorial images`);
-
-/* -------------------------
-   CLOUDINARY + RENDER RECORDS
--------------------------- */
-
-for (let i = 0; i < generatedImages.length; i++) {
-
-  const image = generatedImages[i];
-
-  let finalUrl: string | null = null;
-
   try {
 
-    const outputUrl = image?.url;
-
-    if (!outputUrl) {
-      console.warn(`⚠️ Editorial image ${i + 1} missing URL`);
-      continue;
-    }
-
-    const localPath = await downloadImage(
-      outputUrl,
-      `editorial_${i + 1}.png`
+    await generateShot(
+      "back",
+      "back",
+      [backHeroImageUrl]
     );
-
-    const uploaded = await uploadToCloudinary(
-      localPath,
-      {
-        folder: "magicreel/lookbooks",
-        public_id: `${lookbook.id}_editorial_${i + 1}`,
-      }
-    );
-
-    finalUrl = uploaded.secure_url;
-
-    poses.push({
-      poseId: `editorial_${i + 1}`,
-      imageUrl: finalUrl,
-    });
-
-    await prisma.render.create({
-
-      data: {
-
-        pose: `editorial_${i + 1}`,
-
-        engine: "GPT_IMAGE_2_MEDIUM",
-
-        type: "LOOKBOOK",
-
-        status: "completed",
-
-        modelImageUrl: heroImageUrl,
-
-        garmentImageUrl: heroImageUrl,
-
-        outputImageUrl: finalUrl,
-
-        lookbookId: lookbook.id,
-
-      },
-
-    });
-
-    console.log(`✅ Editorial ${i + 1} uploaded`);
 
   } catch (err) {
 
     console.error(
-      `❌ Editorial ${i + 1} failed`,
+      "❌ LOOKBOOK BACK FAILED",
       err
     );
 
+    throw err;
+  }
+
+}
+
+/* -------------------------
+   FOUR CATEGORY POSES
+-------------------------- */
+
+for(
+  const pose of categoryPosePlan.poses
+){
+
+  try {
+
+    await generateShot(
+      pose.id,
+      "pose",
+      [lookbookFrontUrl],
+      pose
+    );
+
+  } catch (err) {
+
+    console.error(
+      `❌ LOOKBOOK ${pose.id} FAILED`,
+      err
+    );
+
+    throw err;
   }
 
 }
@@ -416,8 +429,8 @@ console.log("✅ BILLING COMPLETE");
 
 console.log({
 
-style:
-lookbookStyle,
+world:
+lookbookWorld,
 
 poses:
 poses.length
