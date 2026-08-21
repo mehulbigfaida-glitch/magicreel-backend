@@ -3,11 +3,13 @@
 import { Request, Response } from "express";
 import { prisma } from "../../../magicreel/db/prisma";
 
-import { carouselKenBurnsV2Service }
-from "../../../magicreel/services/carouselKenBurnsV2.service";
+import {
+  carouselKenBurnsV2Service,
+} from "../../../magicreel/services/carouselKenBurnsV2.service";
 
-import { uploadToCloudinary }
-from "../../../utils/cloudinary";
+import {
+  uploadToCloudinary,
+} from "../../../utils/cloudinary";
 
 export async function generateCarouselReelController(
   req: Request,
@@ -15,7 +17,9 @@ export async function generateCarouselReelController(
 ) {
   try {
 
-    const { lookbookId } = req.body;
+    const {
+      lookbookId,
+    } = req.body;
 
     if (!lookbookId) {
       return res.status(400).json({
@@ -24,75 +28,134 @@ export async function generateCarouselReelController(
       });
     }
 
-    const renders = await prisma.render.findMany({
-      where: {
-        lookbookId,
-        status: "completed",
-      },
-      orderBy: {
-        createdAt: "asc",
-      },
-    });
+    const renders =
+      await prisma.render.findMany({
+        where: {
+          lookbookId,
+          status: "completed",
+        },
+
+        orderBy: {
+          createdAt: "asc",
+        },
+      });
 
     if (!renders.length) {
       return res.status(404).json({
         success: false,
-        error: "No completed renders found",
+        error:
+          "No completed renders found",
       });
     }
 
-    // =====================================
-    // USE ONLY REAL CLOUDINARY LOOKBOOK IMAGES
-    // FILTER OUT HERO BASE64 ROWS
-    // =====================================
+    /*
+    =====================================
+    BUILD CAROUSEL SEQUENCE
 
-    // =====================================
-// BUILD FIXED CAROUSEL SEQUENCE
-// hero -> back -> editorial_1..4
-// =====================================
+    Use every completed LOOKBOOK image
+    that has a valid Cloudinary URL.
 
-const heroFront = renders.find(
-  (r) => r.pose === "hero"
-);
+    This supports both:
 
-const heroBack = renders.find(
-  (r) => r.pose === "back"
-);
+    4-image Lookbook:
+      front
+      pose_1
+      pose_2
+      pose_3
 
-const editorialPoses = renders
-  .filter(
-    (r) =>
-      r.pose?.startsWith("editorial_") &&
-      r.outputImageUrl?.startsWith("https://")
-  )
-  .sort((a, b) => a.pose.localeCompare(b.pose));
+    5-image Lookbook:
+      front
+      back
+      pose_1
+      pose_2
+      pose_3
+    =====================================
+    */
 
-const imageUrls = [
-  heroFront?.outputImageUrl,
-  heroBack?.outputImageUrl,
-  ...editorialPoses.map((p) => p.outputImageUrl),
-].filter(
-  (url): url is string =>
-    typeof url === "string" &&
-    url.startsWith("https://")
-);
+    const imageUrls =
+      renders
+        .filter(
+          (render) =>
+            render.type === "LOOKBOOK" &&
+            typeof render.outputImageUrl ===
+              "string" &&
+            render.outputImageUrl.startsWith(
+              "https://"
+            )
+        )
+        .sort(
+          (a, b) =>
+            a.createdAt.getTime() -
+            b.createdAt.getTime()
+        )
+        .map(
+          (render) =>
+            render.outputImageUrl
+        )
+        .filter(
+          (
+            url
+          ): url is string =>
+            typeof url === "string" &&
+            url.startsWith("https://")
+        );
 
-    console.log("================================");
-    console.log("🎬 CAROUSEL REEL START");
-    console.log("LOOKBOOK:", lookbookId);
-    console.log("TOTAL RENDERS:", renders.length);
-    console.log("VALID IMAGES:", imageUrls.length);
-    console.log("================================");
+    console.log(
+      "================================"
+    );
 
-    console.log("IMAGE URLS");
-    console.log(imageUrls);
+    console.log(
+      "🎬 CAROUSEL REEL START"
+    );
 
-    if (!imageUrls.length) {
+    console.log(
+      "LOOKBOOK:",
+      lookbookId
+    );
+
+    console.log(
+      "TOTAL RENDERS:",
+      renders.length
+    );
+
+    console.log(
+      "VALID LOOKBOOK IMAGES:",
+      imageUrls.length
+    );
+
+    console.log(
+      "================================"
+    );
+
+    console.log(
+      "IMAGE URLS"
+    );
+
+    console.log(
+      imageUrls
+    );
+
+    /*
+    =====================================
+    VALIDATION
+
+    Carousel needs at least 2 images.
+    =====================================
+    */
+
+    if (imageUrls.length < 2) {
       return res.status(400).json({
         success: false,
-        error: "No valid Cloudinary images found",
+        error:
+          "At least 2 Lookbook images are required for Carousel Reel",
       });
     }
+
+    /*
+    =====================================
+    GENERATE CAROUSEL REEL
+    =====================================
+    */
 
     const reelResult =
       await carouselKenBurnsV2Service.generate({
@@ -104,12 +167,21 @@ const imageUrls = [
       reelResult.finalVideoPath
     );
 
+    /*
+    =====================================
+    UPLOAD REEL
+    =====================================
+    */
+
     const uploaded =
       await uploadToCloudinary(
         reelResult.finalVideoPath,
         {
-          folder: "magicreel/reels",
-          resource_type: "video",
+          folder:
+            "magicreel/reels",
+
+          resource_type:
+            "video",
         }
       );
 
@@ -118,29 +190,48 @@ const imageUrls = [
       uploaded.secure_url
     );
 
-    const heroRender = renders.find(
-  (r) => r.pose?.toLowerCase() === "hero"
-);
+    /*
+    =====================================
+    HERO IMAGE FOR REEL RECORD
 
-const heroImageUrl =
-  heroRender?.outputImageUrl ||
-  imageUrls[0] ||
-  "";
-    
+    Prefer the first completed Lookbook
+    image because the current Lookbook
+    naming is front/pose_1/... rather
+    than the legacy hero/editorial names.
+    =====================================
+    */
+
+    const heroImageUrl =
+      imageUrls[0] || "";
+
+    /*
+    =====================================
+    SAVE REEL RENDER
+    =====================================
+    */
+
     const reelRender =
       await prisma.render.create({
         data: {
           lookbookId,
 
-          pose: "REEL",
-          engine: "FFMPEG",
+          pose:
+            "REEL",
 
-          modelImageUrl: heroImageUrl,
-          garmentImageUrl: "",
+          engine:
+            "FFMPEG",
 
-          status: "completed",
+          modelImageUrl:
+            heroImageUrl,
 
-          type: "REEL",
+          garmentImageUrl:
+            "",
+
+          status:
+            "completed",
+
+          type:
+            "REEL",
 
           reelVideoUrl:
             uploaded.secure_url,
@@ -151,6 +242,12 @@ const heroImageUrl =
       "✅ REEL SAVED TO DB:",
       uploaded.secure_url
     );
+
+    /*
+    =====================================
+    SUCCESS
+    =====================================
+    */
 
     return res.status(200).json({
       success: true,
@@ -176,6 +273,7 @@ const heroImageUrl =
 
     return res.status(500).json({
       success: false,
+
       error:
         error.message ||
         "Carousel reel failed",
