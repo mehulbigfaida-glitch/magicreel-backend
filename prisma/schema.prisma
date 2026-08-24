@@ -70,6 +70,13 @@ model User {
   creditsAvailable Float @default(0) @map("credits_available")
   rolloverCredits  Float @default(0) @map("rollover_credits")
 
+  // Generation credit validity
+  creditsValidUntil DateTime? @map("credits_valid_until")
+
+  // Independent social publishing subscription
+  publishingSubscriptionStart DateTime? @map("publishing_subscription_start")
+  publishingSubscriptionEnd   DateTime? @map("publishing_subscription_end")
+
   freeHeroUsed Boolean @default(false) @map("free_hero_used")
 
   // ============================================
@@ -81,14 +88,14 @@ model User {
   // ============================================
   // RELATIONS
   // ============================================
-  garments           Garment[]
-  lookbooks          Lookbook[]
-  p2mJobs            ProductToModelJob[]
-  transactions       CreditTransaction[]
-  cinematicLookbooks CinematicLookbook[]
-  campaigns          Campaign[]
+  garments             Garment[]
+  lookbooks            Lookbook[]
+  p2mJobs              ProductToModelJob[]
+  transactions         CreditTransaction[]
+  cinematicLookbooks   CinematicLookbook[]
+  campaigns            Campaign[]
   editorialGenerations EditorialGeneration[]
-  socialGenerations SocialGeneration[]
+  socialGenerations    SocialGeneration[]
 
   profile         UserProfile?
   businessProfile BusinessProfile?
@@ -309,6 +316,7 @@ model Invoice {
   user User @relation(fields: [userId], references: [id])
 
   @@index([userId])
+  @@map("invoices")
 }
 
 model InvoiceSequence {
@@ -409,22 +417,22 @@ model Campaign {
 }
 
 model EditorialGeneration {
-  id             String   @id @default(uuid())
+  id String @id @default(uuid())
 
-  userId         String
+  userId String
 
   editorialWorld String
   output         String
 
-  heroImageUrl   String?
-  imageUrl       String
+  heroImageUrl String?
+  imageUrl     String
 
-  prompt         String?
+  prompt String?
 
-  status         String   @default("COMPLETED")
+  status String @default("COMPLETED")
 
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id])
 
@@ -433,19 +441,19 @@ model EditorialGeneration {
 }
 
 model SocialGeneration {
-  id           String   @id @default(uuid())
+  id String @id @default(uuid())
 
-  userId       String
+  userId String
 
   creativeGoal String
 
   heroImageUrl String?
   imageUrl     String
 
-  status       String   @default("COMPLETED")
+  status String @default("COMPLETED")
 
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id])
 

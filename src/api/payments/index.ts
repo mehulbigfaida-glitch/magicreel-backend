@@ -3,34 +3,38 @@ import { getPaymentHistory } from "./history";
 import { authenticate } from "../../auth/jwt.middleware";
 
 // 👉 ADD THIS IMPORT
-import { generateInvoiceForPayment } from "../../magicreel/services/invoice.service";
+import { createCreditTopupOrder } from "./create-credit-topup";
+import { verifyCreditTopup } from "./verify-credit-topup";
+import { createPublishingOrder } from "./create-publishing-order";
+import { verifyPublishing } from "./verify-publishing";
 
 const router = express.Router();
 
 // ✅ EXISTING ROUTE
 router.get("/history", authenticate, getPaymentHistory);
 
-// 🔥 ADD TEST ROUTE HERE (below existing route)
-router.get("/test-invoice", async (req, res) => {
-  try {
-    const invoice = await generateInvoiceForPayment({
-      userId: "16595a8c-79f0-4adf-a802-cc19ed6ecbaf",
+router.post(
+  "/create-credit-topup",
+  authenticate,
+  createCreditTopupOrder
+);
 
-      // 👉 CHANGE THIS EACH TIME (pay_test_1, pay_test_2...)
-      razorpayPaymentId: "pay_SiYC4hXogrvBk",
-    });
+router.post(
+  "/verify-credit-topup",
+  authenticate,
+  verifyCreditTopup
+);
 
-    res.json({
-      success: true,
-      invoice,
-    });
-  } catch (err) {
-    console.error("❌ TEST INVOICE ERROR:", err);
-    res.status(500).json({
-  error: "Test invoice failed",
-  details: err instanceof Error ? err.message : err,
-});
-  }
-});
+router.post(
+  "/create-publishing-order",
+  authenticate,
+  createPublishingOrder
+);
+
+router.post(
+  "/verify-publishing",
+  authenticate,
+  verifyPublishing
+);
 
 export default router;

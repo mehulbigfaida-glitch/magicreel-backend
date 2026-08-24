@@ -3,25 +3,18 @@ import crypto from "crypto";
 import Razorpay from "razorpay";
 import { Prisma } from "@prisma/client";
 
-import { prisma } from "../../magicreel/db/prisma";
+import {
+  prisma,
+} from "../../magicreel/db/prisma";
 
 import {
   generateInvoiceForPayment,
 } from "../../magicreel/services/invoice.service";
 
 import {
-  PLAN_CONFIG,
+  PUBLISHING_BASE_AMOUNT_PAISE,
   withGST,
 } from "./paymentConfig";
-
-import {
-  SubscriptionService,
-} from "../../subscription/subscription.service";
-
-import {
-  calculateCreditValidityEnd,
-  calculateSubscriptionEnd,
-} from "../../subscription/subscription.utils";
 
 const key_id =
   process.env.RAZORPAY_KEY_ID;
@@ -34,7 +27,25 @@ const razorpay = new Razorpay({
   key_secret: key_secret!,
 });
 
-export const verifyPayment =
+function calculatePublishingEnd(
+  startDate: Date
+): Date {
+
+  const end =
+    new Date(startDate);
+
+  end.setDate(
+    end.getDate() + 30
+  );
+
+  end.setMilliseconds(
+    end.getMilliseconds() - 1
+  );
+
+  return end;
+}
+
+export const verifyPublishing =
   async (
     req: Request,
     res: Response
@@ -69,10 +80,6 @@ export const verifyPayment =
         });
       }
 
-      // =====================================================
-      // SIGNATURE
-      // =====================================================
-
       const body =
         razorpay_order_id +
         "|" +
@@ -99,7 +106,7 @@ export const verifyPayment =
       }
 
       // =====================================================
-      // RAZORPAY ORDER — SERVER AUTHORITY
+      // RAZORPAY ORDER
       // =====================================================
 
       const order =
@@ -110,15 +117,9 @@ export const verifyPayment =
       const notes =
         (order as any).notes || {};
 
-      const plan =
-        notes.plan as
-          | "BASIC"
-          | "PRO"
-          | "ADVANCE";
-
       if (
         notes.kind !==
-        "PLAN_PURCHASE"
+        "PUBLISHING"
       ) {
         return res.status(400).json({
           error:
@@ -136,20 +137,9 @@ export const verifyPayment =
         });
       }
 
-      if (
-        !plan ||
-        !PLAN_CONFIG[plan]
-      ) {
-        return res.status(400).json({
-          error:
-            "Invalid plan",
-        });
-      }
-
       const expectedAmount =
         withGST(
-          PLAN_CONFIG[plan]
-            .baseAmountPaise
+          PUBLISHING_BASE_AMOUNT_PAISE
         );
 
       if (
@@ -203,16 +193,15 @@ export const verifyPayment =
           message:
             "Payment already processed",
         });
+
       }
 
       // =====================================================
-      // ATOMIC CREDIT + PAYMENT SETTLEMENT
+      // ACTIVATE / EXTEND PUBLISHING
       // =====================================================
 
-      const credits =
-        PLAN_CONFIG[
-          plan
-        ].credits;
+      const now =
+        new Date();
 
       await prisma.$transaction(
         async (tx) => {
@@ -224,7 +213,7 @@ export const verifyPayment =
               },
 
               select: {
-                subscriptionEnd:
+                publishingSubscriptionEnd:
                   true,
               },
             });
@@ -235,77 +224,46 @@ export const verifyPayment =
             );
           }
 
-          const now =
-            new Date();
+          const currentEnd =
+            user.publishingSubscriptionEnd;
 
-          const subscriptionStillActive =
-            !!user.subscriptionEnd &&
-            user.subscriptionEnd > now;
+          const active =
+            !!currentEnd &&
+            currentEnd > now;
 
-          const updateData:
-            Prisma.UserUpdateInput = {
+          const newEnd =
+            active
+              ? (() => {
+                  const extended =
+                    new Date(
+                      currentEnd
+                    );
 
-            plan,
+                  extended.setDate(
+                    extended.getDate() +
+                      30
+                  );
 
-            isPaid:
-              true,
-
-            creditsAvailable: {
-              increment:
-                credits,
-            },
-
-          };
-
-          updateData.creditsValidUntil =
-            calculateCreditValidityEnd(
-              now
-            );
-
-          if (
-            !subscriptionStillActive
-          ) {
-
-            updateData.subscriptionType =
-              "MONTHLY";
-
-            updateData.subscriptionStart =
-              now;
-
-            updateData.subscriptionEnd =
-              calculateSubscriptionEnd(
-                now
-              );
-
-          }
+                  return extended;
+                })()
+              : calculatePublishingEnd(
+                  now
+                );
 
           await tx.user.update({
             where: {
               id: userId,
             },
 
-            data:
-              updateData,
-          });
-
-          await tx.creditTransaction.create({
             data: {
 
-              userId,
+              publishingSubscriptionStart:
+                active
+                  ? undefined
+                  : now,
 
-              credits,
-
-              feature:
-                "PLAN_UPGRADE",
-
-              type:
-                "CREDIT",
-
-              status:
-                "COMPLETED",
-
-              referenceId:
-                razorpay_payment_id,
+              publishingSubscriptionEnd:
+                newEnd,
             },
           });
 
@@ -314,7 +272,8 @@ export const verifyPayment =
 
               userId,
 
-              plan,
+              plan:
+                "PUBLISHING",
 
               amount:
                 expectedAmount,
@@ -333,10 +292,6 @@ export const verifyPayment =
         }
       );
 
-      // =====================================================
-      // INVOICE
-      // =====================================================
-
       try {
 
         await generateInvoiceForPayment({
@@ -351,7 +306,7 @@ export const verifyPayment =
       ) {
 
         console.error(
-          "⚠️ INVOICE GENERATION FAILED:",
+          "⚠️ PUBLISHING INVOICE FAILED:",
           invoiceError
         );
 
@@ -362,12 +317,8 @@ export const verifyPayment =
           true,
 
         message:
-          "Payment verified and credits added",
+          "Publishing subscription activated.",
 
-        plan,
-
-        creditsAdded:
-          credits,
       });
 
     } catch (error: any) {
@@ -389,13 +340,13 @@ export const verifyPayment =
       }
 
       console.error(
-        "❌ Verify Payment Error:",
+        "❌ PUBLISHING VERIFY ERROR:",
         error
       );
 
       return res.status(500).json({
         error:
-          "Payment verification failed",
+          "Publishing subscription verification failed",
       });
 
     }

@@ -8,6 +8,7 @@ import { prisma } from "./db/prisma";
 import authRoutes from "../auth/auth.routes";
 import testingCreditRoutes from "../api/testing-credits";
 import businessProfileRoutes from "../business-profile/businessProfile.routes";
+import billingProfileRoutes from "../billing/billingProfile.routes";
 import predictionsRoutes from "../api/predictions";
 import shareRoutes from "../api/share/share.routes";
 import p2mRoutes from "./p2m/p2m.routes";
@@ -39,14 +40,11 @@ import socialRoutes from "../social/social.routes";
 
 const app = express();
 
+
 /* ---------------------------------- */
 /* 🔍 DEBUG TRACE */
 /* ---------------------------------- */
 
-app.use((req, _res, next) => {
-  console.log("🌍 GLOBAL HIT:", req.originalUrl);
-  next();
-});
 
 /* ---------------------------------- */
 /* 🔥 HEALTH ROUTES */
@@ -99,6 +97,10 @@ app.use("/api/mail", mailRoutes);
 app.use(
   "/api/business-profile",
   businessProfileRoutes
+);
+app.use(
+  "/api/billing-profile",
+  billingProfileRoutes
 );
 
 // PUBLISH

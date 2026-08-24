@@ -124,7 +124,6 @@ router.use(
 router.use(
   "/hero",
   heroLimiter,
-  optionalBilling("HERO"),
   heroRoutes
 );
 

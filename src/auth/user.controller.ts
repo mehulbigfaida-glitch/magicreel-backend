@@ -19,6 +19,9 @@ export const getCurrentUser = async (req: Request, res: Response) => {
         freeHeroUsed: true,
         subscriptionType: true,
         subscriptionEnd: true,
+        creditsValidUntil: true,
+        publishingSubscriptionStart: true,
+        publishingSubscriptionEnd: true,
       },
     });
 

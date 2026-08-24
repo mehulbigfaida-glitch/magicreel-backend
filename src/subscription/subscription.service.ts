@@ -1,6 +1,9 @@
 import { prisma } from "../magicreel/db/prisma";
 import { Plan, BillingCycle, Prisma, User } from "@prisma/client";
-import { calculateSubscriptionEnd } from "./subscription.utils";
+import {
+  calculateSubscriptionEnd,
+  calculateCreditValidityEnd,
+} from "./subscription.utils";
 
 export const SubscriptionService = {
   /**
@@ -60,15 +63,20 @@ export const SubscriptionService = {
 
     const data: Prisma.UserUpdateInput = {
       plan,
+
       creditsAvailable: {
         increment: credits,
       },
+
+      creditsValidUntil:
+        calculateCreditValidityEnd(now),
     };
 
     if (!subscriptionStillActive) {
       data.subscriptionType = BillingCycle.MONTHLY;
       data.subscriptionStart = now;
-      data.subscriptionEnd = calculateSubscriptionEnd(now);
+      data.subscriptionEnd =
+        calculateSubscriptionEnd(now);
     }
 
     return prisma.user.update({

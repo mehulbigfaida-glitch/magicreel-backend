@@ -38,17 +38,16 @@ export class PublishService {
         ? 5
         : 20;
 
-    const publishAllowed =
-  (
-    user.plan === "PRO" ||
-    user.plan === "ADVANCE" ||
-    user.plan === "ENTERPRISE"
-  ) &&
-  user.isPaid;
+    const publishingActive =
+      !!user.publishingSubscriptionEnd &&
+      user.publishingSubscriptionEnd >
+        new Date();
 
-if (!publishAllowed) {
-  throw new Error("PLAN_NOT_ALLOWED");
-}
+    if (!publishingActive) {
+      throw new Error(
+        "PUBLISHING_SUBSCRIPTION_REQUIRED"
+      );
+    }
 
     if (todayCount >= dailyLimit) {
 

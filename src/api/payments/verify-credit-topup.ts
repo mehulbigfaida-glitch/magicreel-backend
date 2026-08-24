@@ -3,25 +3,22 @@ import crypto from "crypto";
 import Razorpay from "razorpay";
 import { Prisma } from "@prisma/client";
 
-import { prisma } from "../../magicreel/db/prisma";
+import {
+  prisma,
+} from "../../magicreel/db/prisma";
+
+import {
+  calculateCreditValidityEnd,
+} from "../../subscription/subscription.utils";
 
 import {
   generateInvoiceForPayment,
 } from "../../magicreel/services/invoice.service";
 
 import {
-  PLAN_CONFIG,
+  CREDIT_RATES,
   withGST,
 } from "./paymentConfig";
-
-import {
-  SubscriptionService,
-} from "../../subscription/subscription.service";
-
-import {
-  calculateCreditValidityEnd,
-  calculateSubscriptionEnd,
-} from "../../subscription/subscription.utils";
 
 const key_id =
   process.env.RAZORPAY_KEY_ID;
@@ -34,7 +31,7 @@ const razorpay = new Razorpay({
   key_secret: key_secret!,
 });
 
-export const verifyPayment =
+export const verifyCreditTopup =
   async (
     req: Request,
     res: Response
@@ -99,7 +96,7 @@ export const verifyPayment =
       }
 
       // =====================================================
-      // RAZORPAY ORDER — SERVER AUTHORITY
+      // RAZORPAY ORDER
       // =====================================================
 
       const order =
@@ -110,15 +107,9 @@ export const verifyPayment =
       const notes =
         (order as any).notes || {};
 
-      const plan =
-        notes.plan as
-          | "BASIC"
-          | "PRO"
-          | "ADVANCE";
-
       if (
         notes.kind !==
-        "PLAN_PURCHASE"
+        "CREDIT_TOPUP"
       ) {
         return res.status(400).json({
           error:
@@ -136,20 +127,45 @@ export const verifyPayment =
         });
       }
 
+      const requestedCredits =
+        Number(
+          notes.credits
+        );
+
+      const plan =
+        notes.plan as
+          | "BASIC"
+          | "PRO"
+          | "ADVANCE";
+
       if (
-        !plan ||
-        !PLAN_CONFIG[plan]
+        !Number.isInteger(
+          requestedCredits
+        ) ||
+        requestedCredits < 10 ||
+        requestedCredits % 10 !== 0
       ) {
         return res.status(400).json({
           error:
-            "Invalid plan",
+            "Invalid top-up credits",
+        });
+      }
+
+      const rate =
+        CREDIT_RATES[plan];
+
+      if (!rate) {
+        return res.status(400).json({
+          error:
+            "Invalid top-up plan",
         });
       }
 
       const expectedAmount =
         withGST(
-          PLAN_CONFIG[plan]
-            .baseAmountPaise
+          requestedCredits *
+            rate *
+            100
         );
 
       if (
@@ -203,89 +219,35 @@ export const verifyPayment =
           message:
             "Payment already processed",
         });
+
       }
 
       // =====================================================
-      // ATOMIC CREDIT + PAYMENT SETTLEMENT
+      // ATOMIC SETTLEMENT
       // =====================================================
 
-      const credits =
-        PLAN_CONFIG[
-          plan
-        ].credits;
+      const creditsValidUntil =
+        calculateCreditValidityEnd(
+          new Date()
+        );
 
       await prisma.$transaction(
         async (tx) => {
-
-          const user =
-            await tx.user.findUnique({
-              where: {
-                id: userId,
-              },
-
-              select: {
-                subscriptionEnd:
-                  true,
-              },
-            });
-
-          if (!user) {
-            throw new Error(
-              "User not found"
-            );
-          }
-
-          const now =
-            new Date();
-
-          const subscriptionStillActive =
-            !!user.subscriptionEnd &&
-            user.subscriptionEnd > now;
-
-          const updateData:
-            Prisma.UserUpdateInput = {
-
-            plan,
-
-            isPaid:
-              true,
-
-            creditsAvailable: {
-              increment:
-                credits,
-            },
-
-          };
-
-          updateData.creditsValidUntil =
-            calculateCreditValidityEnd(
-              now
-            );
-
-          if (
-            !subscriptionStillActive
-          ) {
-
-            updateData.subscriptionType =
-              "MONTHLY";
-
-            updateData.subscriptionStart =
-              now;
-
-            updateData.subscriptionEnd =
-              calculateSubscriptionEnd(
-                now
-              );
-
-          }
 
           await tx.user.update({
             where: {
               id: userId,
             },
 
-            data:
-              updateData,
+            data: {
+
+              creditsAvailable: {
+                increment:
+                  requestedCredits,
+              },
+
+              creditsValidUntil,
+            },
           });
 
           await tx.creditTransaction.create({
@@ -293,10 +255,11 @@ export const verifyPayment =
 
               userId,
 
-              credits,
+              credits:
+                requestedCredits,
 
               feature:
-                "PLAN_UPGRADE",
+                "CREDIT_TOPUP",
 
               type:
                 "CREDIT",
@@ -314,7 +277,8 @@ export const verifyPayment =
 
               userId,
 
-              plan,
+              plan:
+                "CREDIT_TOPUP",
 
               amount:
                 expectedAmount,
@@ -333,10 +297,6 @@ export const verifyPayment =
         }
       );
 
-      // =====================================================
-      // INVOICE
-      // =====================================================
-
       try {
 
         await generateInvoiceForPayment({
@@ -351,7 +311,7 @@ export const verifyPayment =
       ) {
 
         console.error(
-          "⚠️ INVOICE GENERATION FAILED:",
+          "⚠️ CREDIT TOP-UP INVOICE FAILED:",
           invoiceError
         );
 
@@ -362,12 +322,13 @@ export const verifyPayment =
           true,
 
         message:
-          "Payment verified and credits added",
-
-        plan,
+          "Credit top-up verified and credits added.",
 
         creditsAdded:
-          credits,
+          requestedCredits,
+
+        creditsValidUntil:
+          creditsValidUntil.toISOString(),
       });
 
     } catch (error: any) {
@@ -389,13 +350,13 @@ export const verifyPayment =
       }
 
       console.error(
-        "❌ Verify Payment Error:",
+        "❌ CREDIT TOP-UP VERIFY ERROR:",
         error
       );
 
       return res.status(500).json({
         error:
-          "Payment verification failed",
+          "Credit top-up verification failed",
       });
 
     }

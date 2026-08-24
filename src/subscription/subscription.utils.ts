@@ -1,5 +1,15 @@
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
+export function calculateCreditValidityEnd(
+  purchaseDate: Date = new Date()
+): Date {
+  const end = new Date(purchaseDate);
+  end.setDate(end.getDate() + 90);
+  end.setMilliseconds(end.getMilliseconds() - 1);
+
+  return end;
+}
+
 export function calculateSubscriptionEnd(startDate: Date): Date {
   const end = new Date(startDate);
   end.setDate(end.getDate() + 30);

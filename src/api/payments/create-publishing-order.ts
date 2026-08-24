@@ -8,7 +8,7 @@ import {
 import Razorpay from "razorpay";
 
 import {
-  PLAN_CONFIG,
+  PUBLISHING_BASE_AMOUNT_PAISE,
   withGST,
 } from "./paymentConfig";
 
@@ -23,21 +23,13 @@ const razorpay = new Razorpay({
   key_secret: key_secret!,
 });
 
-type PlanType =
-  | "BASIC"
-  | "PRO"
-  | "ADVANCE";
-
-export const createOrder =
+export const createPublishingOrder =
   async (
     req: Request,
     res: Response
   ) => {
 
     try {
-
-      const plan =
-        req.body?.plan as PlanType;
 
       const userId =
         (req as any).user?.id;
@@ -73,23 +65,10 @@ export const createOrder =
         });
       }
 
-      if (
-        !plan ||
-        !PLAN_CONFIG[plan]
-      ) {
-        return res.status(400).json({
-          error:
-            "Invalid plan",
-        });
-      }
-
-      const baseAmount =
-        PLAN_CONFIG[
-          plan
-        ].baseAmountPaise;
-
       const amount =
-        withGST(baseAmount);
+        withGST(
+          PUBLISHING_BASE_AMOUNT_PAISE
+        );
 
       const order =
         await razorpay.orders.create({
@@ -99,17 +78,15 @@ export const createOrder =
             "INR",
 
           receipt:
-            `plan_${Date.now()
+            `publish_${Date.now()
               .toString()
               .slice(-8)}`,
 
           notes: {
             kind:
-              "PLAN_PURCHASE",
+              "PUBLISHING",
 
             userId,
-
-            plan,
           },
         });
 
@@ -133,13 +110,13 @@ export const createOrder =
     } catch (error: any) {
 
       console.error(
-        "❌ RAZORPAY PLAN ORDER ERROR:",
+        "❌ PUBLISHING ORDER ERROR:",
         error
       );
 
       return res.status(500).json({
         error:
-          "Failed to create order",
+          "Failed to create publishing subscription order",
 
         message:
           error?.message,

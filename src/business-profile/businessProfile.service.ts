@@ -41,6 +41,22 @@ export async function getBusinessProfile(userId: string) {
   return profile;
 }
 
+export async function isBusinessProfileComplete(
+  userId: string
+): Promise<boolean> {
+  const profile =
+    await prisma.businessProfile.findUnique({
+      where: {
+        userId,
+      },
+      select: {
+        completed: true,
+      },
+    });
+
+  return profile?.completed === true;
+}
+
 /**
  * ------------------------------------------------------------
  * Update Business Profile
