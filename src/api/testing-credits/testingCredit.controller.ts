@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
-import crypto from "crypto";
 import { Plan, BillingCycle } from "@prisma/client";
 
 import { prisma } from "../../magicreel/db/prisma";
@@ -30,12 +29,13 @@ export async function requestTestingCredits(
       !name ||
       !designation ||
       !company ||
-      !email
+      !email ||
+      !mobile
     ) {
       return res.status(400).json({
         success: false,
         error:
-          "Name, designation, company and email are required.",
+          "Name, designation, company, email and mobile number are required.",
       });
     }
 
@@ -52,9 +52,7 @@ export async function requestTestingCredits(
           email: String(email).trim().toLowerCase(),
 
           mobile:
-            mobile
-              ? String(mobile).trim()
-              : null,
+            String(mobile).trim(),
 
           instagram:
             instagram
@@ -369,6 +367,26 @@ export async function approveTestingCreditRequest(
     // is performed here.
 
     // ============================================
+    // NEW ACCOUNT MOBILE REQUIREMENT
+    //
+    // New testing-credit accounts use:
+    //   Login ID  = email
+    //   Password  = mobile number
+    //
+    // Existing MagicReel users keep their existing
+    // password and therefore do not require a mobile
+    // number at approval time.
+    // ============================================
+
+    if (!existingUserByEmail && !mobile) {
+      return res.status(400).json({
+        success: false,
+        error:
+          "Mobile number is required to create a new testing-credit account.",
+      });
+    }
+
+    // ============================================
     // COMPANY CHECK
     //
     // Existing company is ALLOWED.
@@ -399,44 +417,6 @@ export async function approveTestingCreditRequest(
         }
       );
     }
-
-    // ============================================
-    // PASSWORD SETUP TOKEN
-    // ============================================
-
-    const setupToken =
-      crypto.randomBytes(32).toString("hex");
-
-    const hashedSetupToken =
-      crypto
-        .createHash("sha256")
-        .update(setupToken)
-        .digest("hex");
-
-    const setupExpiresAt =
-      new Date(
-        Date.now() + 24 * 60 * 60 * 1000
-      );
-
-    /*
-     * The account must have a passwordHash because
-     * User.passwordHash is required.
-     *
-     * This temporary random password is never
-     * communicated to the user.
-     *
-     * The user sets their real password through
-     * the setup/reset link sent below.
-     */
-
-    const temporaryPassword =
-      crypto.randomBytes(32).toString("hex");
-
-    const passwordHash =
-      await bcrypt.hash(
-        temporaryPassword,
-        10
-      );
 
     // ============================================
     // BASIC SUBSCRIPTION
@@ -544,7 +524,11 @@ export async function approveTestingCreditRequest(
 
                 email,
 
-                passwordHash,
+                passwordHash:
+                  await bcrypt.hash(
+                    mobile!,
+                    10
+                  ),
 
                 plan: Plan.BASIC,
 
@@ -567,11 +551,6 @@ export async function approveTestingCreditRequest(
                  */
                 freeHeroUsed: true,
 
-                passwordResetToken:
-                  hashedSetupToken,
-
-                passwordResetExpiresAt:
-                  setupExpiresAt,
               },
             });
 
@@ -671,9 +650,6 @@ export async function approveTestingCreditRequest(
       process.env.FRONTEND_URL ||
       "https://magicreel.in";
 
-    const setupUrl =
-      `${frontendUrl}/reset-password?token=${setupToken}`;
-
     /*
      * Documentation URL is intentionally added now.
      *
@@ -730,24 +706,27 @@ export async function approveTestingCreditRequest(
             `
                 : `
             <p>
-              Set your MagicReel password using the
-              link below:
+              Your MagicReel account has been created.
             </p>
 
             <p>
-              <a
-                href="${setupUrl}"
-                style="
-                  display:inline-block;
-                  padding:12px 20px;
-                  background:#4f6df5;
-                  color:#fff;
-                  text-decoration:none;
-                  border-radius:6px;
-                "
-              >
-                Set Your MagicReel Password
-              </a>
+              You can log in using:
+            </p>
+
+            <p>
+              <strong>Login ID:</strong>
+              your registered email address
+            </p>
+
+            <p>
+              <strong>Password:</strong>
+              your registered mobile number
+            </p>
+
+            <p>
+              For security, please change your password
+              after your first login using the normal
+              password reset option.
             </p>
             `
             }
