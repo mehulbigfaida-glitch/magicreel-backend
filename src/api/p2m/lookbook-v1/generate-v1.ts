@@ -258,9 +258,9 @@ export async function generateLookbookV1(
 
                 image_size: {
                   width:
-                    1856,
+                    2048,
                   height:
-                    2304,
+                    2736,
                 },
 
               },
