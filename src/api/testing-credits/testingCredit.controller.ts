@@ -658,7 +658,7 @@ export async function approveTestingCreditRequest(
      */
 
     const documentationUrl =
-      `${frontendUrl}/resources/guides/testing-credits`;
+      `${frontendUrl}/docs/hero`;
 
     try {
       const emailResult =
@@ -737,7 +737,7 @@ export async function approveTestingCreditRequest(
 
             <p>
               <a href="${documentationUrl}">
-                How to effectively use Testing Credits
+                7 Steps Guide to Generate Your First Hero
               </a>
             </p>
 
