@@ -67,6 +67,90 @@ export async function requestTestingCredits(
       });
 
     // ============================================
+    // ADMIN NOTIFICATION EMAIL
+    // ============================================
+
+    try {
+      await MailService.sendEmail(
+        "mehul.bigfaida@gmail.com",
+
+        "New MagicReel Testing Credit Request",
+
+        `
+        <div style="font-family:Arial,sans-serif;line-height:1.6;color:#222">
+
+          <h2>New Testing Credit Request</h2>
+
+          <p>A new MagicReel testing credit request has been submitted.</p>
+
+          <hr>
+
+          <p>
+            <strong>Request ID:</strong> ${request.id}
+          </p>
+
+          <p>
+            <strong>Name:</strong> ${String(name).trim()}
+          </p>
+
+          <p>
+            <strong>Designation:</strong> ${String(designation).trim()}
+          </p>
+
+          <p>
+            <strong>Company:</strong> ${String(company).trim()}
+          </p>
+
+          <p>
+            <strong>Email:</strong> ${String(email).trim().toLowerCase()}
+          </p>
+
+          <p>
+            <strong>Mobile:</strong> ${String(mobile).trim()}
+          </p>
+
+          <p>
+            <strong>Instagram:</strong>
+            ${
+              instagram
+                ? String(instagram).trim()
+                : "Not provided"
+            }
+          </p>
+
+          <p>
+            <strong>Requested Features:</strong>
+            ${
+              Array.isArray(requestedFeatures) &&
+              requestedFeatures.length > 0
+                ? requestedFeatures.join(", ")
+                : "None specified"
+            }
+          </p>
+
+          <p>
+            <strong>Submitted:</strong>
+            ${new Date().toLocaleString("en-IN")}
+          </p>
+
+          <hr>
+
+          <p>
+            Please review this request in the MagicReel admin panel
+            and allocate testing credits manually if approved.
+          </p>
+
+        </div>
+        `
+      );
+    } catch (emailError) {
+      console.error(
+        "TESTING CREDIT ADMIN NOTIFICATION EMAIL ERROR:",
+        emailError
+      );
+    }
+
+    // ============================================
     // RESPONSE
     // ============================================
 
