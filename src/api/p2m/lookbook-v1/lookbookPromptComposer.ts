@@ -7,6 +7,10 @@ import {
   getLookbookWorld,
 } from "./lookbookWorldRegistry";
 
+import {
+  getEcomLookbookWorld,
+} from "./ecomLookbookWorld";
+
 export type LookbookShotType =
   | "front"
   | "back"
@@ -32,7 +36,10 @@ export function buildLookbookPrompt(
     pose,
   } = input;
 
-  const world = getLookbookWorld(worldId);
+  const world = getEcomLookbookWorld(
+    worldId,
+    getLookbookWorld(worldId)
+  );
 
   if (!world) {
     throw new Error(`Unknown Lookbook World: ${worldId}`);
@@ -118,6 +125,22 @@ ${world.negativeRules.map(
   item => `• ${item}`
 ).join("\n")}
 `.trim());
+
+  if (worldId.trim().toLowerCase() === "ecom-clean") {
+    sections.push(`
+ECOMMERCE COMPLIANCE — CRITICAL
+
+Use a clean white or near-white seamless studio presentation suitable for commercial marketplace product imagery.
+
+Keep the model and complete garment clearly separated from the background through natural tonal contrast and a subtle realistic grounding shadow.
+
+Do not make the image look like a crude background-removal cutout or a product pasted onto white.
+
+Maintain accurate garment colour and detail under neutral colour-balanced lighting.
+
+Keep the complete model and footwear inside the frame for all full-body shots, with safe margin for downstream marketplace cropping.
+`.trim());
+  }
 
   if (shotType === "front") {
     sections.push(`
