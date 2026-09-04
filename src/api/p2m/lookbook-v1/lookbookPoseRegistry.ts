@@ -389,6 +389,7 @@ export function getLookbookCategoryPoses(
     "top": "top",
     "t-shirt": "tshirt",
     "tshirt": "tshirt",
+    "shirt": "shirt_blouse",
     "shirt / blouse": "shirt_blouse",
     "shirt/blouse": "shirt_blouse",
     "one-piece": "one_piece",
