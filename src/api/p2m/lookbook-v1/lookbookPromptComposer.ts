@@ -53,6 +53,13 @@ export function buildLookbookPrompt(
     );
   }
 
+  const genderLabel =
+    gender.trim().toLowerCase().startsWith("m")
+      ? "MEN'S"
+      : gender.trim().toLowerCase().startsWith("f")
+        ? "WOMEN'S"
+        : "UNISEX";
+
   const sections: string[] = [];
 
   sections.push(`
@@ -67,10 +74,16 @@ Do not redesign, reinterpret, simplify, improve, tailor, split, merge or structu
 Preserve fabric, colour, texture, silhouette, construction, embroidery, prints, embellishments, branding, drape and all visible product details exactly.
 
 The generated image must represent the same commercial fashion product shown in the source image.
+
+FOOTWEAR CONTINUITY — CRITICAL
+
+Preserve the footwear shown in the source/reference image. Footwear is part of the complete commercial styling and must remain consistent across every Lookbook image unless the source image provides no footwear.
+
+Never remove, replace, invent or change footwear. Never render the model barefoot when footwear is visible in the reference.
 `.trim());
 
   sections.push(`
-WOMEN'S GARMENT CATEGORY: ${category}
+${genderLabel} GARMENT CATEGORY: ${category}
 
 Apply the category-specific construction and presentation instructions encoded for this category.
 
@@ -150,13 +163,14 @@ Premium commercial fashion photography.
 Realistic human anatomy.
 Natural garment physics.
 Realistic fabric behaviour.
-Full model visible from head to toe.
+Full model visible from head to toe unless the shot explicitly calls for a close-up/detail composition.
 One person only.
 No text.
 No collage.
 No split screen.
 No duplicate person.
 The garment remains the dominant visual subject.
+Footwear must remain consistent with the source image whenever footwear is visible there.
 `.trim());
 
   return sections
