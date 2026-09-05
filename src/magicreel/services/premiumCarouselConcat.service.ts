@@ -3,8 +3,9 @@ import path from "path";
 import fs from "fs";
 import { ffmpegPath } from "../../utils/ffmpegPath";
 
-const CLIP_DURATION = 3.15;
-const TRANSITION_DURATION = 0.30;
+// Reference Reel: 6 x 2.60s with 0.10s overlaps = 15.10s total.
+const CLIP_DURATION = 2.60;
+const TRANSITION_DURATION = 0.10;
 const TRANSITIONS = ["fade", "smoothleft", "dissolve", "wipeleft", "fade"];
 
 export async function generatePremiumCarouselReel(clips: string[], outputDir: string): Promise<string> {
@@ -30,7 +31,7 @@ export async function generatePremiumCarouselReel(clips: string[], outputDir: st
     `-map "[v]" -c:v libx264 -preset medium -pix_fmt yuv420p -movflags +faststart ` +
     `"${outputVideoPath}"`;
 
-  console.log("🎞️ PREMIUM CAROUSEL EDIT — REFERENCE MATCH");
+  console.log("🎞️ PREMIUM CAROUSEL EDIT — PROVEN REFERENCE TIMING");
   console.log(`🎞️ CLIPS: ${clips.length}`);
   console.log(`🎞️ CANVAS: 1080x1440 (3:4)`);
   console.log(`🎞️ CLIP DURATION: ${CLIP_DURATION.toFixed(2)}s`);
