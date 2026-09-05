@@ -82,6 +82,14 @@ Preserve fabric, colour, texture, silhouette, construction, embroidery, prints, 
 
 The generated image must represent the same commercial fashion product shown in the source image.
 
+NO UNREFERENCED GARMENT LAYERS OR ACCESSORIES — CRITICAL
+
+Do not add any garment layer, scarf, stole, shawl, veil, dupatta, saree pallu, jacket, coat, belt, bag, jewellery or other accessory that is not visibly present in the source/reference image.
+
+In particular, NEVER invent or add a dupatta. If the source image does not visibly contain a dupatta, the generated image must not contain a dupatta in any form.
+
+The absence of an item in the source is authoritative: do not infer, assume or add culturally or stylistically typical garments or accessories merely because they are common for this category.
+
 FOOTWEAR CONTINUITY — CRITICAL
 
 Preserve the footwear shown in the source/reference image. Footwear is part of the complete commercial styling and must remain consistent across every Lookbook image unless the source image provides no footwear.
