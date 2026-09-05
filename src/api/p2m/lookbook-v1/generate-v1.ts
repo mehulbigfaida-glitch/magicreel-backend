@@ -41,21 +41,14 @@ async function downloadImage(url: string, filename: string) {
 async function normalizeOutputDimensions(
   filePath: string,
   width: number,
-  height: number,
-  outputFormat: "png" | "jpeg"
+  height: number
 ) {
-  const extension = outputFormat === "jpeg" ? "jpg" : "png";
-  const tempOutput = `${filePath}.normalized.${extension}`;
+  const tempOutput = `${filePath}.normalized.jpg`;
 
-  const pipeline = sharp(filePath).resize(width, height, { fit: "fill" });
-
-  if (outputFormat === "jpeg") {
-    await pipeline
-      .jpeg({ quality: 94, chromaSubsampling: "4:4:4", mozjpeg: true })
-      .toFile(tempOutput);
-  } else {
-    await pipeline.png().toFile(tempOutput);
-  }
+  await sharp(filePath)
+    .resize(width, height, { fit: "fill" })
+    .jpeg({ quality: 90, chromaSubsampling: "4:2:0", mozjpeg: true })
+    .toFile(tempOutput);
 
   fs.unlinkSync(filePath);
   return tempOutput;
@@ -89,7 +82,7 @@ export async function generateLookbookV1(req: Request, res: Response) {
 
     const categoryPosePlan = getEcomLookbookPosePlan(legacyPlan);
     const imageSize = ECOM_ASPECT_RATIOS[aspectRatio as EcomAspectRatio];
-    const deliveryFormat: "png" | "jpeg" = aspectRatio === "4:5" || aspectRatio === "1:1" ? "jpeg" : "png";
+    const deliveryFormat = "jpeg" as const;
     const userId = (req as any).user?.id;
 
     if (!userId) return res.status(401).json({ error: "Unauthorized" });
@@ -154,16 +147,14 @@ export async function generateLookbookV1(req: Request, res: Response) {
 
         const localPath = await downloadImage(image.url, `${lookbook.id}_${poseId}.png`);
 
-        // GPT Image 2 may return the nearest supported size (for example
-        // 1232×1856 for the 2:3 preset). Normalize the delivered asset to
-        // MagicReel's sealed output dimensions without another model call.
-        // 4:5 and 1:1 are delivered as high-quality JPEG to control file size
-        // while preserving the full sealed pixel dimensions.
+        // GPT Image 2 generates internally as PNG. MagicReel Ecom Lookbook
+        // delivers every aspect ratio as optimized JPEG while preserving the
+        // sealed pixel dimensions. This keeps the customer-facing marketplace
+        // assets compact without changing the AI generation resolution.
         const normalizedPath = await normalizeOutputDimensions(
           localPath,
           imageSize.width,
-          imageSize.height,
-          deliveryFormat
+          imageSize.height
         );
 
         const uploaded = await uploadToCloudinary(normalizedPath, {
