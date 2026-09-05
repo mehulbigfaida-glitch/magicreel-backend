@@ -17,6 +17,14 @@ function downloadFile(
 
     https
       .get(url, (response) => {
+        if (response.statusCode && response.statusCode >= 400) {
+          file.close();
+          try { fs.unlinkSync(outputPath); } catch {}
+          reject(new Error(`Image download failed: HTTP ${response.statusCode}`));
+          response.resume();
+          return;
+        }
+
         response.pipe(file);
 
         file.on("finish", () => {
@@ -75,7 +83,7 @@ export const carouselKenBurnsV2Service = {
       );
 
       console.log("🎬 REEL IMAGE URL:", imageUrl);
-      
+
       await downloadFile(
         imageUrl,
         imagePath
@@ -83,15 +91,13 @@ export const carouselKenBurnsV2Service = {
 
       const totalFrames = 75;
 
-      let zoomPan = "";
-
-      zoomPan =
-  `zoompan=` +
-  `z='1.0':` +
-  `d=${totalFrames}:` +
-  `x='0':` +
-  `y='0':` +
-  `s=1080x1920`;
+      const zoomPan =
+        `zoompan=` +
+        `z='1.0':` +
+        `d=${totalFrames}:` +
+        `x='0':` +
+        `y='0':` +
+        `s=1080x1920`;
 
       const filter = [
         "scale=1080:1920:force_original_aspect_ratio=decrease",
@@ -99,6 +105,9 @@ export const carouselKenBurnsV2Service = {
         zoomPan,
         "fps=30",
         "format=yuv420p",
+        "setsar=1",
+        "settb=AVTB",
+        "setpts=PTS-STARTPTS",
       ].join(",");
 
       const args = [
@@ -111,6 +120,8 @@ export const carouselKenBurnsV2Service = {
         "2.5",
         "-vf",
         filter,
+        "-r",
+        "30",
         "-c:v",
         "libx264",
         "-preset",
