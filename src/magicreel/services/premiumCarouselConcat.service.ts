@@ -3,7 +3,7 @@ import path from "path";
 import fs from "fs";
 import { ffmpegPath } from "../../utils/ffmpegPath";
 
-const CLIP_DURATION = 2.15;
+const CLIP_DURATION = 3.3;
 const TRANSITION_DURATION = 0.55;
 const TRANSITIONS = ["smoothleft", "dissolve", "slideleft", "circleopen", "wipeleft"];
 
@@ -33,6 +33,8 @@ export async function generatePremiumCarouselReel(clips: string[], outputDir: st
   console.log("🎞️ PREMIUM CAROUSEL EDIT");
   console.log(`🎞️ CLIPS: ${clips.length}`);
   console.log(`🎞️ TRANSITIONS: ${TRANSITIONS.join(", ")}`);
+  console.log(`🎞️ CLIP DURATION: ${CLIP_DURATION.toFixed(2)}s`);
+  console.log(`🎞️ TRANSITION DURATION: ${TRANSITION_DURATION.toFixed(2)}s`);
   console.log(`🎞️ EXPECTED DURATION: ${(clips.length * CLIP_DURATION - (clips.length - 1) * TRANSITION_DURATION).toFixed(2)}s`);
 
   await new Promise<void>((resolve, reject) => {
