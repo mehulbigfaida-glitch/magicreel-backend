@@ -48,17 +48,9 @@ export async function generateLookbookV1(req: Request, res: Response) {
       aspectRatio = "2:3",
     } = req.body;
 
-    if (!heroImageUrl) {
-      return res.status(400).json({ error: "heroImageUrl required" });
-    }
-
-    if (!lookbookWorld) {
-      return res.status(400).json({ error: "lookbookWorld required" });
-    }
-
-    if (!gender || !category) {
-      return res.status(400).json({ error: "gender and category required" });
-    }
+    if (!heroImageUrl) return res.status(400).json({ error: "heroImageUrl required" });
+    if (!lookbookWorld) return res.status(400).json({ error: "lookbookWorld required" });
+    if (!gender || !category) return res.status(400).json({ error: "gender and category required" });
 
     if (!(aspectRatio in ECOM_ASPECT_RATIOS)) {
       return res.status(400).json({
@@ -68,18 +60,14 @@ export async function generateLookbookV1(req: Request, res: Response) {
 
     const legacyPlan = getLookbookCategoryPoses(category);
     if (!legacyPlan) {
-      return res.status(400).json({
-        error: `Unsupported Lookbook category: ${category}`,
-      });
+      return res.status(400).json({ error: `Unsupported Lookbook category: ${category}` });
     }
 
     const categoryPosePlan = getEcomLookbookPosePlan(legacyPlan);
     const imageSize = ECOM_ASPECT_RATIOS[aspectRatio as EcomAspectRatio];
     const userId = (req as any).user?.id;
 
-    if (!userId) {
-      return res.status(401).json({ error: "Unauthorized" });
-    }
+    if (!userId) return res.status(401).json({ error: "Unauthorized" });
 
     const lookbook = await prisma.lookbook.create({
       data: {
@@ -115,22 +103,7 @@ export async function generateLookbookV1(req: Request, res: Response) {
         referenceImages: string[],
         pose?: any
       ) {
-        const prompt = buildLookbookPrompt({
-          category,
-          gender,
-          worldId: lookbookWorld,
-          shotType,
-          pose,
-        });
-
-        console.log("🎨 LOOKBOOK SHOT:", {
-          poseId,
-          shotType,
-          world: lookbookWorld,
-          category,
-          aspectRatio,
-          imageSize,
-        });
+        const prompt = buildLookbookPrompt({ category, gender, worldId: lookbookWorld, shotType, pose });
 
         const result = await fal.subscribe("openai/gpt-image-2/edit", {
           input: {
@@ -145,15 +118,9 @@ export async function generateLookbookV1(req: Request, res: Response) {
         });
 
         const image = result?.data?.images?.[0];
-        if (!image?.url) {
-          throw new Error(`GPT Image 2 returned no image for ${poseId}`);
-        }
+        if (!image?.url) throw new Error(`GPT Image 2 returned no image for ${poseId}`);
 
-        const localPath = await downloadImage(
-          image.url,
-          `${lookbook.id}_${poseId}.png`
-        );
-
+        const localPath = await downloadImage(image.url, `${lookbook.id}_${poseId}.png`);
         const uploaded = await uploadToCloudinary(localPath, {
           folder: "magicreel/lookbooks",
           public_id: `${lookbook.id}_${poseId}`,
@@ -175,42 +142,32 @@ export async function generateLookbookV1(req: Request, res: Response) {
           },
         });
 
-        console.log(`✅ LOOKBOOK ${poseId} complete`);
         return finalUrl;
       }
 
       try {
-        const lookbookFrontUrl = await generateShot(
-          "front",
-          "front",
-          [heroImageUrl]
-        );
+        const lookbookFrontUrl = await generateShot("front", "front", [heroImageUrl]);
 
-        if (backHeroImageUrl) {
-          await generateShot("back", "back", [backHeroImageUrl]);
-        }
+        if (backHeroImageUrl) await generateShot("back", "back", [backHeroImageUrl]);
 
         for (const pose of categoryPosePlan.poses) {
-          await generateShot(
-            pose.id,
-            "pose",
-            [lookbookFrontUrl],
-            pose
-          );
+          await generateShot(pose.id, "pose", [lookbookFrontUrl], pose);
         }
 
         const shareId = randomUUID();
+        const shareMedia = poses.map((p, index) => ({
+          kind: "image",
+          url: p.imageUrl,
+          pose: index,
+        }));
 
-        await supabase.from("share_assets").insert([
+        const { error: shareError } = await supabase.from("share_assets").insert([
           {
             id: shareId,
             type: "lookbook",
-            media: poses.map((p, index) => ({
-              kind: "image",
-              url: p.imageUrl,
-              pose: index,
-            })),
+            media: shareMedia,
             metadata: {
+              runId: lookbook.id,
               poses: poses.map((_, i) => i),
               aspectRatio,
               width: imageSize.width,
@@ -219,12 +176,10 @@ export async function generateLookbookV1(req: Request, res: Response) {
           },
         ]);
 
-        await finalizeBilling(req);
+        if (shareError) throw new Error(`Share asset creation failed: ${shareError.message}`);
 
-        await prisma.lookbook.update({
-          where: { id: lookbook.id },
-          data: { status: "completed" },
-        });
+        await finalizeBilling(req);
+        await prisma.lookbook.update({ where: { id: lookbook.id }, data: { status: "completed" } });
 
         console.log("✅ LOOKBOOK BACKGROUND JOB COMPLETE", {
           runId: lookbook.id,
@@ -234,11 +189,7 @@ export async function generateLookbookV1(req: Request, res: Response) {
         });
       } catch (error: any) {
         console.error("❌ LOOKBOOK BACKGROUND JOB FAILED", error);
-
-        await prisma.lookbook.update({
-          where: { id: lookbook.id },
-          data: { status: "failed" },
-        }).catch((updateError) => {
+        await prisma.lookbook.update({ where: { id: lookbook.id }, data: { status: "failed" } }).catch((updateError) => {
           console.error("❌ Failed updating Lookbook status:", updateError);
         });
       }
