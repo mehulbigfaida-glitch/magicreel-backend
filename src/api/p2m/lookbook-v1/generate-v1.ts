@@ -4,6 +4,7 @@ import { fal } from "@fal-ai/client";
 import fs from "fs";
 import path from "path";
 import os from "os";
+import sharp from "sharp";
 
 import { prisma } from "../../../magicreel/db/prisma";
 import { finalizeBilling } from "../../../billing/billing.middleware";
@@ -35,6 +36,21 @@ async function downloadImage(url: string, filename: string) {
   const response = await axios.get(url, { responseType: "arraybuffer" });
   fs.writeFileSync(filePath, response.data);
   return filePath;
+}
+
+async function normalizeOutputDimensions(
+  filePath: string,
+  width: number,
+  height: number
+) {
+  const tempOutput = `${filePath}.normalized.png`;
+
+  await sharp(filePath)
+    .resize(width, height, { fit: "fill" })
+    .png()
+    .toFile(tempOutput);
+
+  fs.renameSync(tempOutput, filePath);
 }
 
 export async function generateLookbookV1(req: Request, res: Response) {
@@ -103,7 +119,13 @@ export async function generateLookbookV1(req: Request, res: Response) {
         referenceImages: string[],
         pose?: any
       ) {
-        const prompt = buildLookbookPrompt({ category, gender, worldId: lookbookWorld, shotType, pose });
+        const prompt = buildLookbookPrompt({
+          category,
+          gender,
+          worldId: lookbookWorld,
+          shotType,
+          pose,
+        });
 
         const result = await fal.subscribe("openai/gpt-image-2/edit", {
           input: {
@@ -121,6 +143,12 @@ export async function generateLookbookV1(req: Request, res: Response) {
         if (!image?.url) throw new Error(`GPT Image 2 returned no image for ${poseId}`);
 
         const localPath = await downloadImage(image.url, `${lookbook.id}_${poseId}.png`);
+
+        // GPT Image 2 may return the nearest supported size (for example
+        // 1232×1856 for the 2:3 preset). Normalize the delivered asset to
+        // MagicReel's sealed output dimensions without another model call.
+        await normalizeOutputDimensions(localPath, imageSize.width, imageSize.height);
+
         const uploaded = await uploadToCloudinary(localPath, {
           folder: "magicreel/lookbooks",
           public_id: `${lookbook.id}_${poseId}`,
@@ -148,10 +176,20 @@ export async function generateLookbookV1(req: Request, res: Response) {
       try {
         const lookbookFrontUrl = await generateShot("front", "front", [heroImageUrl]);
 
-        if (backHeroImageUrl) await generateShot("back", "back", [backHeroImageUrl]);
+        if (backHeroImageUrl) {
+          // Keep the uploaded back reference primary for rear construction,
+          // while also supplying the front reference so visible footwear and
+          // model styling cannot disappear when the back image omits them.
+          await generateShot("back", "back", [backHeroImageUrl, heroImageUrl]);
+        }
 
+        // Ecom V1 is a 6-image pack: Front + Back + 4 Lookbook poses.
+        // Pose 4 is the single close-in product-detail asset.
         for (const pose of categoryPosePlan.poses) {
-          await generateShot(pose.id, "pose", [lookbookFrontUrl], pose);
+          const poseReferences = backHeroImageUrl
+            ? [lookbookFrontUrl, backHeroImageUrl]
+            : [lookbookFrontUrl];
+          await generateShot(pose.id, "pose", poseReferences, pose);
         }
 
         const shareId = randomUUID();
@@ -186,6 +224,8 @@ export async function generateLookbookV1(req: Request, res: Response) {
           poses: poses.length,
           shareId,
           aspectRatio,
+          width: imageSize.width,
+          height: imageSize.height,
         });
       } catch (error: any) {
         console.error("❌ LOOKBOOK BACKGROUND JOB FAILED", error);
