@@ -22,7 +22,7 @@ const { randomUUID } = require("crypto");
 const ECOM_ASPECT_RATIOS = {
   "2:3": { width: 1240, height: 1860 },
   "3:4": { width: 1500, height: 2000 },
-  "4:5": { width: 1856, height: 2320 },
+  "4:5": { width: 1856, height: 2304 },
   "1:1": { width: 2000, height: 2000 },
 } as const;
 
@@ -41,16 +41,24 @@ async function downloadImage(url: string, filename: string) {
 async function normalizeOutputDimensions(
   filePath: string,
   width: number,
-  height: number
+  height: number,
+  outputFormat: "png" | "jpeg"
 ) {
-  const tempOutput = `${filePath}.normalized.png`;
+  const extension = outputFormat === "jpeg" ? "jpg" : "png";
+  const tempOutput = `${filePath}.normalized.${extension}`;
 
-  await sharp(filePath)
-    .resize(width, height, { fit: "fill" })
-    .png()
-    .toFile(tempOutput);
+  const pipeline = sharp(filePath).resize(width, height, { fit: "fill" });
 
-  fs.renameSync(tempOutput, filePath);
+  if (outputFormat === "jpeg") {
+    await pipeline
+      .jpeg({ quality: 94, chromaSubsampling: "4:4:4", mozjpeg: true })
+      .toFile(tempOutput);
+  } else {
+    await pipeline.png().toFile(tempOutput);
+  }
+
+  fs.unlinkSync(filePath);
+  return tempOutput;
 }
 
 export async function generateLookbookV1(req: Request, res: Response) {
@@ -81,6 +89,7 @@ export async function generateLookbookV1(req: Request, res: Response) {
 
     const categoryPosePlan = getEcomLookbookPosePlan(legacyPlan);
     const imageSize = ECOM_ASPECT_RATIOS[aspectRatio as EcomAspectRatio];
+    const deliveryFormat: "png" | "jpeg" = aspectRatio === "4:5" || aspectRatio === "1:1" ? "jpeg" : "png";
     const userId = (req as any).user?.id;
 
     if (!userId) return res.status(401).json({ error: "Unauthorized" });
@@ -108,6 +117,7 @@ export async function generateLookbookV1(req: Request, res: Response) {
       status: "processing",
       aspectRatio,
       targetImageSize: imageSize,
+      deliveryFormat,
     });
 
     setImmediate(async () => {
@@ -147,9 +157,16 @@ export async function generateLookbookV1(req: Request, res: Response) {
         // GPT Image 2 may return the nearest supported size (for example
         // 1232×1856 for the 2:3 preset). Normalize the delivered asset to
         // MagicReel's sealed output dimensions without another model call.
-        await normalizeOutputDimensions(localPath, imageSize.width, imageSize.height);
+        // 4:5 and 1:1 are delivered as high-quality JPEG to control file size
+        // while preserving the full sealed pixel dimensions.
+        const normalizedPath = await normalizeOutputDimensions(
+          localPath,
+          imageSize.width,
+          imageSize.height,
+          deliveryFormat
+        );
 
-        const uploaded = await uploadToCloudinary(localPath, {
+        const uploaded = await uploadToCloudinary(normalizedPath, {
           folder: "magicreel/lookbooks",
           public_id: `${lookbook.id}_${poseId}`,
         });
@@ -210,6 +227,7 @@ export async function generateLookbookV1(req: Request, res: Response) {
               aspectRatio,
               width: imageSize.width,
               height: imageSize.height,
+              deliveryFormat,
             },
           },
         ]);
@@ -226,6 +244,7 @@ export async function generateLookbookV1(req: Request, res: Response) {
           aspectRatio,
           width: imageSize.width,
           height: imageSize.height,
+          deliveryFormat,
         });
       } catch (error: any) {
         console.error("❌ LOOKBOOK BACKGROUND JOB FAILED", error);
