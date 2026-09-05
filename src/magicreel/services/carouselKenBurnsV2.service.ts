@@ -33,7 +33,7 @@ const MOTION_PRESETS = [
   { name: "left-drift", z: "1.04+0.00018*on", x: "(iw-iw/zoom)*0.78", y: "(ih-ih/zoom)/2" },
   { name: "right-drift", z: "1.04+0.00018*on", x: "(iw-iw/zoom)*0.22", y: "(ih-ih/zoom)/2" },
   { name: "upward-drift", z: "1.03+0.00020*on", x: "(iw-iw/zoom)/2", y: "(ih-ih/zoom)*0.72" },
-  { name: "diagonal", z: "1.02+0.00020*on", x: "(iw-ih/zoom)*0.70", y: "(ih-ih/zoom)*0.68" },
+  { name: "diagonal", z: "1.02+0.00020*on", x: "(iw-iw/zoom)*0.70", y: "(ih-ih/zoom)*0.68" },
   { name: "detail-push", z: "1.00+0.00030*on", x: "(iw-iw/zoom)/2", y: "(ih-ih/zoom)/2" },
 ];
 
@@ -57,10 +57,7 @@ export const carouselKenBurnsV2Service = {
       console.log(`⬇️ Downloading image ${i + 1}/${imageUrls.length}`);
       await downloadFile(imageUrls[i], imagePath);
 
-      const zoomPan =
-        `zoompan=z='${motion.z}':x='${motion.x}':y='${motion.y}':` +
-        `d=${totalFrames}:s=1080x1920:fps=${fps}`;
-
+      const zoomPan = `zoompan=z='${motion.z}':x='${motion.x}':y='${motion.y}':d=${totalFrames}:s=1080x1920:fps=${fps}`;
       const filter = [
         "scale=1080:1920:force_original_aspect_ratio=increase",
         "crop=1080:1920",
