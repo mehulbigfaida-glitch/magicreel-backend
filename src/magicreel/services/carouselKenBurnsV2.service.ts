@@ -36,41 +36,44 @@ function downloadFile(url: string, outputPath: string): Promise<void> {
  * The first two scenes establish the full garment with opposing vertical
  * scans; later scenes alternate direction, lateral movement and a detail
  * push so the six-image pack feels like one fashion film.
+ *
+ * FFmpeg zoompan exposes `duration` as the number of output frames for the
+ * current input image; `d` is the option name, not an expression variable.
  */
 const MOTION_PRESETS = [
   {
     name: "front-bottom-to-top",
-    z: "1.12+0.18*((1-cos(PI*on/(d-1)))/2)",
+    z: "1.12+0.18*((1-cos(PI*on/(duration-1)))/2)",
     x: "(iw-iw/zoom)/2",
-    y: "(ih-ih/zoom)*(1-((1-cos(PI*on/(d-1)))/2))",
+    y: "(ih-ih/zoom)*(1-((1-cos(PI*on/(duration-1)))/2))",
   },
   {
     name: "back-top-to-bottom",
-    z: "1.12+0.18*((1-cos(PI*on/(d-1)))/2)",
+    z: "1.12+0.18*((1-cos(PI*on/(duration-1)))/2)",
     x: "(iw-iw/zoom)/2",
-    y: "(ih-ih/zoom)*((1-cos(PI*on/(d-1)))/2)",
+    y: "(ih-ih/zoom)*((1-cos(PI*on/(duration-1)))/2)",
   },
   {
     name: "pose-bottom-to-top",
-    z: "1.10+0.16*((1-cos(PI*on/(d-1)))/2)",
+    z: "1.10+0.16*((1-cos(PI*on/(duration-1)))/2)",
     x: "(iw-iw/zoom)*0.52",
-    y: "(ih-ih/zoom)*(1-((1-cos(PI*on/(d-1)))/2))",
+    y: "(ih-ih/zoom)*(1-((1-cos(PI*on/(duration-1)))/2))",
   },
   {
     name: "pose-top-to-bottom",
-    z: "1.10+0.16*((1-cos(PI*on/(d-1)))/2)",
+    z: "1.10+0.16*((1-cos(PI*on/(duration-1)))/2)",
     x: "(iw-iw/zoom)*0.48",
-    y: "(ih-ih/zoom)*((1-cos(PI*on/(d-1)))/2)",
+    y: "(ih-ih/zoom)*((1-cos(PI*on/(duration-1)))/2)",
   },
   {
     name: "elegant-diagonal",
-    z: "1.08+0.12*((1-cos(PI*on/(d-1)))/2)",
-    x: "(iw-iw/zoom)*(1-((1-cos(PI*on/(d-1)))/2))",
-    y: "(ih-ih/zoom)*((1-cos(PI*on/(d-1)))/2)",
+    z: "1.08+0.12*((1-cos(PI*on/(duration-1)))/2)",
+    x: "(iw-iw/zoom)*(1-((1-cos(PI*on/(duration-1)))/2))",
+    y: "(ih-ih/zoom)*((1-cos(PI*on/(duration-1)))/2)",
   },
   {
     name: "detail-push",
-    z: "1.05+0.20*((1-cos(PI*on/(d-1)))/2)",
+    z: "1.05+0.20*((1-cos(PI*on/(duration-1)))/2)",
     x: "(iw-iw/zoom)/2",
     y: "(ih-ih/zoom)/2",
   },
