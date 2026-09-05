@@ -6,7 +6,7 @@ import https from "https";
 import { spawn } from "child_process";
 
 import { ffmpegPath } from "../../utils/ffmpegPath";
-import { magicReelConcatService } from "../../video/services/magicReelConcat.service";
+import { generatePremiumCarouselReel } from "./premiumCarouselConcat.service";
 
 function downloadFile(url: string, outputPath: string): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -28,17 +28,14 @@ function downloadFile(url: string, outputPath: string): Promise<void> {
   });
 }
 
-/** Premium fashion-carousel motion presets. */
 const MOTION_PRESETS = [
   { name: "hero-push", z: "1.00+0.00022*on", x: "(iw-iw/zoom)/2", y: "(ih-ih/zoom)/2" },
   { name: "left-drift", z: "1.04+0.00018*on", x: "(iw-iw/zoom)*0.78", y: "(ih-ih/zoom)/2" },
   { name: "right-drift", z: "1.04+0.00018*on", x: "(iw-iw/zoom)*0.22", y: "(ih-ih/zoom)/2" },
   { name: "upward-drift", z: "1.03+0.00020*on", x: "(iw-iw/zoom)/2", y: "(ih-ih/zoom)*0.72" },
-  { name: "diagonal", z: "1.02+0.00020*on", x: "(iw-iw/zoom)*0.70", y: "(ih-ih/zoom)*0.68" },
+  { name: "diagonal", z: "1.02+0.00020*on", x: "(iw-ih/zoom)*0.70", y: "(ih-ih/zoom)*0.68" },
   { name: "detail-push", z: "1.00+0.00030*on", x: "(iw-iw/zoom)/2", y: "(ih-ih/zoom)/2" },
 ];
-
-const TRANSITIONS = ["smoothleft", "dissolve", "slideleft", "circleopen", "wipeleft"];
 
 export const carouselKenBurnsV2Service = {
   async generate({ imageUrls }: { imageUrls: string[] }) {
@@ -49,7 +46,6 @@ export const carouselKenBurnsV2Service = {
 
     const clipPaths: string[] = [];
     const clipDuration = 2.15;
-    const transitionDuration = 0.55;
     const fps = 30;
     const totalFrames = Math.round(clipDuration * fps);
 
@@ -59,13 +55,10 @@ export const carouselKenBurnsV2Service = {
       const motion = MOTION_PRESETS[i % MOTION_PRESETS.length];
 
       console.log(`⬇️ Downloading image ${i + 1}/${imageUrls.length}`);
-      console.log("🎬 REEL IMAGE URL:", imageUrls[i]);
       await downloadFile(imageUrls[i], imagePath);
 
       const zoomPan =
-        `zoompan=z='${motion.z}':` +
-        `x='${motion.x}':` +
-        `y='${motion.y}':` +
+        `zoompan=z='${motion.z}':x='${motion.x}':y='${motion.y}':` +
         `d=${totalFrames}:s=1080x1920:fps=${fps}`;
 
       const filter = [
@@ -82,10 +75,8 @@ export const carouselKenBurnsV2Service = {
 
       const args = [
         "-y", "-loop", "1", "-i", imagePath,
-        "-t", clipDuration.toFixed(2),
-        "-vf", filter,
-        "-r", String(fps),
-        "-c:v", "libx264", "-preset", "medium",
+        "-t", clipDuration.toFixed(2), "-vf", filter,
+        "-r", String(fps), "-c:v", "libx264", "-preset", "medium",
         "-pix_fmt", "yuv420p", "-movflags", "+faststart", clipPath,
       ];
 
@@ -99,13 +90,7 @@ export const carouselKenBurnsV2Service = {
       clipPaths.push(clipPath);
     }
 
-    const finalVideoPath = await magicReelConcatService.generateMagicReel({
-      clips: clipPaths,
-      outputDir: tempDir,
-      transitionDuration,
-      transitions: TRANSITIONS,
-    });
-
+    const finalVideoPath = await generatePremiumCarouselReel(clipPaths, tempDir);
     return { finalVideoPath, tempDir };
   },
 };
