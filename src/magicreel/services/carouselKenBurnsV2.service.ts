@@ -28,13 +28,52 @@ function downloadFile(url: string, outputPath: string): Promise<void> {
   });
 }
 
+/**
+ * Premium fashion camera language for still-image Reels.
+ *
+ * The movement is intentionally slow and physical-looking: the virtual
+ * camera travels over the garment rather than merely enlarging the image.
+ * The first two scenes establish the full garment with opposing vertical
+ * scans; later scenes alternate direction, lateral movement and a detail
+ * push so the six-image pack feels like one fashion film.
+ */
 const MOTION_PRESETS = [
-  { name: "hero-push", z: "1.00+0.00022*on", x: "(iw-iw/zoom)/2", y: "(ih-ih/zoom)/2" },
-  { name: "left-drift", z: "1.04+0.00018*on", x: "(iw-iw/zoom)*0.78", y: "(ih-ih/zoom)/2" },
-  { name: "right-drift", z: "1.04+0.00018*on", x: "(iw-iw/zoom)*0.22", y: "(ih-ih/zoom)/2" },
-  { name: "upward-drift", z: "1.03+0.00020*on", x: "(iw-iw/zoom)/2", y: "(ih-ih/zoom)*0.72" },
-  { name: "diagonal", z: "1.02+0.00020*on", x: "(iw-iw/zoom)*0.70", y: "(ih-ih/zoom)*0.68" },
-  { name: "detail-push", z: "1.00+0.00030*on", x: "(iw-iw/zoom)/2", y: "(ih-ih/zoom)/2" },
+  {
+    name: "front-bottom-to-top",
+    z: "1.12+0.18*((1-cos(PI*on/(d-1)))/2)",
+    x: "(iw-iw/zoom)/2",
+    y: "(ih-ih/zoom)*(1-((1-cos(PI*on/(d-1)))/2))",
+  },
+  {
+    name: "back-top-to-bottom",
+    z: "1.12+0.18*((1-cos(PI*on/(d-1)))/2)",
+    x: "(iw-iw/zoom)/2",
+    y: "(ih-ih/zoom)*((1-cos(PI*on/(d-1)))/2)",
+  },
+  {
+    name: "pose-bottom-to-top",
+    z: "1.10+0.16*((1-cos(PI*on/(d-1)))/2)",
+    x: "(iw-iw/zoom)*0.52",
+    y: "(ih-ih/zoom)*(1-((1-cos(PI*on/(d-1)))/2))",
+  },
+  {
+    name: "pose-top-to-bottom",
+    z: "1.10+0.16*((1-cos(PI*on/(d-1)))/2)",
+    x: "(iw-iw/zoom)*0.48",
+    y: "(ih-ih/zoom)*((1-cos(PI*on/(d-1)))/2)",
+  },
+  {
+    name: "elegant-diagonal",
+    z: "1.08+0.12*((1-cos(PI*on/(d-1)))/2)",
+    x: "(iw-iw/zoom)*(1-((1-cos(PI*on/(d-1)))/2))",
+    y: "(ih-ih/zoom)*((1-cos(PI*on/(d-1)))/2)",
+  },
+  {
+    name: "detail-push",
+    z: "1.05+0.20*((1-cos(PI*on/(d-1)))/2)",
+    x: "(iw-iw/zoom)/2",
+    y: "(ih-ih/zoom)/2",
+  },
 ];
 
 export const carouselKenBurnsV2Service = {
@@ -45,7 +84,7 @@ export const carouselKenBurnsV2Service = {
     fs.mkdirSync(tempDir, { recursive: true });
 
     const clipPaths: string[] = [];
-    const clipDuration = 2.15;
+    const clipDuration = 3.3;
     const fps = 30;
     const totalFrames = Math.round(clipDuration * fps);
 
@@ -55,15 +94,21 @@ export const carouselKenBurnsV2Service = {
       const motion = MOTION_PRESETS[i % MOTION_PRESETS.length];
 
       console.log(`⬇️ Downloading image ${i + 1}/${imageUrls.length}`);
+      console.log(`🎥 Camera move: ${motion.name}`);
       await downloadFile(imageUrls[i], imagePath);
 
-      const zoomPan = `zoompan=z='${motion.z}':x='${motion.x}':y='${motion.y}':d=${totalFrames}:s=1080x1920:fps=${fps}`;
+      const zoomPan =
+        `zoompan=z='${motion.z}':` +
+        `x='${motion.x}':` +
+        `y='${motion.y}':` +
+        `d=${totalFrames}:s=1080x1920:fps=${fps}`;
+
       const filter = [
         "scale=1080:1920:force_original_aspect_ratio=increase",
         "crop=1080:1920",
         zoomPan,
-        "eq=contrast=1.025:saturation=1.02:brightness=0.005",
-        "vignette=PI/5",
+        "eq=contrast=1.02:saturation=1.015:brightness=0.003",
+        "vignette=PI/8",
         "format=yuv420p",
         "setsar=1",
         "settb=AVTB",
