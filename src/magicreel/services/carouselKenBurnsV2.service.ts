@@ -8,31 +8,9 @@ import { spawn } from "child_process";
 import { ffmpegPath } from "../../utils/ffmpegPath";
 import { generatePremiumCarouselReel } from "./premiumCarouselConcat.service";
 
-function downloadFile(url: string, outputPath: string): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const file = fs.createWriteStream(outputPath);
-    https.get(url, (response) => {
-      if (response.statusCode && response.statusCode >= 400) {
-        file.close();
-        try { fs.unlinkSync(outputPath); } catch {}
-        response.resume();
-        reject(new Error(`Image download failed: HTTP ${response.statusCode}`));
-        return;
-      }
-      response.pipe(file);
-      file.on("finish", () => { file.close(); resolve(); });
-    }).on("error", (err) => {
-      try { fs.unlinkSync(outputPath); } catch {}
-      reject(err);
-    });
-  });
-}
-
 /**
  * Reference-matched fashion camera language for the Ecom Carousel Reel.
- * The reel is intentionally 3:4 / 1080x1440, matching the proven reference
- * output, while retaining subtle camera travel so garment details remain
- * visible without aggressive cropping or motion.
+ * The proven reference is 3:4 / 1080x1440 and approximately 15 seconds.
  */
 const MOTION_PRESETS = [
   {
@@ -81,7 +59,7 @@ export const carouselKenBurnsV2Service = {
     fs.mkdirSync(tempDir, { recursive: true });
 
     const clipPaths: string[] = [];
-    const clipDuration = 3.15;
+    const clipDuration = 2.6;
     const fps = 30;
     const totalFrames = Math.round(clipDuration * fps);
 
