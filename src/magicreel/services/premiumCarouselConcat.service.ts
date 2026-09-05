@@ -3,9 +3,9 @@ import path from "path";
 import fs from "fs";
 import { ffmpegPath } from "../../utils/ffmpegPath";
 
-const CLIP_DURATION = 3.3;
-const TRANSITION_DURATION = 0.55;
-const TRANSITIONS = ["smoothleft", "dissolve", "slideleft", "circleopen", "wipeleft"];
+const CLIP_DURATION = 3.15;
+const TRANSITION_DURATION = 0.30;
+const TRANSITIONS = ["fade", "smoothleft", "dissolve", "wipeleft", "fade"];
 
 export async function generatePremiumCarouselReel(clips: string[], outputDir: string): Promise<string> {
   if (clips.length < 2) throw new Error("At least 2 clips are required");
@@ -30,11 +30,12 @@ export async function generatePremiumCarouselReel(clips: string[], outputDir: st
     `-map "[v]" -c:v libx264 -preset medium -pix_fmt yuv420p -movflags +faststart ` +
     `"${outputVideoPath}"`;
 
-  console.log("🎞️ PREMIUM CAROUSEL EDIT");
+  console.log("🎞️ PREMIUM CAROUSEL EDIT — REFERENCE MATCH");
   console.log(`🎞️ CLIPS: ${clips.length}`);
-  console.log(`🎞️ TRANSITIONS: ${TRANSITIONS.join(", ")}`);
+  console.log(`🎞️ CANVAS: 1080x1440 (3:4)`);
   console.log(`🎞️ CLIP DURATION: ${CLIP_DURATION.toFixed(2)}s`);
   console.log(`🎞️ TRANSITION DURATION: ${TRANSITION_DURATION.toFixed(2)}s`);
+  console.log(`🎞️ TRANSITIONS: ${TRANSITIONS.join(", ")}`);
   console.log(`🎞️ EXPECTED DURATION: ${(clips.length * CLIP_DURATION - (clips.length - 1) * TRANSITION_DURATION).toFixed(2)}s`);
 
   await new Promise<void>((resolve, reject) => {
