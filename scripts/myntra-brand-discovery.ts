@@ -19,13 +19,60 @@ function csv(value: string): string {
   return `"${value.replace(/"/g, '""')}"`;
 }
 
+function cleanBrandText(value: string): string {
+  return value.replace(/\s+/g, ' ').replace(/\(\s*[\d,]+\s*\)\s*$/g, '').trim();
+}
+
+async function expandBrandFilter(page: Page): Promise<void> {
+  // Myntra initially renders only a few brand options and a "+ N more" control.
+  // Expand that control so the complete filter list becomes available in the DOM.
+  const clicked = await page.evaluate(() => {
+    const nodes = Array.from(document.querySelectorAll('button, a, span, div, li'));
+    const target = nodes.find(el => /^\+\s*[\d,]+\s+more$/i.test((el.textContent || '').trim()));
+    if (target) {
+      (target as HTMLElement).click();
+      return true;
+    }
+    return false;
+  });
+  if (clicked) await new Promise(resolve => setTimeout(resolve, 1200));
+}
+
+async function collectBrandFilterText(page: Page): Promise<string[]> {
+  return page.evaluate(() => {
+    const body = document.body.innerText || '';
+    const lines = body.split(/\n+/).map(x => x.trim()).filter(Boolean);
+    const brandIndex = lines.findIndex(x => /^Brand$/i.test(x));
+    if (brandIndex < 0) return [];
+
+    const result: string[] = [];
+    for (let i = brandIndex + 1; i < lines.length; i++) {
+      const line = lines[i];
+      if (/^Price$/i.test(line)) break;
+      if (/^Input:\s*Search for Brand$/i.test(line)) continue;
+      if (/^\+\s*[\d,]+\s+more$/i.test(line)) continue;
+      if (/^(FILTERS|Categories|Color|Discount Range|Sort by|CLEAR ALL|Clear All)$/i.test(line)) continue;
+      if (/^\d[\d,]*\s+more$/i.test(line)) continue;
+      if (/^\*?$/.test(line)) continue;
+      // Brand filter entries generally end with an item count in parentheses.
+      if (/^.+\(\s*[\d,]+\s*\)$/.test(line)) result.push(line);
+    }
+    return result;
+  });
+}
+
 async function collectFromPage(page: Page, url: string) {
   await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
   await page.waitForNetworkIdle({ idleTime: 1200, timeout: 15000 }).catch(() => undefined);
-  return page.evaluate(() => {
-    const links = Array.from(document.querySelectorAll('a')) as HTMLAnchorElement[];
-    return links.map(a => ({ text: (a.textContent || '').trim(), href: a.href })).filter(x => x.text);
+  await expandBrandFilter(page);
+
+  const filterEntries = await collectBrandFilterText(page);
+  const links = await page.evaluate(() => {
+    const anchors = Array.from(document.querySelectorAll('a')) as HTMLAnchorElement[];
+    return anchors.map(a => ({ text: (a.textContent || '').trim(), href: a.href })).filter(x => x.text);
   });
+
+  return { filterEntries, links };
 }
 
 async function main() {
@@ -43,32 +90,32 @@ async function main() {
       const url = queue.shift()!;
       if (seen.has(url)) continue;
       seen.add(url);
-      let links: { text: string; href: string }[] = [];
-      try { links = await collectFromPage(page, url); } catch { continue; }
 
-      for (const link of links) {
+      let data: { filterEntries: string[]; links: { text: string; href: string }[] };
+      try { data = await collectFromPage(page, url); } catch { continue; }
+
+      // Primary source: the Myntra Brand filter itself. This is the authoritative
+      // brand universe exposed by the category page and does not depend on anchor links.
+      for (const entry of data.filterEntries) {
+        const brand = cleanBrandText(entry);
+        const k = key(brand);
+        if (k.length >= 2 && !brands.has(k)) {
+          brands.set(k, { brand, url, source: url });
+        }
+      }
+
+      // Secondary source: any explicit brand links/index links on the page.
+      for (const link of data.links) {
         const href = link.href.split('#')[0];
-        const text = link.text.replace(/\s+/g, ' ').trim();
-        if (!text || text.length > 100) continue;
-        if (!href.startsWith(BASE)) continue;
-
-        // Brand surfaces generally use /<brand> or /brand/<slug>; product/category links are excluded.
+        const text = cleanBrandText(link.text);
+        if (!text || text.length > 100 || !href.startsWith(BASE)) continue;
         const path = new URL(href).pathname;
         const excluded = /\/(products|shop|search|men|women|kids|home|beauty|sports|brandlisting|top-myntra-brands|brands-men|brands-women|brands-kids)/i.test(path);
         if (!excluded && /^[\p{L}\p{N}][\p{L}\p{N}&.'()\- ]{1,70}$/u.test(text)) {
           const k = key(text);
           if (k.length >= 2 && !brands.has(k)) brands.set(k, { brand: text, url: href, source: url });
         }
-
-        // Continue following Myntra brand/category pagination and brand-index links.
         if (/brands|brand/i.test(path) && !seen.has(href) && queue.length < MAX_PAGES * 2) queue.push(href);
-      }
-
-      // Also harvest visible filter chips, which are frequently rendered as buttons/spans rather than anchors.
-      const visibleNames = await page.evaluate(() => Array.from(document.querySelectorAll('[class*="brand"], [class*="Brand"]')).map(e => (e.textContent || '').trim()).filter(t => t && t.length < 80).slice(0, 500));
-      for (const text of visibleNames) {
-        const k = key(text);
-        if (k.length >= 2 && !/^(brand|brands|clear all|view all)$/i.test(text) && !brands.has(k)) brands.set(k, { brand: text, url, source: url });
       }
     }
 
