@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 import { prisma } from "../../magicreel/db/prisma";
 
 export const getPredictions = async (req: Request, res: Response) => {
-
   console.log("===== GET PREDICTIONS HIT =====");
 
   try {
@@ -11,10 +10,6 @@ export const getPredictions = async (req: Request, res: Response) => {
     if (!userId) {
       return res.status(401).json({ error: "Unauthorized" });
     }
-
-    // ========================
-    // STEP 1: GET USER CREDIT TX
-    // ========================
 
     console.time("creditTx");
 
@@ -28,9 +23,9 @@ export const getPredictions = async (req: Request, res: Response) => {
 
     console.timeEnd("creditTx");
 
-    // A 360° Reel is persisted in ReelJob using the FAL runId. The
-    // billing transaction stores that same runId as predictionId, so use
-    // the user's own completed billing transactions to establish ownership.
+    // 360° Reels are persisted in ReelJob using the FAL runId. The billing
+    // transaction stores that same runId as predictionId, which gives us a
+    // user-scoped link between the Portfolio item and its 360° output route.
     const reel360RunIds = creditTx
       .filter(
         (tx: any) =>
@@ -56,23 +51,11 @@ export const getPredictions = async (req: Request, res: Response) => {
 
     console.timeEnd("reel360Jobs");
 
-    const reel360RunIdSet = new Set(
-      reel360Jobs.map((job: any) => job.id)
-    );
-
-    // ========================
-    // STEP 2: FETCH ONLY USER JOBS
-    // ========================
-
     console.time("heroJobs");
 
     const heroJobs = await prisma.productToModelJob.findMany({
-      where: {
-        userId,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
+      where: { userId },
+      orderBy: { createdAt: "desc" },
       take: 50,
     });
 
@@ -80,9 +63,8 @@ export const getPredictions = async (req: Request, res: Response) => {
 
     console.time("reelJobs");
 
-    // Standard Reels are Render records. 360° Reels are represented by
-    // ReelJob above, so explicitly exclude the 360 render marker here to
-    // prevent duplicate Portfolio cards.
+    // 360° renders are excluded because their Portfolio representation comes
+    // from ReelJob above. This prevents duplicate 360° cards.
     const reelJobs = await prisma.render.findMany({
       select: {
         id: true,
@@ -93,21 +75,12 @@ export const getPredictions = async (req: Request, res: Response) => {
         modelImageUrl: true,
         createdAt: true,
       },
-
       where: {
         type: "REEL",
-        pose: {
-          not: "REEL_360",
-        },
-        lookbook: {
-          userId,
-        },
+        pose: { not: "REEL_360" },
+        lookbook: { userId },
       },
-
-      orderBy: {
-        createdAt: "desc",
-      },
-
+      orderBy: { createdAt: "desc" },
       take: 30,
     });
 
@@ -116,30 +89,18 @@ export const getPredictions = async (req: Request, res: Response) => {
     console.time("lookbookJobs");
 
     const lookbookJobs = await prisma.lookbook.findMany({
-      where: {
-        userId,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
+      where: { userId },
+      orderBy: { createdAt: "desc" },
       take: 50,
     });
 
     console.timeEnd("lookbookJobs");
 
-    // ========================
-    // CAMPAIGN
-    // ========================
-
     console.time("campaignJobs");
 
     const campaignJobs = await prisma.campaign.findMany({
-      where: {
-        userId,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
+      where: { userId },
+      orderBy: { createdAt: "desc" },
       take: 50,
     });
 
@@ -149,22 +110,13 @@ export const getPredictions = async (req: Request, res: Response) => {
     console.log("Count:", campaignJobs.length);
     console.dir(campaignJobs, { depth: null });
 
-    // ========================
-    // EDITORIAL
-    // ========================
-
     console.time("editorialJobs");
 
-    const editorialJobs =
-      await prisma.editorialGeneration.findMany({
-        where: {
-          userId,
-        },
-        orderBy: {
-          createdAt: "desc",
-        },
-        take: 50,
-      });
+    const editorialJobs = await prisma.editorialGeneration.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+      take: 50,
+    });
 
     console.timeEnd("editorialJobs");
 
@@ -172,22 +124,13 @@ export const getPredictions = async (req: Request, res: Response) => {
     console.log("Count:", editorialJobs.length);
     console.dir(editorialJobs, { depth: null });
 
-    // ========================
-    // SOCIAL
-    // ========================
-
     console.time("socialJobs");
 
-    const socialJobs =
-      await prisma.socialGeneration.findMany({
-        where: {
-          userId,
-        },
-        orderBy: {
-          createdAt: "desc",
-        },
-        take: 50,
-      });
+    const socialJobs = await prisma.socialGeneration.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+      take: 50,
+    });
 
     console.timeEnd("socialJobs");
 
@@ -204,16 +147,12 @@ export const getPredictions = async (req: Request, res: Response) => {
         outputImageUrl: true,
         createdAt: true,
       },
-
       where: {
         lookbookId: {
           in: lookbookJobs.map((lb) => lb.id),
         },
       },
-
-      orderBy: {
-        createdAt: "asc",
-      },
+      orderBy: { createdAt: "asc" },
     });
 
     console.timeEnd("allLookbookRenders");
@@ -235,9 +174,7 @@ export const getPredictions = async (req: Request, res: Response) => {
         .map((r) => r.outputImageUrl)
         .filter((url) => !!url);
 
-      const heroRender = renders.find(
-        (r) => r.pose === "hero"
-      );
+      const heroRender = renders.find((r) => r.pose === "hero");
 
       const heroImageUrl =
         heroRender?.outputImageUrl ||
@@ -253,10 +190,6 @@ export const getPredictions = async (req: Request, res: Response) => {
         createdAt: lb.createdAt,
       };
     });
-
-    // ========================
-    // CREDIT MATCH FUNCTION
-    // ========================
 
     const getCredits = (item: any) => {
       const itemTime = new Date(item.createdAt).getTime();
@@ -274,12 +207,7 @@ export const getPredictions = async (req: Request, res: Response) => {
       return match?.credits ?? 0;
     };
 
-    // ========================
-    // BUILD RESPONSE
-    // ========================
-
     const predictions = [
-      // HERO
       ...heroJobs.map((job) => ({
         id: job.id,
         type: "hero",
@@ -294,7 +222,6 @@ export const getPredictions = async (req: Request, res: Response) => {
         }),
       })),
 
-      // STANDARD REEL
       ...reelJobs.map((job) => ({
         id: job.id,
         type: "reel",
@@ -303,14 +230,12 @@ export const getPredictions = async (req: Request, res: Response) => {
         mediaUrl: job.reelVideoUrl ?? null,
         heroImageUrl: job.modelImageUrl ?? null,
         createdAt: job.createdAt,
-        creditsUsed:
-          getCredits({
-            type: "reel",
-            createdAt: job.createdAt,
-          }),
+        creditsUsed: getCredits({
+          type: "reel",
+          createdAt: job.createdAt,
+        }),
       })),
 
-      // 360° REEL
       ...reel360Jobs.map((job: any) => ({
         id: job.id,
         runId: job.id,
@@ -326,7 +251,6 @@ export const getPredictions = async (req: Request, res: Response) => {
         }),
       })),
 
-      // LOOKBOOK
       ...lookbookPredictions.map((lb) => ({
         ...lb,
         creditsUsed: getCredits({
@@ -335,7 +259,6 @@ export const getPredictions = async (req: Request, res: Response) => {
         }),
       })),
 
-      // CAMPAIGN
       ...campaignJobs.map((job) => ({
         id: job.id,
         type: "campaign",
@@ -349,7 +272,6 @@ export const getPredictions = async (req: Request, res: Response) => {
         }),
       })),
 
-      // SOCIAL
       ...socialJobs.map((job) => ({
         id: job.id,
         type: "social",
@@ -364,7 +286,6 @@ export const getPredictions = async (req: Request, res: Response) => {
         }),
       })),
 
-      // EDITORIAL
       ...editorialJobs.map((job) => ({
         id: job.id,
         type: "editorial",
@@ -381,7 +302,6 @@ export const getPredictions = async (req: Request, res: Response) => {
       })),
     ];
 
-    // SORT
     predictions.sort(
       (a, b) =>
         new Date(b.createdAt).getTime() -
