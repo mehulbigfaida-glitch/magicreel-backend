@@ -39,7 +39,7 @@ export class FalImageProvider {
   ): Promise<GenerateEditedImageResponse> {
     try {
       console.info(
-        "[FalImageProvider] Starting GPT Image 2 generation"
+        "[FalImageProvider] Starting GPT Image 2.5 Sunburst generation"
       );
 
       const input: Record<string, unknown> = {
@@ -55,7 +55,7 @@ export class FalImageProvider {
       console.dir(input, { depth: null });
 
       const result = await fal.subscribe(
-        "openai/gpt-image-2/edit",
+        "openai/gpt-image-2.5/sunburst/edit",
         {
           input,
           logs: true,
