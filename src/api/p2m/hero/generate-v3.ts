@@ -96,7 +96,7 @@ console.log(frontPrompt);
     userId,
     productImageUrl: garmentFrontImageUrl,
     modelImageUrl: avatarFaceImageUrl,
-    engine: "gpt-image-2",
+    engine: "gpt-image-2.5-sunburst",
     engineJobId: "pending",
     status: "running",
     avatarGender,
