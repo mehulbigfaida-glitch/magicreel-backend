@@ -82,7 +82,7 @@ export async function generateCinematicImage({
 
     generationId,
 
-    provider: "openai/gpt-image-2",
+    provider: "openai/gpt-image-2.5/sunburst/edit",
 
     prompt,
 
