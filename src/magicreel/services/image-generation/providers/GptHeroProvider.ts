@@ -43,7 +43,7 @@ export class GptHeroProvider {
 ): Promise<GenerateHeroResponse> {
     try {
       console.info(
-        "[GptHeroProvider] Starting Hero generation"
+        "[GptHeroProvider] Starting Hero generation — GPT Image 2.5 Sunburst Medium"
       );
 
       const input: Record<string, unknown> = {
@@ -70,7 +70,7 @@ export class GptHeroProvider {
       console.dir(input, { depth: null });
 
       const result = await fal.subscribe(
-        "openai/gpt-image-2/edit",
+        "openai/gpt-image-2.5/sunburst/edit",
         {
           input,
           logs: true,
