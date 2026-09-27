@@ -25,17 +25,17 @@ export const LOOKBOOK_POSE_REGISTRY: Record<
       {
         id: "pose_1",
         prompt:
-          "Three-quarter front presentation. Turn the torso approximately 30 to 45 degrees toward the camera while keeping the face toward camera. One forearm is naturally bent near the waist and the opposite arm remains relaxed. Clearly reveal neckline, sleeve construction, hemline and overall silhouette. Do not reproduce the straight Hero stance."
+          "Commercial three-quarter pose. Turn the torso 30 to 45 degrees toward camera, keep both feet grounded with one foot slightly offset, keep the face toward camera, bend one forearm naturally at the waist and leave the other arm relaxed away from the torso. Keep neckline, sleeves and hem unobstructed. Do not reproduce the straight Hero stance."
       },
       {
         id: "pose_2",
         prompt:
-          "Refined upper-body gesture. Maintain a three-quarter body angle and place one hand naturally near the shoulder or upper chest while the opposite arm rests near the waist. The gesture must reveal neckline, sleeve and shoulder construction. Do not use the arm configuration of Pose 1."
+          "Dynamic weight-shift pose. Keep the upper body mostly upright while shifting body weight clearly onto one leg and placing the opposite foot slightly forward and outward. Use a distinctly different arm geometry: one arm relaxed alongside the body and the other lightly touching the opposite forearm. Keep the complete top visible; no walking."
       },
       {
         id: "pose_3",
         prompt:
-          "Strong side-oriented silhouette. Turn the torso approximately 60 degrees away from camera while keeping the face toward camera. Keep both arms away from the torso enough to reveal the garment outline and hem. Do not use a frontal standing pose."
+          "Side silhouette pose. Rotate the torso 60 to 70 degrees from camera, align the legs in a clean side-oriented stance, keep the face turned back toward camera and hold both arms slightly separated from the torso. Prioritize the top's side length, shoulder line, sleeve profile and hem silhouette."
       }
     ]
   },
@@ -51,17 +51,17 @@ export const LOOKBOOK_POSE_REGISTRY: Record<
       {
         id: "pose_1",
         prompt:
-          "Relaxed three-quarter fashion pose with one forearm naturally bent and the other relaxed. Keep the T-shirt fully visible and show shoulder, sleeve and hem shape."
+          "Commercial three-quarter T-shirt pose. Rotate the torso 30 to 45 degrees, keep both feet grounded with one foot slightly offset, one arm relaxed and the other loosely bent. Keep print, neckline, sleeves and hem completely visible."
       },
       {
         id: "pose_2",
         prompt:
-          "Confident asymmetric casual pose with a subtle torso angle and deliberate arm geometry. Keep the T-shirt unobstructed and distinct from the Hero stance."
+          "Contemporary casual weight-shift pose. Place most weight on one leg and move the other foot clearly forward and outward, with one hand in a relaxed low position and the opposite arm naturally away from the body. Keep the T-shirt unobstructed and do not create walking motion."
       },
       {
         id: "pose_3",
         prompt:
-          "Side-oriented silhouette pose with the torso approximately 60 degrees from camera. Clearly show T-shirt length, sleeve profile and natural fit. Avoid walking."
+          "Strong side-profile T-shirt pose. Turn the body 60 to 70 degrees from camera, keep the face turned back toward camera and separate the arms from the torso. Show T-shirt length, sleeve profile, side seam and hem clearly."
       }
     ]
   },
@@ -77,17 +77,17 @@ export const LOOKBOOK_POSE_REGISTRY: Record<
       {
         id: "pose_1",
         prompt:
-          "Three-quarter front fashion pose with torso angled 30 to 45 degrees, one forearm naturally bent and the opposite arm relaxed. Clearly reveal collar, placket, sleeves and cuffs."
+          "Structured three-quarter shirt/blouse pose. Turn torso 30 to 45 degrees, keep feet grounded with one foot slightly offset, one arm relaxed and the other naturally bent near the waist. Clearly expose collar, placket, buttons, sleeves and cuffs."
       },
       {
         id: "pose_2",
         prompt:
-          "Editorial shoulder gesture. Maintain a three-quarter angle, raise one hand naturally near the shoulder or neckline while the opposite hand rests near the waist. Keep collar and sleeve construction visible."
+          "Editorial stance for construction. Shift weight clearly onto one leg, place the other foot slightly forward, and use a deliberate shoulder-level gesture with one hand lightly near the opposite upper arm while the other arm hangs relaxed. Keep collar, placket and cuffs visible; no walking."
       },
       {
         id: "pose_3",
         prompt:
-          "Side-oriented silhouette showing shirt or blouse length, shoulder line, sleeve shape and hem. Avoid repeating the frontal Hero posture."
+          "Side construction pose. Rotate body 60 to 70 degrees, keep face turned toward camera, align arms away from torso and show the shirt/blouse length, side seam, sleeve shape and hem."
       }
     ]
   },
@@ -103,17 +103,17 @@ export const LOOKBOOK_POSE_REGISTRY: Record<
       {
         id: "pose_1",
         prompt:
-          "Elegant three-quarter pose with clear torso rotation and a natural asymmetric arm arrangement. Preserve the entire one-piece silhouette."
+          "Elegant three-quarter commercial pose. Rotate torso 30 to 45 degrees, keep one foot slightly offset, one arm relaxed and the other bent naturally near the waist. Preserve the complete one-piece silhouette from neckline to hem."
       },
       {
         id: "pose_2",
         prompt:
-          "Refined shoulder and waist gesture. One hand naturally approaches the shoulder or upper torso while the other rests near the waist. Keep the full garment visible."
+          "Dynamic editorial weight-shift pose. Transfer weight decisively to one leg and place the other foot slightly forward/outward. Use a distinct arm arrangement with one hand lightly near the opposite elbow and the other relaxed. Keep the full garment unobstructed; no walking."
       },
       {
         id: "pose_3",
         prompt:
-          "Strong side silhouette with approximately 60-degree torso rotation, clearly showing garment length, side construction and natural drape."
+          "Strong side silhouette. Rotate body 60 to 70 degrees, turn face back toward camera and keep arms separated from the torso. Emphasize one-piece length, side construction and natural drape."
       }
     ]
   },
@@ -129,17 +129,17 @@ export const LOOKBOOK_POSE_REGISTRY: Record<
       {
         id: "pose_1",
         prompt:
-          "ELEGANT THREE-QUARTER SAREE POSE. Rotate the body clearly into a three-quarter angle, approximately 30 to 45 degrees from the camera, while turning the face naturally toward the camera. Compose both hands naturally together near the waist. Show the complete saree silhouette, blouse, pleats, border and pallu. This must be visibly different from the straight-on Hero pose. Do not reproduce a frontal neutral stance."
+          "Elegant three-quarter saree pose. Rotate the body 30 to 45 degrees, keep one foot slightly forward, face toward camera, place one hand gently near the waist and allow the other arm to fall naturally. Keep blouse, pleats, border and pallu fully readable."
       },
       {
         id: "pose_2",
         prompt:
-          "EDITORIAL SHOULDER GESTURE SAREE POSE. Turn the body into a clear three-quarter fashion angle. Raise one hand naturally near the shoulder or neckline while the opposite hand rests elegantly near the waist. Turn the head slightly away from camera while preserving facial identity. Keep the complete saree, pallu, border and pleats visible. Use a distinctly different arm configuration from the Hero and Pose 1."
+          "Graceful weight-shift saree pose. Place most weight on the rear leg with the front foot slightly advanced and outward. One hand lightly manages the pallu near the shoulder while the other rests low near the waist. Keep the complete drape visible and avoid repeating Pose 1."
       },
       {
         id: "pose_3",
         prompt:
-          "SIDE SILHOUETTE AND PALLU FALL SAREE POSE. Rotate the body approximately 60 to 70 degrees away from the camera to create a strong side-oriented silhouette, while turning the head back toward camera. Place the weight naturally on the rear leg with a subtle elegant hip shift. Keep the front arm relaxed and the opposite arm slightly behind the torso. Allow the pallu to fall naturally and visibly along the body. Clearly show saree pleats, border, pallu and full silhouette."
+          "Side silhouette and pallu-fall pose. Rotate body 60 to 70 degrees, turn head back toward camera, keep one arm relaxed in front and the other slightly behind the torso. Allow the pallu to fall naturally along the side so pleats, border and full saree silhouette are clearly visible."
       }
     ]
   },
@@ -155,17 +155,17 @@ export const LOOKBOOK_POSE_REGISTRY: Record<
       {
         id: "pose_1",
         prompt:
-          "Three-quarter open-layer presentation. Angle the torso 30 to 45 degrees and keep the front layer naturally visible so the viewer can understand the relationship between the overlay and underlying outfit."
+          "Three-quarter layering pose. Rotate torso 30 to 45 degrees with one foot slightly offset. Keep one arm relaxed and the other naturally away from the body so the jacket/overlay and underlying garment remain clearly separated."
       },
       {
         id: "pose_2",
         prompt:
-          "Refined lapel or shoulder gesture. One hand naturally approaches the lapel, collar or front edge while the opposite arm rests near the waist. Clearly show the outer-layer construction."
+          "Layer-detail editorial pose. Shift weight onto one leg and place the other foot slightly forward. Lightly touch the lapel, collar or front edge with one hand while the opposite arm remains relaxed. Keep closures, sleeves and layering unobstructed."
       },
       {
         id: "pose_3",
         prompt:
-          "Side-oriented silhouette approximately 60 degrees from camera, clearly revealing overlay length, sleeve profile, layering and rear fall."
+          "Side silhouette layering pose. Rotate body 60 to 70 degrees, turn face toward camera and separate the arms from the torso. Emphasize jacket length, sleeve profile, outer silhouette and rear fall."
       }
     ]
   },
@@ -181,17 +181,17 @@ export const LOOKBOOK_POSE_REGISTRY: Record<
       {
         id: "pose_1",
         prompt:
-          "Three-quarter front presentation with one leg subtly advanced and weight shifted naturally. Clearly reveal waistband, rise, leg shape and hemline."
+          "Commercial three-quarter bottoms pose. Rotate torso 30 to 45 degrees, place one leg slightly forward and outward, keep the upper body relaxed and arms clear of the waistband. Clearly reveal waistband, rise, leg shape and hem."
       },
       {
         id: "pose_2",
         prompt:
-          "Strong side-profile presentation showing the lower garment's side silhouette, length and fabric behaviour. Keep both legs visually readable."
+          "Lower-body editorial stance. Shift weight strongly onto one leg and place the opposite foot diagonally forward, creating a clearly different leg geometry. Keep both hands relaxed away from the waistband so the rise, pleats and fabric fall remain visible. No walking."
       },
       {
         id: "pose_3",
         prompt:
-          "Controlled crossed-leg fashion stance with one leg crossing naturally in front of the other, keeping the garment silhouette, hem and fabric construction visible. Do not create walking motion."
+          "Strong side-profile bottoms pose. Rotate body 60 to 70 degrees, keep legs readable in profile and arms away from the lower garment. Emphasize waistband, rise, side seam, leg silhouette and hem."
       }
     ]
   },
@@ -207,17 +207,17 @@ export const LOOKBOOK_POSE_REGISTRY: Record<
       {
         id: "pose_1",
         prompt:
-          "Three-quarter coordinated-outfit pose. Angle the torso 30 to 45 degrees while maintaining clear separation between the top and bottom."
+          "Three-quarter coordinated-outfit pose. Rotate torso 30 to 45 degrees with one foot slightly offset, one arm relaxed and one naturally bent. Keep the top and bottom visually separated and fully readable."
       },
       {
         id: "pose_2",
         prompt:
-          "Upper-body gesture with one hand near the shoulder or waist and the other relaxed. The separate top and bottom must remain clearly readable."
+          "Dynamic coordinated-outfit weight shift. Put most weight on one leg and move the other foot clearly forward/outward. Use asymmetric arms with one hand lightly near the opposite forearm and the other relaxed. Keep both garment components unobstructed; no walking."
       },
       {
         id: "pose_3",
         prompt:
-          "Side-oriented silhouette approximately 60 degrees from camera, clearly revealing the relationship, lengths and proportions of the separate top and bottom garments."
+          "Side-oriented coordinated silhouette. Rotate body 60 to 70 degrees, turn face toward camera and separate arms from torso. Clearly show the proportions, lengths and relationship of the top and bottom."
       }
     ]
   },
@@ -233,17 +233,17 @@ export const LOOKBOOK_POSE_REGISTRY: Record<
       {
         id: "pose_1",
         prompt:
-          "Elegant three-quarter ethnic pose with graceful hand placement and clear visibility of all major outfit components."
+          "Elegant three-quarter ethnic pose. Rotate torso 30 to 45 degrees, offset one foot slightly, keep one arm relaxed and the other naturally bent near the waist. Keep every major garment component visible."
       },
       {
         id: "pose_2",
         prompt:
-          "Refined ethnic gesture with one hand naturally near the shoulder, dupatta or upper torso where present, and the other near the waist. Keep every major garment component visible."
+          "Graceful ethnic weight-shift pose. Transfer weight onto one leg and place the other foot diagonally forward. Where a dupatta is present, one hand may lightly manage it near the shoulder while the opposite arm stays relaxed. Keep all components readable; no walking."
       },
       {
         id: "pose_3",
         prompt:
-          "Side-oriented ethnic silhouette showing garment length, layering, lower garment and natural fabric fall."
+          "Strong ethnic side silhouette. Rotate body 60 to 70 degrees, turn face toward camera and keep arms separated from the torso. Emphasize garment length, layering, lower garment and fabric fall."
       }
     ]
   },
@@ -259,17 +259,17 @@ export const LOOKBOOK_POSE_REGISTRY: Record<
       {
         id: "pose_1",
         prompt:
-          "Elegant three-quarter Kurta Set pose with one hand naturally near the waist and the other relaxed. Clearly show kurta length, sleeves and coordinated bottom."
+          "Elegant three-quarter Kurta Set pose. Rotate torso 30 to 45 degrees, offset one foot, keep one hand relaxed and the other naturally near the waist. Clearly show kurta length, sleeves and coordinated bottom."
       },
       {
         id: "pose_2",
         prompt:
-          "Upper-body ethnic gesture. Where a dupatta is present, one hand naturally manages or lightly touches the dupatta near the shoulder while keeping the kurta and bottom visible. Without a dupatta, use a clean shoulder/neckline gesture instead."
+          "Kurta Set editorial weight shift. Put weight on one leg and place the other foot forward/outward. Where a dupatta is present, lightly touch it near the shoulder with one hand; otherwise use a relaxed low hand position. Keep the kurta and bottom unobstructed."
       },
       {
         id: "pose_3",
         prompt:
-          "Side-oriented silhouette approximately 60 degrees from camera, clearly revealing kurta length, side fall and coordinated lower garment."
+          "Side-oriented Kurta Set silhouette. Rotate body 60 to 70 degrees, face back toward camera and separate arms from torso. Clearly reveal kurta side fall, length and coordinated lower garment."
       }
     ]
   },
@@ -285,17 +285,17 @@ export const LOOKBOOK_POSE_REGISTRY: Record<
       {
         id: "pose_1",
         prompt:
-          "Three-quarter Sharara Set pose. Angle the torso 30 to 45 degrees while keeping the two distinct sharara legs visibly separated. Clearly show the upper garment and the flared lower construction."
+          "Three-quarter Sharara presentation. Rotate torso 30 to 45 degrees, offset one foot and keep the arms clear of the lower garment. Deliberately preserve visible separation between the two wide sharara legs."
       },
       {
         id: "pose_2",
         prompt:
-          "Sharara-leg presentation pose. Place the weight primarily on one leg while slightly positioning the other leg forward and away from it, creating a clear visual separation between the two flared sharara legs. Do not reinterpret the garment as a lehenga skirt."
+          "Dynamic Sharara stance. Shift weight strongly onto one leg and place the other leg forward and outward so the two flared legs remain visibly distinct. Use asymmetric relaxed arms; no walking and never merge the sharara into a skirt."
       },
       {
         id: "pose_3",
         prompt:
-          "Strong side-oriented Sharara silhouette approximately 60 degrees from camera. Clearly show the two-leg construction, flare, fabric volume and natural separation. Do not merge the sharara legs into a single skirt-like silhouette."
+          "Side Sharara silhouette. Rotate body 60 to 70 degrees and keep the face toward camera. Position legs so the divided lower construction remains readable from the side, with arms separated from the garment. Preserve flare and fabric volume."
       }
     ]
   },
@@ -311,17 +311,17 @@ export const LOOKBOOK_POSE_REGISTRY: Record<
       {
         id: "pose_1",
         prompt:
-          "Elegant three-quarter Lehenga Set pose with clear torso rotation and graceful hand placement. Preserve the distinction between blouse, skirt and dupatta."
+          "Elegant three-quarter Lehenga pose. Rotate torso 30 to 45 degrees, offset one foot and use graceful asymmetric hands. Keep blouse, skirt and dupatta clearly separated and fully visible."
       },
       {
         id: "pose_2",
         prompt:
-          "Controlled lehenga-flare presentation. Position the body in an elegant three-quarter angle and allow the skirt to open naturally enough to reveal its flare and volume while keeping the dupatta visible and intact. Do not spin."
+          "Controlled Lehenga editorial weight shift. Put weight on one leg and move the other foot slightly forward/outward. Use one hand lightly near the dupatta or waist and the other relaxed. Let the skirt show natural flare without spinning or lifting."
       },
       {
         id: "pose_3",
         prompt:
-          "Strong side-oriented Lehenga Set silhouette approximately 60 degrees from camera, clearly revealing skirt volume, waist fit and dupatta fall."
+          "Strong side Lehenga silhouette. Rotate body 60 to 70 degrees, turn face toward camera and keep arms away from the skirt. Clearly reveal skirt volume, waist fit, side profile and dupatta fall."
       }
     ]
   },
@@ -337,17 +337,17 @@ export const LOOKBOOK_POSE_REGISTRY: Record<
       {
         id: "pose_1",
         prompt:
-          "Elegant three-quarter Dhoti Kurta pose with clear torso rotation and natural arm placement. Keep the dhoti visibly readable as a distinct lower garment."
+          "Elegant three-quarter Dhoti Kurta pose. Rotate torso 30 to 45 degrees, offset one foot and keep arms naturally asymmetric. Preserve the dhoti as a distinct lower garment with visible folds and volume."
       },
       {
         id: "pose_2",
         prompt:
-          "Dhoti-construction presentation. Position one leg slightly forward and the opposite leg naturally behind without walking. The stance must clearly expose the dhoti folds, volume and divided lower construction."
+          "Dhoti construction stance. Shift weight onto one leg and place the other leg clearly forward and outward without walking. Keep both arms away from the lower garment so the divided dhoti folds and volume remain readable."
       },
       {
         id: "pose_3",
         prompt:
-          "Strong side-oriented Dhoti Kurta silhouette approximately 60 degrees from camera, clearly revealing the dhoti folds, volume and lower-body construction. Do not reinterpret the dhoti as trousers, pants, salwar, churidar or skirt."
+          "Strong side Dhoti Kurta silhouette. Rotate body 60 to 70 degrees, face toward camera and separate the arms from the torso. Emphasize dhoti folds, volume and lower-body construction; do not reinterpret it as trousers, salwar, churidar or skirt."
       }
     ]
   },
@@ -363,17 +363,17 @@ export const LOOKBOOK_POSE_REGISTRY: Record<
       {
         id: "pose_1",
         prompt:
-          "Elegant three-quarter Anarkali pose with clear torso angle and graceful hand placement. Preserve the full-length flared silhouette."
+          "Elegant three-quarter Anarkali pose. Rotate torso 30 to 45 degrees, offset one foot and use graceful asymmetric hands. Keep the full-length flare and dupatta visible without obstruction."
       },
       {
         id: "pose_2",
         prompt:
-          "Controlled flare presentation. Angle the torso slightly and position the arms so the lower flare remains unobstructed. Where a dupatta is present, keep it naturally visible without hiding the flare."
+          "Anarkali weight-shift editorial pose. Transfer weight onto one leg and move the other foot slightly forward/outward. Keep one hand lightly near the waist or dupatta and the other relaxed, allowing the flare to remain unobstructed. Do not spin."
       },
       {
         id: "pose_3",
         prompt:
-          "Strong side-oriented Anarkali silhouette approximately 60 degrees from camera, clearly showing length, flare and natural fabric volume."
+          "Strong side Anarkali silhouette. Rotate body 60 to 70 degrees, turn face toward camera and separate arms from the torso. Emphasize full length, flare, side construction and natural fabric volume."
       }
     ]
   }
