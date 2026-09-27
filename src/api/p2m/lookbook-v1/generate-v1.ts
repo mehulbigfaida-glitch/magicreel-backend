@@ -130,7 +130,7 @@ export async function generateLookbookV1(req: Request, res: Response) {
           pose,
         });
 
-        const result = await fal.subscribe("openai/gpt-image-2/edit", {
+        const result = await fal.subscribe("openai/gpt-image-2.5/sunburst/edit", {
           input: {
             prompt,
             image_urls: referenceImages,
@@ -143,11 +143,11 @@ export async function generateLookbookV1(req: Request, res: Response) {
         });
 
         const image = result?.data?.images?.[0];
-        if (!image?.url) throw new Error(`GPT Image 2 returned no image for ${poseId}`);
+        if (!image?.url) throw new Error(`GPT Image 2.5 Sunburst returned no image for ${poseId}`);
 
         const localPath = await downloadImage(image.url, `${lookbook.id}_${poseId}.png`);
 
-        // GPT Image 2 generates internally as PNG. MagicReel Ecom Lookbook
+        // GPT Image 2.5 Sunburst generates internally as PNG. MagicReel Ecom Lookbook
         // delivers every aspect ratio as optimized JPEG while preserving the
         // sealed pixel dimensions. This keeps the customer-facing marketplace
         // assets compact without changing the AI generation resolution.
@@ -168,7 +168,7 @@ export async function generateLookbookV1(req: Request, res: Response) {
         await prisma.render.create({
           data: {
             pose: poseId,
-            engine: "GPT_IMAGE_2_MEDIUM",
+            engine: "GPT_IMAGE_2_5_SUNBURST_MEDIUM",
             type: "LOOKBOOK",
             status: "completed",
             modelImageUrl: referenceImages[0],
