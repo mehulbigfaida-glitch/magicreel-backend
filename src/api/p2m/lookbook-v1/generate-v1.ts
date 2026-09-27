@@ -130,22 +130,61 @@ export async function generateLookbookV1(req: Request, res: Response) {
           pose,
         });
 
-        const result = await fal.subscribe("openai/gpt-image-2.5/sunburst/edit", {
-          input: {
-            prompt,
-            image_urls: referenceImages,
-            num_images: 1,
-            quality: "medium",
-            output_format: "png",
-            image_size: imageSize,
-          },
-          logs: true,
-        });
+        // A single transient provider/network failure must not abort the entire
+        // six-image Lookbook pack. Retry the AI generation for this shot before
+        // failing the whole Lookbook. Generation settings and prompt are unchanged.
+        const MAX_GENERATION_ATTEMPTS = 3;
+        let imageUrl: string | undefined;
+        let lastGenerationError: unknown;
 
-        const image = result?.data?.images?.[0];
-        if (!image?.url) throw new Error(`GPT Image 2.5 Sunburst returned no image for ${poseId}`);
+        for (let attempt = 1; attempt <= MAX_GENERATION_ATTEMPTS; attempt++) {
+          try {
+            const result = await fal.subscribe("openai/gpt-image-2.5/sunburst/edit", {
+              input: {
+                prompt,
+                image_urls: referenceImages,
+                num_images: 1,
+                quality: "medium",
+                output_format: "png",
+                image_size: imageSize,
+              },
+              logs: true,
+            });
 
-        const localPath = await downloadImage(image.url, `${lookbook.id}_${poseId}.png`);
+            imageUrl = result?.data?.images?.[0]?.url;
+            if (!imageUrl) {
+              throw new Error(
+                `GPT Image 2.5 Sunburst returned no image for ${poseId}`
+              );
+            }
+
+            break;
+          } catch (generationError) {
+            lastGenerationError = generationError;
+
+            console.error(
+              `⚠️ LOOKBOOK ${poseId} generation attempt ${attempt}/${MAX_GENERATION_ATTEMPTS} failed`,
+              generationError
+            );
+
+            if (attempt < MAX_GENERATION_ATTEMPTS) {
+              await new Promise((resolve) =>
+                setTimeout(resolve, attempt * 2000)
+              );
+            }
+          }
+        }
+
+        if (!imageUrl) {
+          throw new Error(
+            `GPT Image 2.5 Sunburst failed for ${poseId} after ${MAX_GENERATION_ATTEMPTS} attempts: ${String(lastGenerationError)}`
+          );
+        }
+
+        const localPath = await downloadImage(
+          imageUrl,
+          `${lookbook.id}_${poseId}.png`
+        );
 
         // GPT Image 2.5 Sunburst generates internally as PNG. MagicReel Ecom Lookbook
         // delivers every aspect ratio as optimized JPEG while preserving the
