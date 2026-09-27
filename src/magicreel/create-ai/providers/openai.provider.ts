@@ -129,7 +129,7 @@ const result =
 await client.images.edit({
 
   model:
-    "gpt-image-2",
+    "gpt-image-2.5-sunburst",
 
   image:[
     garmentFile,
