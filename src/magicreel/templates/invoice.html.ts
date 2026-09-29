@@ -197,22 +197,16 @@ line-height:1.8;
 
 <div class="company">
 
-<strong>AMJIS</strong><br>
-
-129-B, AWCL Complex<br>
-
-VIT College Road<br>
-
-Wadala (East)<br>
-
-Mumbai - 400037<br>
-
+<strong>MEHUL HARSHAD GANDHI HUF</strong><br>
+Trade Name: <strong>AMJIS</strong><br>
+Barkat Ali Dargah Antop Hill<br>
+Floor-1 B, B-129, Antop Hill<br>
+Wassishun, Vidhyalankar College Marg<br>
+Mumbai, Mumbai - 400037<br>
 Maharashtra, India<br><br>
 
 GSTIN : 27AASHM8403M1ZI<br>
-
 Email : admin@magicreel.in<br>
-
 Website : www.magicreel.in
 
 </div>
