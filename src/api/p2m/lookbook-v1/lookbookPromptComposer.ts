@@ -3,13 +3,8 @@ import {
   LookbookPoseDefinition,
 } from "./lookbookPoseRegistry";
 
-import {
-  getLookbookWorld,
-} from "./lookbookWorldRegistry";
-
-import {
-  getEcomLookbookWorld,
-} from "./ecomLookbookWorld";
+import { getLookbookWorld } from "./lookbookWorldRegistry";
+import { getEcomLookbookWorld } from "./ecomLookbookWorld";
 
 export type LookbookShotType =
   | "front"
@@ -27,7 +22,6 @@ export interface BuildLookbookPromptInput {
 export function buildLookbookPrompt(
   input: BuildLookbookPromptInput
 ): string {
-
   const {
     category,
     gender,
@@ -45,8 +39,7 @@ export function buildLookbookPrompt(
     throw new Error(`Unknown Lookbook World: ${worldId}`);
   }
 
-  const categoryPosePlan =
-    getLookbookCategoryPoses(category);
+  const categoryPosePlan = getLookbookCategoryPoses(category);
 
   if (!categoryPosePlan) {
     throw new Error(
@@ -55,9 +48,7 @@ export function buildLookbookPrompt(
   }
 
   if (shotType === "pose" && !pose) {
-    throw new Error(
-      "Pose definition required for pose generation."
-    );
+    throw new Error("Pose definition required for pose generation.");
   }
 
   const genderLabel =
@@ -95,152 +86,18 @@ FOOTWEAR CONTINUITY — CRITICAL
 Preserve the footwear shown in the source/reference image. Footwear is part of the complete commercial styling and must remain consistent across every Lookbook image unless the source image provides no footwear.
 
 Never remove, replace, invent or change footwear. Never render the model barefoot when footwear is visible in the reference.
-`.trim());
 
-  sections.push(`
-${genderLabel} GARMENT CATEGORY: ${category}
-
-Apply the category-specific construction and presentation instructions encoded for this category.
-
-Do not reinterpret the garment as another category.
-`.trim());
-
-  sections.push(`
-LOOKBOOK WORLD: ${world.name}
-
-${world.description}
-
-ENVIRONMENT:
-${world.environment}
-
-LIGHTING:
-${world.lighting}
-
-COMPOSITION:
-${world.composition}
-
-STYLING:
-${world.styling}
-
-POSE DIRECTION:
-${world.poseDirection}
-
-ACCESSORY DIRECTION:
-${world.accessoryDirection}
-
-WORLD NEGATIVE RULES:
-${world.negativeRules.map(
-  item => `• ${item}`
-).join("\n")}
-import {
-  getLookbookCategoryPoses,
-  LookbookPoseDefinition,
-} from "./lookbookPoseRegistry";
-
-import {
-  getLookbookWorld,
-} from "./lookbookWorldRegistry";
-
-import {
-  getEcomLookbookWorld,
-} from "./ecomLookbookWorld";
-
-export type LookbookShotType =
-  | "front"
-  | "back"
-  | "pose";
-
-export interface BuildLookbookPromptInput {
-  category: string;
-  gender: string;
-  worldId: string;
-  shotType: LookbookShotType;
-  pose?: LookbookPoseDefinition;
-}
-
-export function buildLookbookPrompt(
-  input: BuildLookbookPromptInput
-): string {
-
-  const {
-    category,
-    gender,
-    worldId,
-    shotType,
-    pose,
-  } = input;
-
-  const world = getEcomLookbookWorld(
-    worldId,
-    getLookbookWorld(worldId)
-  );
-
-  if (!world) {
-    throw new Error(`Unknown Lookbook World: ${worldId}`);
-  }
-
-  const categoryPosePlan =
-    getLookbookCategoryPoses(category);
-
-  if (!categoryPosePlan) {
-    throw new Error(
-      `No Lookbook pose plan for category: ${category}`
-    );
-  }
-
-  if (shotType === "pose" && !pose) {
-    throw new Error(
-      "Pose definition required for pose generation."
-    );
-  }
-
-  const genderLabel =
-    gender.trim().toLowerCase().startsWith("m")
-      ? "MEN'S"
-      : gender.trim().toLowerCase().startsWith("f")
-        ? "WOMEN'S"
-        : "UNISEX";
-
-  const sections: string[] = [];
-
-  sections.push(`
-The source image is the absolute visual reference for the model and garment.
-
-Preserve the model identity, face, hairstyle, skin appearance, body proportions and anatomy exactly.
-
-Preserve the garment as an immutable finished commercial fashion product.
-
-Do not redesign, reinterpret, simplify, improve, tailor, split, merge or structurally modify the garment.
-
-Preserve fabric, colour, texture, silhouette, construction, embroidery, prints, embellishments, branding, drape and all visible product details exactly.
-
-The generated image must represent the same commercial fashion product shown in the source image.
-
-NO UNREFERENCED GARMENT LAYERS OR ACCESSORIES — CRITICAL
-
-Do not add any garment layer, scarf, stole, shawl, veil, dupatta, saree pallu, jacket, coat, belt, bag, jewellery or other accessory that is not visibly present in the source/reference image.
-
-In particular, NEVER invent or add a dupatta. If the source image does not visibly contain a dupatta, the generated image must not contain a dupatta in any form.
-
-The absence of an item in the source is authoritative: do not infer, assume or add culturally or stylistically typical garments or accessories merely because they are common for this category.
-
-FOOTWEAR CONTINUITY — CRITICAL
-
-Preserve the footwear shown in the source/reference image. Footwear is part of the complete commercial styling and must remain consistent across every Lookbook image unless the source image provides no footwear.
-
-Never remove, replace, invent or change footwear. Never render the model barefoot when footwear is visible in the reference.
-`WORLD CONTINUITY ACROSS THE COMPLETE LOOKBOOK — CRITICAL
+WORLD CONTINUITY ACROSS THE COMPLETE LOOKBOOK — CRITICAL
 
 This image is one frame within the complete six-image Lookbook series.
 
-Treat the Lookbook World defined above as a shared visual environment across the entire series. Maintain the same environment, background design language, lighting direction and quality, colour atmosphere, material qualities and overall photographic production aesthetic across all Lookbook images.
+Treat the Lookbook World defined below as a shared visual environment across the entire series. Maintain the same environment, background design language, lighting direction and quality, colour atmosphere, material qualities and overall photographic production aesthetic across all Lookbook images.
 
 The model pose, camera angle, framing and composition may change according to the specified shot, but every image must clearly appear to belong to the same fashion production and the same Lookbook World.
 
 Do not copy another generated Lookbook image.
 Do not use another generated Lookbook image as a visual reference.
 Do not force identical composition or camera framing across the series.
-
 `.trim());
 
   sections.push(`
@@ -278,7 +135,9 @@ WORLD NEGATIVE RULES:
 ${world.negativeRules.map(
   item => `• ${item}`
 ).join("\n")}
- {
+`.trim());
+
+  if (worldId.trim().toLowerCase() === "ecom-clean") {
     sections.push(`
 ECOMMERCE COMPLIANCE — CRITICAL
 
