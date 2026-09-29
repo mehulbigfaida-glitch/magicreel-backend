@@ -130,15 +130,26 @@ export async function generateLookbookV1(req: Request, res: Response) {
           pose,
         });
 
-        // A single transient provider/network failure must not abort the entire
-        // six-image Lookbook pack. Retry the AI generation for this shot before
-        // failing the whole Lookbook. Generation settings and prompt are unchanged.
-        const MAX_GENERATION_ATTEMPTS = 3;
-        let imageUrl: string | undefined;
-        let lastGenerationError: unknown;
+        // Retry the COMPLETE shot pipeline, not only the Fal request.
+        // A shot can fail after Fal succeeds (download, Sharp, Cloudinary,
+        // or Prisma). If that happens, the next Lookbook shots must still
+        // be attempted rather than silently stopping the entire pack.
+        const MAX_SHOT_ATTEMPTS = 3;
+        let lastShotError: unknown;
 
-        for (let attempt = 1; attempt <= MAX_GENERATION_ATTEMPTS; attempt++) {
+        for (let attempt = 1; attempt <= MAX_SHOT_ATTEMPTS; attempt++) {
+          let stage = "fal";
+
           try {
+            console.log("🎬 LOOKBOOK SHOT START", {
+              runId: lookbook.id,
+              poseId,
+              shotType,
+              attempt,
+              maxAttempts: MAX_SHOT_ATTEMPTS,
+              referenceCount: referenceImages.length,
+            });
+
             const result = await fal.subscribe("openai/gpt-image-2.5/sunburst/edit", {
               input: {
                 prompt,
@@ -151,23 +162,71 @@ export async function generateLookbookV1(req: Request, res: Response) {
               logs: true,
             });
 
-            imageUrl = result?.data?.images?.[0]?.url;
+            const imageUrl = result?.data?.images?.[0]?.url;
             if (!imageUrl) {
               throw new Error(
                 `GPT Image 2.5 Sunburst returned no image for ${poseId}`
               );
             }
 
-            break;
-          } catch (generationError) {
-            lastGenerationError = generationError;
-
-            console.error(
-              `⚠️ LOOKBOOK ${poseId} generation attempt ${attempt}/${MAX_GENERATION_ATTEMPTS} failed`,
-              generationError
+            stage = "download";
+            const localPath = await downloadImage(
+              imageUrl,
+              `${lookbook.id}_${poseId}.png`
             );
 
-            if (attempt < MAX_GENERATION_ATTEMPTS) {
+            stage = "normalize";
+            // GPT Image 2.5 Sunburst generates internally as PNG. MagicReel Ecom Lookbook
+            // delivers every aspect ratio as optimized JPEG while preserving the
+            // sealed pixel dimensions.
+            const normalizedPath = await normalizeOutputDimensions(
+              localPath,
+              imageSize.width,
+              imageSize.height
+            );
+
+            stage = "cloudinary";
+            const uploaded = await uploadToCloudinary(normalizedPath, {
+              folder: "magicreel/lookbooks",
+              public_id: `${lookbook.id}_${poseId}`,
+            });
+
+            const finalUrl = uploaded.secure_url;
+
+            stage = "prisma";
+            await prisma.render.create({
+              data: {
+                pose: poseId,
+                engine: "GPT_IMAGE_2_5_SUNBURST_MEDIUM",
+                type: "LOOKBOOK",
+                status: "completed",
+                modelImageUrl: referenceImages[0],
+                garmentImageUrl: referenceImages[0],
+                outputImageUrl: finalUrl,
+                lookbookId: lookbook.id,
+              },
+            });
+
+            poses.push({ poseId, imageUrl: finalUrl });
+
+            console.log("✅ LOOKBOOK SHOT COMPLETE", {
+              runId: lookbook.id,
+              poseId,
+              shotType,
+              attempt,
+              stage: "complete",
+            });
+
+            return finalUrl;
+          } catch (shotError) {
+            lastShotError = shotError;
+
+            console.error(
+              `⚠️ LOOKBOOK ${poseId} failed at ${stage} (attempt ${attempt}/${MAX_SHOT_ATTEMPTS})`,
+              shotError
+            );
+
+            if (attempt < MAX_SHOT_ATTEMPTS) {
               await new Promise((resolve) =>
                 setTimeout(resolve, attempt * 2000)
               );
@@ -175,49 +234,9 @@ export async function generateLookbookV1(req: Request, res: Response) {
           }
         }
 
-        if (!imageUrl) {
-          throw new Error(
-            `GPT Image 2.5 Sunburst failed for ${poseId} after ${MAX_GENERATION_ATTEMPTS} attempts: ${String(lastGenerationError)}`
-          );
-        }
-
-        const localPath = await downloadImage(
-          imageUrl,
-          `${lookbook.id}_${poseId}.png`
+        throw new Error(
+          `Lookbook shot ${poseId} failed after ${MAX_SHOT_ATTEMPTS} attempts: ${String(lastShotError)}`
         );
-
-        // GPT Image 2.5 Sunburst generates internally as PNG. MagicReel Ecom Lookbook
-        // delivers every aspect ratio as optimized JPEG while preserving the
-        // sealed pixel dimensions. This keeps the customer-facing marketplace
-        // assets compact without changing the AI generation resolution.
-        const normalizedPath = await normalizeOutputDimensions(
-          localPath,
-          imageSize.width,
-          imageSize.height
-        );
-
-        const uploaded = await uploadToCloudinary(normalizedPath, {
-          folder: "magicreel/lookbooks",
-          public_id: `${lookbook.id}_${poseId}`,
-        });
-
-        const finalUrl = uploaded.secure_url;
-        poses.push({ poseId, imageUrl: finalUrl });
-
-        await prisma.render.create({
-          data: {
-            pose: poseId,
-            engine: "GPT_IMAGE_2_5_SUNBURST_MEDIUM",
-            type: "LOOKBOOK",
-            status: "completed",
-            modelImageUrl: referenceImages[0],
-            garmentImageUrl: referenceImages[0],
-            outputImageUrl: finalUrl,
-            lookbookId: lookbook.id,
-          },
-        });
-
-        return finalUrl;
       }
 
       try {
