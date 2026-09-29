@@ -55,36 +55,20 @@ Preserve the garment exactly as shown in the garment image.
   function buildMannequinCleanupSection(): string {
 
     return `
-The garment source image may contain a mannequin, dress form, display dummy or other artificial body beneath or around the garment.
+The garment source image may contain a mannequin, dress form or display form beneath the garment.
 
-The mannequin is NOT part of the garment and must NEVER appear in the final image.
+The display form is NOT part of the product and must never appear in the final image.
 
-Remove all visible mannequin material, including:
-• mannequin torso
-• mannequin abdomen
-• mannequin waist
-• mannequin neck
-• mannequin shoulders
-• mannequin arms
-• mannequin edges
-• plastic, foam or artificial body surfaces
+Use the garment image only to reproduce the finished garment itself. Replace any visible display-form material with the corresponding area of the referenced fashion model.
 
-This is especially important around the waist, abdomen, side torso, armholes, neckline and openings between layered garment components.
-
-Where mannequin material is visible beneath, inside, between or behind garment components, reconstruct the natural human anatomy of the referenced fashion model.
-
-The final image must contain natural human skin and realistic body anatomy wherever the garment does not cover the body.
-
-Never reproduce mannequin plastic, foam, black dummy material, artificial torso surfaces or mannequin silhouettes.
+Do not reproduce plastic, foam, artificial surfaces or display-form edges.
 
 IMPORTANT:
-Do NOT remove or alter genuine black garment fabric, dark embroidery, black waistbands, dark trims or other legitimate black product details.
+Do NOT remove or alter genuine garment fabric, embroidery, trims, waistbands or other product details, including legitimate black fabric.
 
-Remove the MANNEQUIN, not the colour black.
+Before finalizing the image, verify that only the finished garment and the referenced fashion model are visible.
 
-Before finalizing the image, inspect the complete garment perimeter and all garment openings for any remaining mannequin fragments.
-
-No mannequin material may remain visible anywhere in the final image.
+The garment remains the primary commercial product.
 `.trim();
 
   }
