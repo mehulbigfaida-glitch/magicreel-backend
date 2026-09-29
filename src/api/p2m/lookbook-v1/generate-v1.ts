@@ -224,19 +224,16 @@ export async function generateLookbookV1(req: Request, res: Response) {
         const lookbookFrontUrl = await generateShot("front", "front", [heroImageUrl]);
 
         if (backHeroImageUrl) {
-          // Keep the uploaded back reference primary for rear construction,
-          // while also supplying the front reference so visible footwear and
-          // model styling cannot disappear when the back image omits them.
-          await generateShot("back", "back", [backHeroImageUrl, heroImageUrl]);
+          // Back Hero is the exclusive reference for the dedicated Back image.
+          // Do not provide the Front Hero as a second visual reference.
+          await generateShot("back", "back", [backHeroImageUrl]);
         }
 
         // Ecom V1 is a 6-image pack: Front + Back + 4 Lookbook poses.
-        // Pose 4 is the single close-in product-detail asset.
+        // The Front Hero is the exclusive reference for every front-derived pose.
+        // World continuity is prompt-driven; generated Lookbook images are never reused as references.
         for (const pose of categoryPosePlan.poses) {
-          const poseReferences = backHeroImageUrl
-            ? [lookbookFrontUrl, backHeroImageUrl]
-            : [lookbookFrontUrl];
-          await generateShot(pose.id, "pose", poseReferences, pose);
+          await generateShot(pose.id, "pose", [heroImageUrl], pose);
         }
 
         const shareId = randomUUID();
