@@ -97,23 +97,23 @@ export const LOOKBOOK_POSE_REGISTRY: Record<
       "Strict front-facing full-body presentation of the complete one-piece garment from neckline to hem.",
 
     back:
-      "Strict back-facing full-body presentation showing the complete rear one-piece construction.",
+      "Strict back-facing full-body presentation showing the complete rear one-piece construction. Preserve the source garment's original coverage and construction. Do not increase, widen, lower or otherwise alter any neckline, opening, slit, drape or exposed area.",
 
     poses: [
       {
         id: "pose_1",
         prompt:
-          "Elegant three-quarter commercial pose. Rotate torso 30 to 45 degrees, keep one foot slightly offset, one arm relaxed and the other bent naturally near the waist. Preserve the complete one-piece silhouette from neckline to hem."
+          "Conservative commercial three-quarter product pose. Rotate the torso approximately 30 to 40 degrees toward camera while maintaining a natural upright standing posture. Keep both arms relaxed and clearly outside the garment. Keep the complete one-piece silhouette, neckline, sleeves, draped panels and hem clearly visible. Preserve the exact source garment coverage and openings; do not widen, raise, lower, open, pull, separate or reinterpret any slit, neckline, drape or exposed area. Do not emphasize the model's body or exposed skin."
       },
       {
         id: "pose_2",
         prompt:
-          "Dynamic editorial weight-shift pose. Transfer weight decisively to one leg and place the other foot slightly forward/outward. Use a distinct arm arrangement with one hand lightly near the opposite elbow and the other relaxed. Keep the full garment unobstructed; no walking."
+          "Controlled commercial standing pose with a subtle weight shift onto one leg and the opposite foot only slightly offset. Keep both arms relaxed and away from the garment. Keep the complete one-piece construction clearly visible without dramatic leg positioning or garment movement. Preserve the exact source garment coverage, openings, draped panels and asymmetric construction; do not widen, raise, lower, open, pull, separate or reinterpret any slit, neckline, drape or exposed area. Do not emphasize the model's body or exposed skin. No walking."
       },
       {
         id: "pose_3",
         prompt:
-          "Strong side silhouette. Rotate body 60 to 70 degrees, turn face back toward camera and keep arms separated from the torso. Emphasize one-piece length, side construction and natural drape."
+          "Conservative three-quarter side product view. Rotate the body approximately 45 to 55 degrees rather than a deep side profile, keep the face naturally toward camera and keep both arms relaxed outside the garment. Clearly show the one-piece length, side construction, sleeves and natural drape while preserving the exact source garment coverage. Do not widen, raise, lower, open, pull, separate or reinterpret any slit, neckline, drape or exposed area. Do not emphasize the model's body or exposed skin."
       }
     ]
   },
