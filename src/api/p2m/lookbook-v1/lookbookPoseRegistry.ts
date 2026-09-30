@@ -113,7 +113,7 @@ export const LOOKBOOK_POSE_REGISTRY: Record<
       {
         id: "pose_3",
         prompt:
-          "Conservative three-quarter side product view. Rotate the body approximately 45 to 55 degrees rather than a deep side profile, keep the face naturally toward camera and keep both arms relaxed outside the garment. Clearly show the one-piece length, side construction, sleeves and natural drape while preserving the exact source garment coverage. Do not widen, raise, lower, open, pull, separate or reinterpret any slit, neckline, drape or exposed area. Do not emphasize the model's body or exposed skin."
+          "Conservative three-quarter side product view. Rotate the body approximately 45 to 55 degrees rather than a deep side profile, keep the face naturally toward camera and keep both arms relaxed and clear of the garment. Clearly show the one-piece length, side construction, sleeves and natural drape. Preserve the garment's original construction, proportions, silhouette and natural fall throughout the pose. Keep the garment fully readable and naturally positioned. Do not alter, separate, rearrange or reinterpret any part of the garment."
       }
     ]
   },
