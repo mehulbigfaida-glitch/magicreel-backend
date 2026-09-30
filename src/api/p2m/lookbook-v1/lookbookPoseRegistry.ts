@@ -108,7 +108,7 @@ export const LOOKBOOK_POSE_REGISTRY: Record<
       {
         id: "pose_2",
         prompt:
-          "Controlled commercial standing pose with a subtle weight shift onto one leg and the opposite foot only slightly offset. Keep both arms relaxed and away from the garment. Keep the complete one-piece construction clearly visible without dramatic leg positioning or garment movement. Preserve the exact source garment coverage, openings, draped panels and asymmetric construction; do not widen, raise, lower, open, pull, separate or reinterpret any slit, neckline, drape or exposed area. Do not emphasize the model's body or exposed skin. No walking."
+          "Controlled commercial standing pose with a subtle weight shift onto one leg and the opposite foot only slightly offset. Keep both arms relaxed and clear of the garment. Keep the complete one-piece construction clearly visible without dramatic movement. Preserve the garment's original construction, proportions, silhouette, draped panels and natural fall. Keep the garment fully readable and naturally positioned. No walking."
       },
       {
         id: "pose_3",
