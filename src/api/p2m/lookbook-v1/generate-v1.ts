@@ -28,6 +28,12 @@ const ECOM_ASPECT_RATIOS = {
 
 type EcomAspectRatio = keyof typeof ECOM_ASPECT_RATIOS;
 
+const PRIMARY_LOOKBOOK_MODEL = "openai/gpt-image-2.5/sunburst/edit";
+const PRIMARY_LOOKBOOK_ENGINE = "GPT_IMAGE_2_5_SUNBURST_MEDIUM";
+
+const FALLBACK_LOOKBOOK_MODEL = "openai/gpt-image-2/edit";
+const FALLBACK_LOOKBOOK_ENGINE = "GPT_IMAGE_2_EDIT_MEDIUM";
+
 async function downloadImage(url: string, filename: string) {
   const tempDir = os.tmpdir();
   if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
@@ -132,111 +138,187 @@ export async function generateLookbookV1(req: Request, res: Response) {
 
         // Retry the COMPLETE shot pipeline, not only the Fal request.
         // A shot can fail after Fal succeeds (download, Sharp, Cloudinary,
-        // or Prisma). If that happens, the next Lookbook shots must still
-        // be attempted rather than silently stopping the entire pack.
+        // or Prisma). The existing 3-attempt retry policy remains unchanged.
         const MAX_SHOT_ATTEMPTS = 3;
-        let lastShotError: unknown;
 
-        for (let attempt = 1; attempt <= MAX_SHOT_ATTEMPTS; attempt++) {
-          let stage = "fal";
-
-          try {
-            console.log("🎬 LOOKBOOK SHOT START", {
-              runId: lookbook.id,
-              poseId,
-              shotType,
-              attempt,
-              maxAttempts: MAX_SHOT_ATTEMPTS,
-              referenceCount: referenceImages.length,
-            });
-
-            const result = await fal.subscribe("openai/gpt-image-2.5/sunburst/edit", {
-              input: {
-                prompt,
-                image_urls: referenceImages,
-                num_images: 1,
-                quality: "medium",
-                output_format: "png",
-                image_size: imageSize,
-              },
-              logs: true,
-            });
-
-            const imageUrl = result?.data?.images?.[0]?.url;
-            if (!imageUrl) {
-              throw new Error(
-                `GPT Image 2.5 Sunburst returned no image for ${poseId}`
-              );
+        const isFalContentPolicyError = (error: unknown) => {
+          const serialized = (() => {
+            try {
+              return JSON.stringify(error);
+            } catch {
+              return String(error);
             }
+          })().toLowerCase();
 
-            stage = "download";
-            const localPath = await downloadImage(
-              imageUrl,
-              `${lookbook.id}_${poseId}.png`
-            );
+          const message =
+            error instanceof Error ? error.message.toLowerCase() : "";
 
-            stage = "normalize";
-            // GPT Image 2.5 Sunburst generates internally as PNG. MagicReel Ecom Lookbook
-            // delivers every aspect ratio as optimized JPEG while preserving the
-            // sealed pixel dimensions.
-            const normalizedPath = await normalizeOutputDimensions(
-              localPath,
-              imageSize.width,
-              imageSize.height
-            );
+          const combined = `${message} ${serialized}`;
 
-            stage = "cloudinary";
-            const uploaded = await uploadToCloudinary(normalizedPath, {
-              folder: "magicreel/lookbooks",
-              public_id: `${lookbook.id}_${poseId}`,
-            });
+          return (
+            combined.includes("content_policy_violation") ||
+            combined.includes("flagged by a content checker") ||
+            combined.includes("content checker") ||
+            combined.includes("content policy")
+          );
+        };
 
-            const finalUrl = uploaded.secure_url;
+        async function runModelWithRetries(
+          modelId: string,
+          engine: string
+        ): Promise<string> {
+          let lastModelError: unknown;
 
-            stage = "prisma";
-            await prisma.render.create({
-              data: {
-                pose: poseId,
-                engine: "GPT_IMAGE_2_5_SUNBURST_MEDIUM",
-                type: "LOOKBOOK",
-                status: "completed",
-                modelImageUrl: referenceImages[0],
-                garmentImageUrl: referenceImages[0],
-                outputImageUrl: finalUrl,
-                lookbookId: lookbook.id,
-              },
-            });
+          for (let attempt = 1; attempt <= MAX_SHOT_ATTEMPTS; attempt++) {
+            try {
+              console.log("🎬 LOOKBOOK MODEL ATTEMPT", {
+                runId: lookbook.id,
+                poseId,
+                shotType,
+                modelId,
+                engine,
+                attempt,
+                maxAttempts: MAX_SHOT_ATTEMPTS,
+                referenceCount: referenceImages.length,
+              });
 
-            poses.push({ poseId, imageUrl: finalUrl });
+              const result = await fal.subscribe(modelId, {
+                input: {
+                  prompt,
+                  image_urls: referenceImages,
+                  num_images: 1,
+                  quality: "medium",
+                  output_format: "png",
+                  image_size: imageSize,
+                },
+                logs: true,
+              });
 
-            console.log("✅ LOOKBOOK SHOT COMPLETE", {
-              runId: lookbook.id,
-              poseId,
-              shotType,
-              attempt,
-              stage: "complete",
-            });
+              const imageUrl = result?.data?.images?.[0]?.url;
+              if (!imageUrl) {
+                throw new Error(
+                  `${engine} returned no image for ${poseId}`
+                );
+              }
 
-            return finalUrl;
-          } catch (shotError) {
-            lastShotError = shotError;
+              return imageUrl;
+            } catch (modelError) {
+              lastModelError = modelError;
 
-            console.error(
-              `⚠️ LOOKBOOK ${poseId} failed at ${stage} (attempt ${attempt}/${MAX_SHOT_ATTEMPTS})`,
-              shotError
-            );
-
-            if (attempt < MAX_SHOT_ATTEMPTS) {
-              await new Promise((resolve) =>
-                setTimeout(resolve, attempt * 2000)
+              console.error(
+                `⚠️ LOOKBOOK ${poseId} ${engine} failed (attempt ${attempt}/${MAX_SHOT_ATTEMPTS})`,
+                modelError
               );
+
+              if (attempt < MAX_SHOT_ATTEMPTS) {
+                await new Promise((resolve) =>
+                  setTimeout(resolve, attempt * 2000)
+                );
+              }
             }
           }
+
+          throw lastModelError instanceof Error
+            ? lastModelError
+            : new Error(
+                `Lookbook shot ${poseId} failed on ${engine}: ${String(lastModelError)}`
+              );
         }
 
-        throw new Error(
-          `Lookbook shot ${poseId} failed after ${MAX_SHOT_ATTEMPTS} attempts: ${String(lastShotError)}`
-        );
+        let imageUrl: string;
+        let engineUsed = PRIMARY_LOOKBOOK_ENGINE;
+
+        try {
+          // Primary path: keep the sealed low-cost GPT Image 2.5 Lookbook model.
+          imageUrl = await runModelWithRetries(
+            PRIMARY_LOOKBOOK_MODEL,
+            PRIMARY_LOOKBOOK_ENGINE
+          );
+        } catch (primaryError) {
+          // Only fall back to GPT Image 2.0 when the primary model is actually
+          // rejected by its content checker. Other infrastructure/provider
+          // failures still fail normally and preserve the existing behavior.
+          if (!isFalContentPolicyError(primaryError)) {
+            throw primaryError;
+          }
+
+          console.warn("🔁 LOOKBOOK MODEL FALLBACK", {
+            runId: lookbook.id,
+            poseId,
+            shotType,
+            from: PRIMARY_LOOKBOOK_MODEL,
+            to: FALLBACK_LOOKBOOK_MODEL,
+            reason: "GPT Image 2.5 content-checker rejection",
+          });
+
+          imageUrl = await runModelWithRetries(
+            FALLBACK_LOOKBOOK_MODEL,
+            FALLBACK_LOOKBOOK_ENGINE
+          );
+          engineUsed = FALLBACK_LOOKBOOK_ENGINE;
+        }
+
+        // Both primary and fallback models return an image URL. From this point
+        // onward the existing download → normalize → Cloudinary → Prisma
+        // pipeline remains unchanged.
+        let stage = "download";
+
+        try {
+          const localPath = await downloadImage(
+            imageUrl,
+            `${lookbook.id}_${poseId}.png`
+          );
+
+          stage = "normalize";
+          // GPT Image models generate PNG. MagicReel Ecom Lookbook delivers every
+          // aspect ratio as optimized JPEG while preserving the sealed dimensions.
+          const normalizedPath = await normalizeOutputDimensions(
+            localPath,
+            imageSize.width,
+            imageSize.height
+          );
+
+          stage = "cloudinary";
+          const uploaded = await uploadToCloudinary(normalizedPath, {
+            folder: "magicreel/lookbooks",
+            public_id: `${lookbook.id}_${poseId}`,
+          });
+
+          const finalUrl = uploaded.secure_url;
+
+          stage = "prisma";
+          await prisma.render.create({
+            data: {
+              pose: poseId,
+              engine: engineUsed,
+              type: "LOOKBOOK",
+              status: "completed",
+              modelImageUrl: referenceImages[0],
+              garmentImageUrl: referenceImages[0],
+              outputImageUrl: finalUrl,
+              lookbookId: lookbook.id,
+            },
+          });
+
+          poses.push({ poseId, imageUrl: finalUrl });
+
+          console.log("✅ LOOKBOOK SHOT COMPLETE", {
+            runId: lookbook.id,
+            poseId,
+            shotType,
+            engine: engineUsed,
+            usedFallback: engineUsed === FALLBACK_LOOKBOOK_ENGINE,
+            stage: "complete",
+          });
+
+          return finalUrl;
+        } catch (processingError) {
+          console.error(
+            `❌ LOOKBOOK ${poseId} failed at ${stage} after model generation`,
+            processingError
+          );
+          throw processingError;
+        }
       }
 
       try {
