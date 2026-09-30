@@ -103,7 +103,7 @@ export const LOOKBOOK_POSE_REGISTRY: Record<
       {
         id: "pose_1",
         prompt:
-          "Conservative commercial three-quarter product pose. Rotate the torso approximately 30 to 40 degrees toward camera while maintaining a natural upright standing posture. Keep both arms relaxed and clearly outside the garment. Keep the complete one-piece silhouette, neckline, sleeves, draped panels and hem clearly visible. Preserve the exact source garment coverage and openings; do not widen, raise, lower, open, pull, separate or reinterpret any slit, neckline, drape or exposed area. Do not emphasize the model's body or exposed skin."
+          "Conservative commercial three-quarter product pose. Rotate the torso approximately 30 to 40 degrees toward camera while maintaining a natural upright standing posture. Keep both arms relaxed and clear of the garment. Keep the complete one-piece silhouette, neckline, sleeves, draped panels and hem clearly visible. Preserve the garment's original construction, proportions, silhouette and natural drape throughout the pose. Keep the garment naturally positioned and fully readable. Do not alter, separate, rearrange or reinterpret any part of the garment."
       },
       {
         id: "pose_2",
