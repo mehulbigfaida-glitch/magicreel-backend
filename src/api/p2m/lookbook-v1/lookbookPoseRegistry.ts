@@ -94,26 +94,26 @@ export const LOOKBOOK_POSE_REGISTRY: Record<
 
   one_piece: {
     front:
-      "Strict front-facing full-body presentation of the complete one-piece garment from neckline to hem.",
+      "Clean front-facing full-body product presentation of the complete one-piece garment. Face the camera directly and keep the garment visible from neckline to hem.",
 
     back:
-      "Strict back-facing full-body presentation showing the complete rear one-piece construction. Preserve the source garment's original coverage and construction. Do not increase, widen, lower or otherwise alter any neckline, opening, slit, drape or exposed area.",
+      "Clean back-facing full-body product presentation of the complete one-piece garment. Face directly away from the camera and clearly show the rear construction.",
 
     poses: [
       {
         id: "pose_1",
         prompt:
-          "Conservative commercial three-quarter product pose. Rotate the torso approximately 30 to 40 degrees toward camera while maintaining a natural upright standing posture. Keep both arms relaxed and clear of the garment. Keep the complete one-piece silhouette, neckline, sleeves, draped panels and hem clearly visible. Preserve the garment's original construction, proportions, silhouette and natural drape throughout the pose. Keep the garment naturally positioned and fully readable. Do not alter, separate, rearrange or reinterpret any part of the garment."
+          "Three-quarter commercial product pose. Turn the body approximately 30 to 40 degrees toward camera. Keep the posture upright, both arms relaxed and clear of the garment, and the complete one-piece silhouette visible from neckline to hem."
       },
       {
         id: "pose_2",
         prompt:
-          "Controlled commercial standing pose with a subtle weight shift onto one leg and the opposite foot only slightly offset. Keep both arms relaxed and clear of the garment. Keep the complete one-piece construction clearly visible without dramatic movement. Preserve the garment's original construction, proportions, silhouette, draped panels and natural fall. Keep the garment fully readable and naturally positioned. No walking."
+          "Controlled commercial standing pose. Shift weight gently onto one leg and place the other foot slightly to the side. Keep both arms relaxed and clear of the garment. Keep the complete one-piece silhouette and natural drape clearly visible. No walking."
       },
       {
         id: "pose_3",
         prompt:
-          "Conservative three-quarter side product view. Rotate the body approximately 45 to 55 degrees rather than a deep side profile, keep the face naturally toward camera and keep both arms relaxed and clear of the garment. Clearly show the one-piece length, side construction, sleeves and natural drape. Preserve the garment's original construction, proportions, silhouette and natural fall throughout the pose. Keep the garment fully readable and naturally positioned. Do not alter, separate, rearrange or reinterpret any part of the garment."
+          "Three-quarter side commercial product pose. Turn the body approximately 45 to 55 degrees toward the side while keeping the face toward camera. Keep both arms relaxed and clear of the garment. Clearly show the one-piece length, side construction, sleeves and natural drape."
       }
     ]
   },
