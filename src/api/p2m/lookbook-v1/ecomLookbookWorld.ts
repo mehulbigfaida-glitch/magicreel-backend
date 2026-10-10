@@ -6,9 +6,9 @@ export const ECOM_CLEAN_WORLD: LookbookWorldDefinition = {
   description:
     "Marketplace-ready clean product presentation where the garment remains the unmistakable commercial focus.",
   environment:
-    "Seamless pure-white to near-white studio background with no visible wall or floor transition, no props and no architectural elements.",
+    "Seamless pure white (#FFFFFF) studio background filling the entire frame, with no visible wall or floor transition, no props and no architectural elements. Keep the background visually white rather than grey or tinted.",
   lighting:
-    "Soft, even, colour-accurate studio lighting with gentle natural grounding shadow and no dramatic colour cast.",
+    "Soft, even, colour-accurate studio lighting with a subtle natural grounding shadow beneath the model and no dramatic colour cast. Keep the background white while preserving realistic garment texture and colour.",
   composition:
     "Clean, balanced product framing with the model fully visible and sufficient breathing room for safe marketplace cropping. Keep the garment prominent without crude cutout or pasted-on appearance.",
   styling:
@@ -20,7 +20,8 @@ export const ECOM_CLEAN_WORLD: LookbookWorldDefinition = {
   negativeRules: [
     "No visible wall or floor horizon line.",
     "No props, furniture, architecture or decorative objects.",
-    "No dramatic coloured background or lighting cast.",
+    "No grey, cream, off-white, tinted, gradient or textured background; use pure white (#FFFFFF).",
+    "No dramatic coloured lighting cast.",
     "No heavy shadows or floating/cutout appearance.",
     "No text, watermark, border, collage or split composition.",
     "Do not crop out the garment or footwear when they are visible in the source."
