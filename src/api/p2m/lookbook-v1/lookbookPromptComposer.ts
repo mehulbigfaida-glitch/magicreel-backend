@@ -141,9 +141,9 @@ ${world.negativeRules.map(
     sections.push(`
 ECOMMERCE COMPLIANCE — CRITICAL
 
-Use a clean white or near-white seamless studio presentation suitable for commercial marketplace product imagery.
+Use a pure white (#FFFFFF) seamless studio background—not near-white, grey, cream, tinted or gradient—for commercial marketplace product imagery.
 
-Keep the model and complete garment clearly separated from the background through natural tonal contrast and a subtle realistic grounding shadow.
+Keep the model and complete garment clearly separated from the background through natural tonal contrast and a subtle realistic grounding shadow beneath the model.
 
 Do not make the image look like a crude background-removal cutout or a product pasted onto white.
 
