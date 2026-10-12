@@ -1,69 +1,41 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 
+const JWT_SECRET = process.env.JWT_SECRET || "dev_secret";
+
 export function authenticate(
   req: Request,
   res: Response,
   next: NextFunction
 ) {
   try {
-    console.log(
-  "ALL HEADERS:",
-  req.headers
-);
+    const authHeader = req.headers.authorization;
+    let token: string | undefined;
 
-const authHeader =
-  req.headers.authorization;
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      token = authHeader.slice("Bearer ".length).trim();
+    } else if (typeof req.query.token === "string") {
+      // Legacy browser redirect flow. Prefer Authorization headers for API calls.
+      token = req.query.token;
+    }
 
-let token: string | undefined;
+    if (!token) {
+      return res.status(401).json({ error: "No token" });
+    }
 
-if (
-  authHeader &&
-  authHeader.startsWith("Bearer ")
-) {
-  token = authHeader.split(" ")[1];
-} else if (
-  typeof req.query.token === "string"
-) {
-  token = req.query.token;
-}
+    // Decode is not authentication: verify signature and expiry before trusting the user ID.
+    const decoded = jwt.verify(token, JWT_SECRET) as jwt.JwtPayload;
+    const userId = decoded.id || decoded.userId;
 
-if (!token) {
-  return res.status(401).json({
-    error: "No token",
-  });
-}
+    if (typeof userId !== "string" || !userId) {
+      return res.status(401).json({ error: "Invalid token payload" });
+    }
 
-// TEMP DEBUG
-const decoded: any =
-  jwt.decode(token);
-
-const userId =
-  decoded?.id ||
-  decoded?.userId;
-
-if (!userId) {
-  return res.status(401).json({
-    error: "Invalid token payload",
-  });
-}
-
-(req as any).user = {
-  id: userId,
-};
-
-return next();
-
+    (req as any).user = { id: userId };
+    return next();
   } catch (error: any) {
-
-    console.error(
-      "JWT VERIFY ERROR:",
-      error?.message
-    );
-
-    return res.status(401).json({
-      error: "Unauthorized",
-    });
-
+    // Never log request headers or the supplied token.
+    console.warn("JWT authentication failed:", error?.name ?? "Unauthorized");
+    return res.status(401).json({ error: "Unauthorized" });
   }
 }
