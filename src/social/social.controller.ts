@@ -1,9 +1,100 @@
 import { Request, Response } from "express";
+import { randomBytes, timingSafeEqual } from "crypto";
 import { prisma } from "../magicreel/db/prisma";
 import { zernioProvider } from "../publish/providers/zernio.provider";
 import { socialService } from "./social.service";
+import { metaInstagramProvider } from "../publish/providers/meta-instagram.provider";
+import { encryptMetaToken } from "../publish/providers/meta-token-crypto";
 
 export class SocialController {
+
+  async connectMetaInstagram(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.id;
+      if (!userId) return res.status(401).json({ success: false, error: "Unauthorized" });
+
+      const state = randomBytes(32).toString("hex");
+      const cookieOptions = {
+        httpOnly: true,
+        sameSite: "lax" as const,
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 10 * 60 * 1000,
+        path: "/",
+      };
+      res.cookie("mr_meta_connect_user", userId, cookieOptions);
+      res.cookie("mr_meta_connect_state", state, cookieOptions);
+      return res.redirect(metaInstagramProvider.getAuthorizationUrl(state));
+    } catch (error: any) {
+      console.error("Meta Instagram connect initialization failed:", error?.message);
+      return res.status(503).json({
+        success: false,
+        error: error?.message === "META_INSTAGRAM_CONFIGURATION_MISSING"
+          ? "META_INSTAGRAM_CONFIGURATION_MISSING"
+          : "META_INSTAGRAM_CONNECT_FAILED",
+      });
+    }
+  }
+
+  async callbackMetaInstagram(req: Request, res: Response) {
+    const frontend = process.env.FRONTEND_URL || "https://www.magicreel.in";
+    const clearCookies = () => {
+      res.clearCookie("mr_meta_connect_user", { path: "/" });
+      res.clearCookie("mr_meta_connect_state", { path: "/" });
+    };
+    try {
+      const userId = req.cookies?.mr_meta_connect_user;
+      const expectedState = String(req.cookies?.mr_meta_connect_state ?? "");
+      const returnedState = String(req.query.state ?? "");
+      if (!userId || !expectedState || !returnedState) {
+        clearCookies();
+        return res.status(400).send("Instagram connection expired. Return to MagicReel and try again.");
+      }
+      const expected = Buffer.from(expectedState);
+      const returned = Buffer.from(returnedState);
+      if (expected.length !== returned.length || !timingSafeEqual(expected, returned)) {
+        clearCookies();
+        return res.status(400).send("Instagram authorization state did not match. Please try again.");
+      }
+      if (req.query.error || !req.query.code) {
+        clearCookies();
+        return res.redirect(`${frontend}/social-media?instagram=authorization_denied`);
+      }
+
+      const result = await metaInstagramProvider.exchangeCode(String(req.query.code));
+      const encryptedToken = encryptMetaToken(result.accessToken);
+      await prisma.publishAccount.upsert({
+        where: { userId_platform: { userId, platform: "instagram" } },
+        update: {
+          username: result.username,
+          socialProfileId: result.instagramUserId,
+          metaInstagramUserId: result.instagramUserId,
+          metaAccessToken: encryptedToken,
+          connected: true,
+          connectedAt: new Date(),
+          disconnectedAt: null,
+        },
+        create: {
+          userId,
+          platform: "instagram",
+          username: result.username,
+          socialProfileId: result.instagramUserId,
+          metaInstagramUserId: result.instagramUserId,
+          metaAccessToken: encryptedToken,
+          zernioAccountId: null,
+          connected: true,
+          connectedAt: new Date(),
+        },
+      });
+      clearCookies();
+      return res.redirect(`${frontend}/social-media?connected=instagram&provider=meta`);
+    } catch (error: any) {
+      console.error("Meta Instagram callback failed:", error?.response?.data ?? error?.message);
+      clearCookies();
+      return res.redirect(`${frontend}/social-media?instagram=connection_failed`);
+    }
+  }
+
+
   async connect(
     req: Request,
     res: Response
