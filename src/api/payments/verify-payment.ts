@@ -29,10 +29,12 @@ const key_id =
 const key_secret =
   process.env.RAZORPAY_KEY_SECRET;
 
-const razorpay = new Razorpay({
-  key_id: key_id!,
-  key_secret: key_secret!,
-});
+function getRazorpayClient(): Razorpay {
+  if (!key_id || !key_secret) {
+    throw new Error("Razorpay billing is not configured in this environment.");
+  }
+  return new Razorpay({ key_id, key_secret });
+}
 
 export const verifyPayment =
   async (
@@ -103,7 +105,7 @@ export const verifyPayment =
       // =====================================================
 
       const order =
-        await razorpay.orders.fetch(
+        await getRazorpayClient().orders.fetch(
           razorpay_order_id
         );
 
