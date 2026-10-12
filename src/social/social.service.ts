@@ -14,6 +14,21 @@ export class SocialService {
       const accounts = result.data.accounts ?? [];
 
       for (const account of accounts) {
+        const existing = await prisma.publishAccount.findUnique({
+          where: {
+            userId_platform: {
+              userId,
+              platform: account.platform,
+            },
+          },
+          select: { metaAccessToken: true },
+        });
+        const zernioConnected = account.isActive && account.platformStatus === "active";
+        // A Zernio sync must not disconnect a still-authorized direct Meta account.
+        const connected = account.platform === "instagram" && existing?.metaAccessToken
+          ? true
+          : zernioConnected;
+
         await prisma.publishAccount.upsert({
           where: {
             userId_platform: {
@@ -25,11 +40,8 @@ export class SocialService {
             username: account.username,
             socialProfileId: account.profileId._id,
             zernioAccountId: account._id,
-            connected: account.isActive && account.platformStatus === "active",
-            disconnectedAt:
-              account.isActive && account.platformStatus === "active"
-                ? null
-                : new Date(),
+            connected,
+            disconnectedAt: connected ? null : new Date(),
           },
           create: {
             userId,
@@ -37,7 +49,7 @@ export class SocialService {
             username: account.username,
             socialProfileId: account.profileId._id,
             zernioAccountId: account._id,
-            connected: account.isActive && account.platformStatus === "active",
+            connected: zernioConnected,
           },
         });
       }
