@@ -15,13 +15,13 @@ import {
 const key_id =
   process.env.RAZORPAY_KEY_ID;
 
-const key_secret =
-  process.env.RAZORPAY_KEY_SECRET;
-
-const razorpay = new Razorpay({
-  key_id: key_id!,
-  key_secret: key_secret!,
-});
+function getRazorpayClient(): Razorpay {
+  const key_secret = process.env.RAZORPAY_KEY_SECRET;
+  if (!key_id || !key_secret) {
+    throw new Error("Razorpay credentials are not configured");
+  }
+  return new Razorpay({ key_id, key_secret });
+}
 
 export const createPublishingOrder =
   async (
@@ -71,7 +71,7 @@ export const createPublishingOrder =
         );
 
       const order =
-        await razorpay.orders.create({
+        await getRazorpayClient().orders.create({
           amount,
 
           currency:
