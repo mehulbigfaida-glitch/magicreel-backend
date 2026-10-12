@@ -1,8 +1,12 @@
 import OpenAI from "openai";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-});
+function getOpenAIClient(): OpenAI {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    throw new Error("OpenAI API is not configured");
+  }
+  return new OpenAI({ apiKey });
+}
 
 export interface GenerateContentInput {
   imageUrl: string;
