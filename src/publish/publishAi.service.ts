@@ -52,7 +52,7 @@ if (input.assetType === "video") {
 }
 
     const response =
-      await openai.chat.completions.create({
+      await getOpenAIClient().chat.completions.create({
 
         model: "gpt-4.1-mini",
 
