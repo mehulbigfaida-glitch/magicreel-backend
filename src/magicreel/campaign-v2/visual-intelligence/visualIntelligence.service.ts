@@ -6,9 +6,13 @@ import {
   VisualIntelligenceResult,
 } from "./visual.types";
 
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+function getOpenAIClient(): OpenAI {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    throw new Error("OpenAI API is not configured");
+  }
+  return new OpenAI({ apiKey });
+}
 
 export class VisualIntelligenceService {
   private readonly model = "gpt-5.5";
@@ -147,7 +151,7 @@ Return EXACTLY this JSON structure:
   ): Promise<VisualIntelligenceResult> {
     const started = Date.now();
 
-    const response = await client.responses.create({
+    const response = await getOpenAIClient().responses.create({
       model: this.model,
 
       reasoning: {
