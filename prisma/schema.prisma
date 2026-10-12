@@ -342,8 +342,10 @@ model PublishAccount {
   username        String?
   socialProfileId String?
 
-  // Zernio account identifier
-  zernioAccountId String
+  // Provider-specific identifiers. Zernio remains available as rollback.
+  zernioAccountId String?
+  metaInstagramUserId String?
+  metaAccessToken String? // AES-256-GCM encrypted; never store raw Meta tokens
 
   // Connection state
   connected Boolean @default(true)
