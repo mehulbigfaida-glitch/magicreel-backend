@@ -1,5 +1,7 @@
 import { prisma } from "../magicreel/db/prisma";
 import { zernioProvider } from "./providers/zernio.provider";
+import { metaInstagramProvider } from "./providers/meta-instagram.provider";
+import { decryptMetaToken } from "./providers/meta-token-crypto";
 
 export class PublishService {
   async publish(params: {
@@ -81,23 +83,37 @@ export class PublishService {
       );
     }
 
-      const result =
-      await zernioProvider.publishMedia({
-        accountId: account.zernioAccountId,
-        platform: params.platform,
-        assetUrl: params.assetUrl,
-        assetType: params.assetType,
-        caption: params.caption,
-      });
+      let providerPostId: string | null = null;
 
-    console.info(
-  "ZERNIO RESULT:",
-  {
-    success: result?.success,
-    postId: result?.postId,
-    error: result?.error
-  }
-);
+      if (params.platform === "instagram" && account.metaAccessToken && account.metaInstagramUserId) {
+        const accessToken = decryptMetaToken(account.metaAccessToken);
+        const result = await metaInstagramProvider.publishMedia({
+          instagramUserId: account.metaInstagramUserId,
+          accessToken,
+          assetUrl: params.assetUrl,
+          assetType: params.assetType,
+          caption: params.caption,
+        });
+        providerPostId = result.id;
+        console.info("META_INSTAGRAM_PUBLISH_SUCCEEDED", { userId: params.userId, postId: providerPostId });
+      } else {
+        if (!account.zernioAccountId) {
+          throw new Error("PUBLISH_PROVIDER_ACCOUNT_MISSING");
+        }
+        const result = await zernioProvider.publishMedia({
+          accountId: account.zernioAccountId,
+          platform: params.platform,
+          assetUrl: params.assetUrl,
+          assetType: params.assetType,
+          caption: params.caption,
+        });
+        providerPostId = result?.data?.post?._id ?? result?.postId ?? null;
+        console.info("ZERNIO_PUBLISH_RESPONSE", {
+          success: result?.success,
+          postId: providerPostId,
+          error: result?.error,
+        });
+      }
 
     const publishPost =
       await prisma.publishPost.create({
@@ -108,8 +124,7 @@ export class PublishService {
           assetUrl: params.assetUrl,
           caption: params.caption,
           status: "PUBLISHED",
-          zernioPostId:
-            result?.data?.post?._id ?? null,
+          zernioPostId: providerPostId,
         },
       });
 
