@@ -23,7 +23,7 @@ export class SocialController {
       };
       res.cookie("mr_meta_connect_user", userId, cookieOptions);
       res.cookie("mr_meta_connect_state", state, cookieOptions);
-      return res.redirect(metaInstagramProvider.getAuthorizationUrl(state));
+      return res.json({ success: true, authorizationUrl: metaInstagramProvider.getAuthorizationUrl(state) });
     } catch (error: any) {
       console.error("Meta Instagram connect initialization failed:", error?.message);
       return res.status(503).json({
