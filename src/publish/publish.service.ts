@@ -39,19 +39,9 @@ export class PublishService {
       user.plan === "ADVANCE"
         ? 5
         : 20;
+    // Publishing is free for all users; no publishing subscription/payment gate.
 
-    const publishingActive =
-      !!user.publishingSubscriptionEnd &&
-      user.publishingSubscriptionEnd >
-        new Date();
-
-    if (!publishingActive) {
-      throw new Error(
-        "PUBLISHING_SUBSCRIPTION_REQUIRED"
-      );
-    }
-
-    if (todayCount >= dailyLimit) {
+if (todayCount >= dailyLimit) {
 
       console.warn(
   "DAILY_LIMIT_REACHED",
