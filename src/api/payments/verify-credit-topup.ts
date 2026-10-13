@@ -20,16 +20,16 @@ import {
   withGST,
 } from "./paymentConfig";
 
-const key_id =
-  process.env.RAZORPAY_KEY_ID;
+function getRazorpayClient(): Razorpay {
+  const key_id = process.env.RAZORPAY_KEY_ID;
+  const key_secret = process.env.RAZORPAY_KEY_SECRET;
 
-const key_secret =
-  process.env.RAZORPAY_KEY_SECRET;
+  if (!key_id || !key_secret) {
+    throw new Error("RAZORPAY_NOT_CONFIGURED");
+  }
 
-const razorpay = new Razorpay({
-  key_id: key_id!,
-  key_secret: key_secret!,
-});
+  return new Razorpay({ key_id, key_secret });
+}
 
 export const verifyCreditTopup =
   async (
@@ -38,6 +38,7 @@ export const verifyCreditTopup =
   ) => {
 
     try {
+      const razorpay = getRazorpayClient();
 
       const {
         razorpay_order_id,
