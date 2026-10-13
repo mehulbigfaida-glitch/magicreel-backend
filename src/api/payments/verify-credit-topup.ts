@@ -23,13 +23,13 @@ import {
 const key_id =
   process.env.RAZORPAY_KEY_ID;
 
-function getRazorpayClient(): Razorpay {
-  const key_secret = process.env.RAZORPAY_KEY_SECRET;
-  if (!key_id || !key_secret) {
-    throw new Error("Razorpay credentials are not configured");
-  }
-  return new Razorpay({ key_id, key_secret });
-}
+const key_secret =
+  process.env.RAZORPAY_KEY_SECRET;
+
+const razorpay = new Razorpay({
+  key_id: key_id!,
+  key_secret: key_secret!,
+});
 
 export const verifyCreditTopup =
   async (
@@ -100,7 +100,7 @@ export const verifyCreditTopup =
       // =====================================================
 
       const order =
-        await getRazorpayClient().orders.fetch(
+        await razorpay.orders.fetch(
           razorpay_order_id
         );
 
