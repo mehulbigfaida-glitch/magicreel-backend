@@ -3,13 +3,10 @@ import OpenAI, { toFile } from "openai";
 import { v2 as cloudinary } from "cloudinary";
 import { buildCreateAIPrompt } from "../createAI.prompt";
 
-function getOpenAIClient(): OpenAI {
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) {
-    throw new Error("OpenAI API is not configured");
-  }
-  return new OpenAI({ apiKey });
-}
+const client = new OpenAI({
+  apiKey:
+    process.env.OPENAI_API_KEY,
+});
 
 cloudinary.config({
 
@@ -129,7 +126,7 @@ await toFile(
 
 
 const result =
-await getOpenAIClient().images.edit({
+await client.images.edit({
 
   model:
     "gpt-image-2.5-sunburst",
