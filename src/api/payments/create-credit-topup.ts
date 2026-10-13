@@ -33,7 +33,6 @@ export const createCreditTopupOrder =
 
     try {
       const razorpay = getRazorpayClient();
-      const key_id = process.env.RAZORPAY_KEY_ID;
 
       const userId =
         (req as any).user?.id;
@@ -173,8 +172,7 @@ export const createCreditTopupOrder =
         currency:
           order.currency,
 
-        key:
-          key_id,
+        key: process.env.RAZORPAY_KEY_ID,
 
         credits,
 
