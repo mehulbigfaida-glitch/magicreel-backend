@@ -27,13 +27,9 @@ import {
   VisualAnalysis,
 } from "../visual-intelligence/visual.types";
 
-function getOpenAIClient(): OpenAI {
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) {
-    throw new Error("OpenAI API is not configured");
-  }
-  return new OpenAI({ apiKey });
-}
+const client = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 export class CampaignDirectorService {
 
@@ -127,7 +123,7 @@ ${analysis.opportunities.strongestVisualFeature ?? ""}
   ): Promise<CreativeVision> {
 
     const response =
-      await getOpenAIClient().responses.create({
+      await client.responses.create({
 
         model: this.model,
 
