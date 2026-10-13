@@ -3,10 +3,13 @@ import OpenAI, { toFile } from "openai";
 import { v2 as cloudinary } from "cloudinary";
 import { buildCreateAIPrompt } from "../createAI.prompt";
 
-const client = new OpenAI({
-  apiKey:
-    process.env.OPENAI_API_KEY,
-});
+function getOpenAIClient(): OpenAI {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    throw new Error("OPENAI_API_KEY_NOT_CONFIGURED");
+  }
+  return new OpenAI({ apiKey });
+}
 
 cloudinary.config({
 
@@ -125,6 +128,7 @@ await toFile(
 );
 
 
+const client = getOpenAIClient();
 const result =
 await client.images.edit({
 
