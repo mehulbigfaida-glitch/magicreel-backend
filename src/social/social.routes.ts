@@ -7,7 +7,7 @@ const router = Router();
 // Direct Meta OAuth initiation requires a valid MagicReel JWT.
 // The OAuth callback is public by design; it is protected by one-time state
 // validation and short-lived HttpOnly cookies created by the initiation route.
-router.get(
+router.post(
   "/meta/connect",
   authenticate,
   socialController.connectMetaInstagram.bind(socialController)
