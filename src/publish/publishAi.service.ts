@@ -1,12 +1,8 @@
 import OpenAI from "openai";
 
-function getOpenAIClient(): OpenAI {
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) {
-    throw new Error("OpenAI API is not configured");
-  }
-  return new OpenAI({ apiKey });
-}
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
 
 export interface GenerateContentInput {
   imageUrl: string;
@@ -56,7 +52,7 @@ if (input.assetType === "video") {
 }
 
     const response =
-      await getOpenAIClient().chat.completions.create({
+      await openai.chat.completions.create({
 
         model: "gpt-4.1-mini",
 
