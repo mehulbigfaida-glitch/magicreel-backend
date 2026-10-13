@@ -36,7 +36,6 @@ export const createOrder =
 
     try {
       const razorpay = getRazorpayClient();
-      const key_id = process.env.RAZORPAY_KEY_ID;
 
       const plan =
         req.body?.plan as PlanType;
@@ -128,8 +127,7 @@ export const createOrder =
         currency:
           order.currency,
 
-        key:
-          key_id,
+        key: process.env.RAZORPAY_KEY_ID,
       });
 
     } catch (error: any) {
