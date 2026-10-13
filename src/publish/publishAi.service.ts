@@ -1,8 +1,12 @@
 import OpenAI from "openai";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-});
+function getOpenAIClient(): OpenAI {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    throw new Error("OPENAI_API_KEY_NOT_CONFIGURED");
+  }
+  return new OpenAI({ apiKey });
+}
 
 export interface GenerateContentInput {
   imageUrl: string;
@@ -51,6 +55,7 @@ if (input.assetType === "video") {
 
 }
 
+    const openai = getOpenAIClient();
     const response =
       await openai.chat.completions.create({
 
