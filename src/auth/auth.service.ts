@@ -80,23 +80,27 @@ export async function registerUser(
     // ------------------------------------------------
 // Create Zernio Profile
 // ------------------------------------------------
-const zernioProfile = await zernioProvider.createProfile(fullName);
+// Zernio is optional: registration must work when the legacy
+// publishing provider is not configured in this environment.
+let zernioProfileId: string | null = null;
+if (process.env.ZERNIO_API_KEY) {
+  try {
+    const zernioProfile = await zernioProvider.createProfile(fullName);
+    zernioProfileId = zernioProfile?.data?.profile?._id ?? null;
+  } catch {
+    console.warn("Zernio profile creation skipped during registration.");
+  }
+}
 
-// TEMP: log response
-console.log("Zernio Profile Response:", zernioProfile);
-
-// ------------------------------------------------
-// Create Business Profile
-// ------------------------------------------------
 await tx.businessProfile.create({
   data: {
     userId: createdUser.id,
-    zernioProfileId: zernioProfile.data.profile._id,
+    zernioProfileId,
   },
 });
 
 // ------------------------------------------------
-// Create Billing Profile (UserProfile)
+// // Create Billing Profile (UserProfile)
 // ------------------------------------------------
 await tx.userProfile.create({
   data: {
