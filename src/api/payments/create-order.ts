@@ -12,16 +12,16 @@ import {
   withGST,
 } from "./paymentConfig";
 
-const key_id =
-  process.env.RAZORPAY_KEY_ID;
+function getRazorpayClient(): Razorpay {
+  const key_id = process.env.RAZORPAY_KEY_ID;
+  const key_secret = process.env.RAZORPAY_KEY_SECRET;
 
-const key_secret =
-  process.env.RAZORPAY_KEY_SECRET;
+  if (!key_id || !key_secret) {
+    throw new Error("RAZORPAY_NOT_CONFIGURED");
+  }
 
-const razorpay = new Razorpay({
-  key_id: key_id!,
-  key_secret: key_secret!,
-});
+  return new Razorpay({ key_id, key_secret });
+}
 
 type PlanType =
   | "BASIC"
@@ -35,6 +35,7 @@ export const createOrder =
   ) => {
 
     try {
+      const razorpay = getRazorpayClient();
 
       const plan =
         req.body?.plan as PlanType;
@@ -126,8 +127,7 @@ export const createOrder =
         currency:
           order.currency,
 
-        key:
-          key_id,
+        key: process.env.RAZORPAY_KEY_ID,
       });
 
     } catch (error: any) {
