@@ -75,7 +75,12 @@ if (todayCount >= dailyLimit) {
 
       let providerPostId: string | null = null;
 
-      if (params.platform === "instagram" && account.metaAccessToken && account.metaInstagramUserId) {
+      if (params.platform === "instagram") {
+        // Instagram must use direct Meta publishing only. Zernio remains in this
+        // file as a deliberate rollback path, never as an automatic fallback.
+        if (!account.metaAccessToken || !account.metaInstagramUserId) {
+          throw new Error("META_INSTAGRAM_NOT_CONNECTED");
+        }
         const accessToken = decryptMetaToken(account.metaAccessToken);
         const result = await metaInstagramProvider.publishMedia({
           instagramUserId: account.metaInstagramUserId,
@@ -87,6 +92,8 @@ if (todayCount >= dailyLimit) {
         providerPostId = result.id;
         console.info("META_INSTAGRAM_PUBLISH_SUCCEEDED", { userId: params.userId, postId: providerPostId });
       } else {
+        // Legacy Facebook provider retained only for backward compatibility;
+        // the current product rollout and UI scope are Instagram only.
         if (!account.zernioAccountId) {
           throw new Error("PUBLISH_PROVIDER_ACCOUNT_MISSING");
         }
