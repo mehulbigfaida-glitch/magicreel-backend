@@ -131,22 +131,42 @@ export class SocialController {
         return res.status(401).json({ success: false, error: "CONNECT_COOKIE_MISSING" });
       }
 
+      // Legacy Zernio callback only. The normal accounts-list endpoint below
+      // reads our database directly and never depends on Zernio availability.
       await socialService.syncAccounts(userId);
       res.clearCookie("mr_connect");
       return res.redirect(`${process.env.FRONTEND_URL}/social-media?connected=instagram`);
     } catch (error: any) {
-      console.error(error);
-      return res.status(500).json({ success: false, error: error?.message });
+      console.error("Legacy social callback failed:", error?.message);
+      return res.status(500).json({ success: false, error: "SOCIAL_CALLBACK_FAILED" });
     }
   }
 
   async accounts(req: Request, res: Response) {
     try {
       const userId = (req as any).user.id;
-      const accounts = await socialService.syncAccounts(userId);
+      // Local database only: Meta account visibility must not call or depend on
+      // Zernio account synchronization or its API availability.
+      const accounts = await prisma.publishAccount.findMany({
+        where: { userId, connected: true },
+        select: {
+          id: true,
+          userId: true,
+          platform: true,
+          username: true,
+          socialProfileId: true,
+          connected: true,
+          connectedAt: true,
+          disconnectedAt: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+        orderBy: { createdAt: "asc" },
+      });
       return res.json({ success: true, accounts });
     } catch (error: any) {
-      return res.status(500).json({ success: false, error: error?.message });
+      console.error("Social accounts lookup failed:", error?.message);
+      return res.status(500).json({ success: false, error: "SOCIAL_ACCOUNTS_LOOKUP_FAILED" });
     }
   }
 }
