@@ -111,10 +111,7 @@ export const verifyPayment =
         (order as any).notes || {};
 
       const plan =
-        notes.plan as
-          | "BASIC"
-          | "PRO"
-          | "ADVANCE";
+        notes.plan as "PRO";
 
       if (
         notes.kind !==

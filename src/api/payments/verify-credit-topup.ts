@@ -133,10 +133,7 @@ export const verifyCreditTopup =
         );
 
       const plan =
-        notes.plan as
-          | "BASIC"
-          | "PRO"
-          | "ADVANCE";
+        notes.plan as "PRO";
 
       if (
         !Number.isInteger(

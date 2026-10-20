@@ -105,10 +105,7 @@ export const createCreditTopupOrder =
 
       const rate =
         CREDIT_RATES[
-          user.plan as
-            | "BASIC"
-            | "PRO"
-            | "ADVANCE"
+          user.plan as "PRO"
         ];
 
       if (!rate) {
