@@ -13,7 +13,7 @@ export type FeatureType =
 
 const featureCredits: Record<FeatureType, number> = {
   HERO: 1,
-  LOOKBOOK_ECOM: 2,
+  LOOKBOOK_ECOM: 1,
   REEL: 3,
   CAMPAIGN_ENGINE: 1,
   EDITORIAL: 1,
