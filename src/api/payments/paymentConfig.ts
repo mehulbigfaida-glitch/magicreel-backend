@@ -12,7 +12,7 @@ export const CREDIT_RATES = {
   PRO: 35,
 } as const;
 
-export const PUBLISHING_BASE_AMOUNT_PAISE = 0;
+export const PUBLISHING_BASE_AMOUNT_PAISE = 90000;
 
 export function withGST(baseAmountPaise: number): number {
   return Math.round((baseAmountPaise * (100 + GST_RATE)) / 100);
