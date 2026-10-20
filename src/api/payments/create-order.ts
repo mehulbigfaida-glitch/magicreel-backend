@@ -23,10 +23,7 @@ const razorpay = new Razorpay({
   key_secret: key_secret!,
 });
 
-type PlanType =
-  | "BASIC"
-  | "PRO"
-  | "ADVANCE";
+type PlanType = "PRO";
 
 export const createOrder =
   async (
