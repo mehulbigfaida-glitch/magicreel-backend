@@ -13,46 +13,47 @@ export class PublishController {
         });
       }
 
-      const {
+      const { platform, assetUrl, assetType, caption } = req.body;
+      const result = await publishService.publish({
+        userId,
         platform,
         assetUrl,
         assetType,
         caption,
-      } = req.body;
-
-      const result =
-        await publishService.publish({
-          userId,
-          platform,
-          assetUrl,
-          assetType,
-          caption,
-        });
-
-      return res.json({
-        success: true,
-        data: result,
       });
 
+      return res.json({ success: true, data: result });
     } catch (error: any) {
-
-      console.error(
-        "PUBLISH ERROR:",
-        error
-      );
+      // Never log the raw Axios error: its request config can include the
+      // Instagram access token in a URL/query parameter.
+      const metaError = error?.response?.data?.error;
+      console.error("PUBLISH ERROR", {
+        message: error?.message ?? "Unknown error",
+        status: error?.response?.status,
+        metaCode: metaError?.code,
+        metaSubcode: metaError?.error_subcode,
+        metaType: metaError?.type,
+        metaMessage: metaError?.message,
+        fbtraceId: metaError?.fbtrace_id,
+      });
 
       return res.status(400).json({
         success: false,
-        error:
-          error?.message ||
-          "Unknown error",
-        details:
-          error?.response?.data ||
-          error,
+        error: error?.message || "Unknown error",
+        ...(metaError
+          ? {
+              details: {
+                code: metaError.code,
+                subcode: metaError.error_subcode,
+                type: metaError.type,
+                message: metaError.message,
+                fbtrace_id: metaError.fbtrace_id,
+              },
+            }
+          : {}),
       });
     }
   }
 }
 
-export const publishController =
-  new PublishController();
+export const publishController = new PublishController();
