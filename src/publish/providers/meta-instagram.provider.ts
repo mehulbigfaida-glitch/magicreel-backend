@@ -117,38 +117,64 @@ export class MetaInstagramProvider {
     const creationId = container.data?.id;
     if (!creationId) throw new Error("INSTAGRAM_MEDIA_CONTAINER_FAILED");
 
-    // Meta processes video asynchronously; poll briefly before publishing.
-    if (isVideo) {
-      let ready = false;
-      for (let attempt = 0; attempt < 12; attempt += 1) {
-        const status = await axios.get(`${GRAPH_BASE}/${creationId}`, {
-          params: { fields: "status_code", access_token: params.accessToken },
-          timeout: 15000,
-        });
-        const statusCode = status.data?.status_code;
-        if (statusCode === "FINISHED") {
-          ready = true;
-          break;
-        }
-        if (statusCode === "ERROR" || statusCode === "EXPIRED") {
-          throw new Error("INSTAGRAM_VIDEO_PROCESSING_FAILED");
-        }
-        await new Promise((resolve) => setTimeout(resolve, 5000));
+    // Instagram processes media asynchronously. Wait for both image and video
+    // containers to be ready before calling media_publish; publishing too early
+    // can return HTTP 400 even though container creation succeeded.
+    let ready = false;
+    let lastStatus = "IN_PROGRESS";
+    for (let attempt = 0; attempt < 12; attempt += 1) {
+      const status = await axios.get(`${GRAPH_BASE}/${creationId}`, {
+        params: { fields: "status_code", access_token: params.accessToken },
+        timeout: 15000,
+      });
+      lastStatus = String(status.data?.status_code ?? "IN_PROGRESS");
+      if (lastStatus === "FINISHED") {
+        ready = true;
+        break;
       }
-      if (!ready) throw new Error("INSTAGRAM_VIDEO_PROCESSING_TIMEOUT");
+      if (lastStatus === "ERROR" || lastStatus === "EXPIRED") {
+        throw new Error(`INSTAGRAM_MEDIA_PROCESSING_FAILED:${lastStatus}`);
+      }
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+    }
+    if (!ready) {
+      throw new Error(`INSTAGRAM_MEDIA_PROCESSING_TIMEOUT:${lastStatus}`);
     }
 
-    const published = await axios.post(
-      `${GRAPH_BASE}/${encodeURIComponent(params.instagramUserId)}/media_publish`,
-      null,
-      {
-        params: { creation_id: creationId, access_token: params.accessToken },
-        timeout: 20000,
+    try {
+      const published = await axios.post(
+        `${GRAPH_BASE}/${encodeURIComponent(params.instagramUserId)}/media_publish`,
+        null,
+        {
+          params: { creation_id: creationId, access_token: params.accessToken },
+          timeout: 20000,
+        }
+      );
+      const id = published.data?.id;
+      if (!id) throw new Error("INSTAGRAM_PUBLISH_FAILED");
+      return { id: String(id) };
+    } catch (error: any) {
+      // Surface Meta's actionable error without logging request config, which
+      // contains the access token in the query string.
+      const metaError = error?.response?.data?.error;
+      if (metaError) {
+        console.error("Instagram media_publish rejected request", {
+          code: metaError.code,
+          subcode: metaError.error_subcode,
+          type: metaError.type,
+          message: metaError.message,
+          fbtrace_id: metaError.fbtrace_id,
+        });
+        throw new Error(
+          `INSTAGRAM_MEDIA_PUBLISH_REJECTED:${metaError.code ?? "unknown"}:${metaError.message ?? "Meta rejected the publish request"}`
+        );
       }
-    );
-    const id = published.data?.id;
-    if (!id) throw new Error("INSTAGRAM_PUBLISH_FAILED");
-    return { id: String(id) };
+      console.error("Instagram media_publish request failed", {
+        message: error?.message ?? "Unknown request error",
+        status: error?.response?.status,
+      });
+      throw new Error("INSTAGRAM_MEDIA_PUBLISH_REQUEST_FAILED");
+    }
   }
 }
 
