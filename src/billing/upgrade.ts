@@ -27,8 +27,8 @@ export const upgradePlan = async (req: Request, res: Response) => {
     // 🎯 MATCH YOUR UI
     const PLAN_CREDITS: Record<string, number> = {
       BASIC: 10,
-      PRO: 30,
-      ADVANCE: 60,
+      PRO: 32,
+      ADVANCE: 72,
     };
 
     const creditsToAdd = PLAN_CREDITS[plan];
