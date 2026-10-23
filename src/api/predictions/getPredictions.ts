@@ -8,32 +8,6 @@ type CreditTransactionLite = {
   createdAt: Date;
 };
 
-const getNearestCredit = (
-  transactions: CreditTransactionLite[],
-  itemCreatedAt: Date
-) => {
-  if (!transactions.length) return 0;
-  const target = itemCreatedAt.getTime();
-  let low = 0;
-  let high = transactions.length - 1;
-
-  while (low <= high) {
-    const mid = Math.floor((low + high) / 2);
-    const time = transactions[mid].createdAt.getTime();
-    if (time === target) return transactions[mid].credits;
-    if (time < target) low = mid + 1;
-    else high = mid - 1;
-  }
-
-  const candidates = [transactions[low], transactions[high]].filter(Boolean);
-  return candidates.reduce(
-    (nearest, tx) =>
-      Math.abs(tx.createdAt.getTime() - target) <
-      Math.abs(nearest.createdAt.getTime() - target) ? tx : nearest,
-    candidates[0]
-  ).credits;
-};
-
 export const getPredictions = async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user?.id;
@@ -124,29 +98,42 @@ export const getPredictions = async (req: Request, res: Response) => {
       };
     });
 
-    const creditGroups = new Map<string, CreditTransactionLite[]>();
+    // Prefer the exact prediction/job link saved by billing. Timestamp-nearest
+    // matching can attach another generation's debit to this card.
+    const creditsByPredictionId = new Map<string, number>();
     for (const tx of creditTx) {
-      const feature = tx.feature?.toLowerCase() || "";
-      for (const type of ["hero", "reel", "lookbook", "campaign", "social", "editorial"]) {
-        if (feature.includes(type)) {
-          const group = creditGroups.get(type) || [];
-          group.push(tx);
-          creditGroups.set(type, group);
-        }
+      if (tx.predictionId && !creditsByPredictionId.has(tx.predictionId)) {
+        creditsByPredictionId.set(tx.predictionId, tx.credits);
       }
     }
 
-    const getCredits = (item: { type: string; createdAt: Date }) =>
-      getNearestCredit(creditGroups.get(item.type.toLowerCase()) || [], new Date(item.createdAt));
+    const getCredits = (item: { id: string; type: string; createdAt: Date }) => {
+      const exact = creditsByPredictionId.get(item.id);
+      if (exact !== undefined) return exact;
+      const feature = item.type.toLowerCase();
+      const candidates = creditTx.filter((tx) => {
+        const txFeature = tx.feature?.toLowerCase() || "";
+        const matches = feature === "hero" ? txFeature.includes("hero") :
+          feature === "reel" ? txFeature.includes("reel") :
+          feature === "lookbook" ? txFeature.includes("lookbook") :
+          txFeature.includes(feature);
+        return matches && !tx.predictionId;
+      });
+      if (!candidates.length) return 0;
+      const target = new Date(item.createdAt).getTime();
+      return candidates.reduce((nearest, tx) =>
+        Math.abs(tx.createdAt.getTime() - target) < Math.abs(nearest.createdAt.getTime() - target) ? tx : nearest
+      ).credits;
+    };
 
     const predictions = [
-      ...heroJobs.map((job) => ({ id: job.id, type: "hero", status: job.status, mediaUrl: job.resultImageUrl, avatarGender: job.avatarGender, categoryKey: job.categoryKey, createdAt: job.createdAt, creditsUsed: getCredits({ type: "hero", createdAt: job.createdAt }) })),
-      ...reelJobs.map((job) => ({ id: job.id, type: "reel", reelType: "standard", status: job.status || "completed", mediaUrl: job.reelVideoUrl ?? null, heroImageUrl: job.modelImageUrl ?? null, createdAt: job.createdAt, creditsUsed: getCredits({ type: "reel", createdAt: job.createdAt }) })),
-      ...reel360Jobs.map((job: any) => ({ id: job.id, runId: job.id, type: "reel", reelType: "360", status: job.status || "processing", mediaUrl: job.reelVideoUrl ?? null, heroImageUrl: job.inputImageUrl ?? null, createdAt: job.createdAt, creditsUsed: getCredits({ type: "reel", createdAt: job.createdAt }) })),
-      ...lookbookPredictions.map((lb) => ({ ...lb, creditsUsed: getCredits({ type: "lookbook", createdAt: lb.createdAt }) })),
-      ...campaignJobs.map((job) => ({ id: job.id, type: "campaign", status: job.status || "completed", mediaUrl: job.outputImageUrl, heroImageUrl: job.heroImageUrl, createdAt: job.createdAt, creditsUsed: getCredits({ type: "campaign", createdAt: job.createdAt }) })),
-      ...socialJobs.map((job) => ({ id: job.id, type: "social", status: job.status || "completed", mediaUrl: job.imageUrl, heroImageUrl: job.heroImageUrl, creativeGoal: job.creativeGoal, createdAt: job.createdAt, creditsUsed: getCredits({ type: "social", createdAt: job.createdAt }) })),
-      ...editorialJobs.map((job) => ({ id: job.id, type: "editorial", status: job.status || "completed", mediaUrl: job.imageUrl, heroImageUrl: job.heroImageUrl, editorialWorld: job.editorialWorld, output: job.output, createdAt: job.createdAt, creditsUsed: getCredits({ type: "editorial", createdAt: job.createdAt }) })),
+      ...heroJobs.map((job) => ({ id: job.id, type: "hero", status: job.status, mediaUrl: job.resultImageUrl, avatarGender: job.avatarGender, categoryKey: job.categoryKey, createdAt: job.createdAt, creditsUsed: getCredits({ id: job.id, type: "hero", createdAt: job.createdAt }) })),
+      ...reelJobs.map((job) => ({ id: job.id, type: "reel", reelType: "standard", status: job.status || "completed", mediaUrl: job.reelVideoUrl ?? null, heroImageUrl: job.modelImageUrl ?? null, createdAt: job.createdAt, creditsUsed: getCredits({ id: job.id, type: "reel", createdAt: job.createdAt }) })),
+      ...reel360Jobs.map((job: any) => ({ id: job.id, runId: job.id, type: "reel", reelType: "360", status: job.status || "processing", mediaUrl: job.reelVideoUrl ?? null, heroImageUrl: job.inputImageUrl ?? null, createdAt: job.createdAt, creditsUsed: getCredits({ id: job.id, type: "reel", createdAt: job.createdAt }) })),
+      ...lookbookPredictions.map((lb) => ({ ...lb, creditsUsed: getCredits({ id: lb.id, type: "lookbook", createdAt: lb.createdAt }) })),
+      ...campaignJobs.map((job) => ({ id: job.id, type: "campaign", status: job.status || "completed", mediaUrl: job.outputImageUrl, heroImageUrl: job.heroImageUrl, createdAt: job.createdAt, creditsUsed: getCredits({ id: job.id, type: "campaign", createdAt: job.createdAt }) })),
+      ...socialJobs.map((job) => ({ id: job.id, type: "social", status: job.status || "completed", mediaUrl: job.imageUrl, heroImageUrl: job.heroImageUrl, creativeGoal: job.creativeGoal, createdAt: job.createdAt, creditsUsed: getCredits({ id: job.id, type: "social", createdAt: job.createdAt }) })),
+      ...editorialJobs.map((job) => ({ id: job.id, type: "editorial", status: job.status || "completed", mediaUrl: job.imageUrl, heroImageUrl: job.heroImageUrl, editorialWorld: job.editorialWorld, output: job.output, createdAt: job.createdAt, creditsUsed: getCredits({ id: job.id, type: "editorial", createdAt: job.createdAt }) })),
     ];
 
     predictions.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
