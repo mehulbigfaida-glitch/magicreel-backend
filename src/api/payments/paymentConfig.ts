@@ -10,20 +10,20 @@ export const PLAN_CONFIG = {
   PRO: {
     credits: 32,
     baseAmountPaise: 240000,
-    usd: 27,
+    usd: 24,
   },
 
   ADVANCE: {
     credits: 72,
     baseAmountPaise: 360000,
-    usd: 39,
+    usd: 36,
   },
 } as const;
 
 export const CREDIT_RATES = {
   BASIC: 90,
-  PRO: 80,
-  ADVANCE: 60,
+  PRO: 75,
+  ADVANCE: 50,
 } as const;
 
 export const PUBLISHING_BASE_AMOUNT_PAISE =
