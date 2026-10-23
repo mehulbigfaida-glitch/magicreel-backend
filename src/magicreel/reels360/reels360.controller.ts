@@ -28,7 +28,7 @@ export class Reels360Controller {
 
       await checkCreditsOrThrow(
         req,
-        3
+        4
       );
 
       /* ----------------------------------
