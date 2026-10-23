@@ -28,7 +28,7 @@ export class Reels360Controller {
 
       await checkCreditsOrThrow(
         req,
-        3
+        4
       );
 
       /* ----------------------------------
@@ -61,7 +61,7 @@ export class Reels360Controller {
         userId:
           (req as any).user.id,
         feature: "REEL",
-        creditsRequired: 3,
+        creditsRequired: 4,
         predictionId:
           result.runId,
       };
