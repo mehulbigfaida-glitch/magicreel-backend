@@ -59,7 +59,7 @@ export async function generateLookbookV2(req: Request, res: Response) {
 (req as any).billing = {
   userId,
   feature: "LOOKBOOK_ECOM",
-  creditsRequired: 2,
+  creditsRequired: 1,
   predictionId: lookbook.id,
 };
 
