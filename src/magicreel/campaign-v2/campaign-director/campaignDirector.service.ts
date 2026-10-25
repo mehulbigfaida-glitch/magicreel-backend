@@ -27,9 +27,19 @@ import {
   VisualAnalysis,
 } from "../visual-intelligence/visual.types";
 
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Initialize on demand so importing the backend does not require an OpenAI key.
+let client: OpenAI | undefined;
+
+function getOpenAIClient(): OpenAI {
+  if (!client) {
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+      throw new Error("Campaign Director requires OPENAI_API_KEY to be configured.");
+    }
+    client = new OpenAI({ apiKey });
+  }
+  return client;
+}
 
 export class CampaignDirectorService {
 
@@ -123,7 +133,7 @@ ${analysis.opportunities.strongestVisualFeature ?? ""}
   ): Promise<CreativeVision> {
 
     const response =
-      await client.responses.create({
+      await getOpenAIClient().responses.create({
 
         model: this.model,
 

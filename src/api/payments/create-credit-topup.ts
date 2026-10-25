@@ -20,10 +20,7 @@ const key_id =
 const key_secret =
   process.env.RAZORPAY_KEY_SECRET;
 
-const razorpay = new Razorpay({
-  key_id: key_id!,
-  key_secret: key_secret!,
-});
+
 
 export const createCreditTopupOrder =
   async (
@@ -40,6 +37,13 @@ export const createCreditTopupOrder =
         return res.status(401).json({
           error:
             "Unauthorized",
+        });
+      }
+
+      if (!key_id || !key_secret) {
+        return res.status(503).json({
+          error: "PAYMENTS_UNAVAILABLE",
+          message: "Payments are temporarily unavailable. Please try again later.",
         });
       }
 
@@ -127,6 +131,8 @@ export const createCreditTopupOrder =
         withGST(
           baseAmountPaise
         );
+
+      const razorpay = new Razorpay({ key_id, key_secret });
 
       const order =
         await razorpay.orders.create({

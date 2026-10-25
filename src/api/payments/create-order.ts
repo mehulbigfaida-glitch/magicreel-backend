@@ -18,10 +18,6 @@ const key_id =
 const key_secret =
   process.env.RAZORPAY_KEY_SECRET;
 
-const razorpay = new Razorpay({
-  key_id: key_id!,
-  key_secret: key_secret!,
-});
 
 type PlanType =
   | "BASIC"
@@ -46,6 +42,13 @@ export const createOrder =
         return res.status(401).json({
           error:
             "Unauthorized",
+        });
+      }
+
+      if (!key_id || !key_secret) {
+        return res.status(503).json({
+          error: "PAYMENTS_UNAVAILABLE",
+          message: "Payments are temporarily unavailable. Please try again later.",
         });
       }
 
@@ -82,6 +85,11 @@ export const createOrder =
             "Invalid plan",
         });
       }
+
+      const razorpay = new Razorpay({
+        key_id,
+        key_secret,
+      });
 
       const baseAmount =
         PLAN_CONFIG[
