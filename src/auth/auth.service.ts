@@ -158,6 +158,10 @@ export async function loginUser(
     throw new Error("Invalid credentials");
   }
 
+  if (!user.emailVerified) {
+    throw new Error("Please verify your email address before signing in. Check your inbox for the MagicReel verification link.");
+  }
+
   const isValid = await bcrypt.compare(
     password,
     user.passwordHash
