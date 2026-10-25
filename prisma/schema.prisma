@@ -55,6 +55,11 @@ model User {
   passwordResetToken     String?
   passwordResetExpiresAt DateTime?
 
+  // Existing accounts remain verified by default; new signups explicitly opt into verification.
+  emailVerified              Boolean   @default(true) @map("email_verified")
+  emailVerificationToken     String?   @map("email_verification_token")
+  emailVerificationExpiresAt DateTime? @map("email_verification_expires_at")
+
   // ============================================
   // SUBSCRIPTION
   // ============================================
