@@ -1,6 +1,9 @@
 import { Request, Response } from "express";
 import {
   registerUser,
+  registerPendingUser,
+  verifyUserEmail,
+  resendUserVerification,
   loginUser,
   forgotPassword as forgotPasswordService,
   resetPassword as resetPasswordService,
