@@ -335,7 +335,15 @@ export async function registerPendingUser(input: RegisterUserInput) {
   if (!email || !input.password) throw new Error("Email and password are required.");
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
-    if (!existing.emailVerified) throw new Error("An account is already awaiting verification. Use resend verification.");
+    if (!existing.emailVerified) {
+      const { rawToken, tokenHash, expiresAt } = createVerificationToken();
+      await prisma.user.update({
+        where: { id: existing.id },
+        data: { emailVerificationToken: tokenHash, emailVerificationExpiresAt: expiresAt },
+      });
+      await sendVerificationEmail(email, rawToken);
+      return { success: true };
+    }
     throw new Error("An account already exists for this email. Please log in.");
   }
 
