@@ -6,6 +6,7 @@ import {
   resetPassword as resetPasswordService,
 } from "./auth.service";
 import { prisma } from "../magicreel/db/prisma";
+import { verifyEmailToken, resendUserVerification, resendTestingVerification, isCompanyEmail } from "./email-verification.service";
 
 // ---------------- REGISTER ----------------
 export async function register(req: Request, res: Response) {
@@ -23,7 +24,7 @@ export async function register(req: Request, res: Response) {
     }
 
     // ✅ Create user + get token
-    const token = await registerUser({
+    const registration = await registerUser({
   fullName,
   email,
   mobileNumber,
@@ -154,5 +155,41 @@ export async function resetPassword(req: Request, res: Response) {
     return res.status(400).json({
       error: err.message,
     });
+  }
+}
+
+export async function verifyEmail(req: Request, res: Response) {
+  try {
+    const { token } = req.body;
+    if (!token || typeof token !== "string") {
+      return res.status(400).json({ success: false, error: "Verification token is required." });
+    }
+    const result = await verifyEmailToken(token);
+    return res.json({
+      success: true,
+      purpose: result.purpose,
+      email: result.email,
+      message: result.purpose === "signup"
+        ? "Email verified. You can now sign in to MagicReel."
+        : "Business email verified. Your testing-credit request is ready for review.",
+    });
+  } catch (err: any) {
+    return res.status(400).json({ success: false, error: err?.message || "Unable to verify email." });
+  }
+}
+
+export async function resendVerification(req: Request, res: Response) {
+  try {
+    const email = String(req.body?.email || "").trim().toLowerCase();
+    const purpose = req.body?.purpose === "testing" ? "testing" : "signup";
+    if (!email) return res.status(400).json({ success: false, error: "Email is required." });
+    if (purpose === "testing" && !isCompanyEmail(email)) {
+      return res.status(400).json({ success: false, error: "Please use a company email address for testing-credit requests." });
+    }
+    if (purpose === "testing") await resendTestingVerification(email);
+    else await resendUserVerification(email);
+    return res.json({ success: true, message: "If the request can be verified, a fresh verification email has been sent." });
+  } catch (err: any) {
+    return res.status(400).json({ success: false, error: err?.message || "Unable to resend verification email." });
   }
 }
