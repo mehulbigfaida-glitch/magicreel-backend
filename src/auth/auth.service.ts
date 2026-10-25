@@ -13,6 +13,7 @@ export interface RegisterUserInput {
   email: string;
   mobileNumber?: string;
   password: string;
+  emailVerified?: boolean;
 }
 
 // ----------------------------
