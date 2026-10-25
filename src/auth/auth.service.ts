@@ -66,6 +66,7 @@ export async function registerUser(
         mobileNumber,
         email,
         passwordHash,
+        emailVerified: false,
       },
     });
 
