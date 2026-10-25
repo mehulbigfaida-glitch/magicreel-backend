@@ -7,6 +7,41 @@ import {
 } from "./auth.service";
 import { prisma } from "../magicreel/db/prisma";
 
+// ---------------- EMAIL-VERIFIED REGISTRATION ----------------
+export async function registerPending(req: Request, res: Response) {
+  try {
+    const { fullName, email, mobileNumber, password } = req.body;
+    if (!email || !password) return res.status(400).json({ error: "Email and password are required." });
+    if (String(password).length < 8) return res.status(400).json({ error: "Password must contain at least 8 characters." });
+    const result = await registerPendingUser({ fullName, email, mobileNumber, password });
+    return res.status(202).json({ ...result, verificationRequired: true, message: "If registration was accepted, a verification email has been sent." });
+  } catch (err: any) {
+    return res.status(400).json({ error: err.message || "Registration failed." });
+  }
+}
+
+export async function verifyEmail(req: Request, res: Response) {
+  try {
+    const { token } = req.body;
+    if (!token) return res.status(400).json({ error: "Verification token is required." });
+    await verifyUserEmail(token);
+    return res.json({ success: true, message: "Email verified successfully." });
+  } catch (err: any) {
+    return res.status(400).json({ error: err.message || "Email verification failed." });
+  }
+}
+
+export async function resendVerification(req: Request, res: Response) {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: "Email is required." });
+    await resendUserVerification(email);
+    return res.json({ success: true, message: "If the account is awaiting verification, a new email has been sent." });
+  } catch (err: any) {
+    return res.status(400).json({ error: err.message || "Could not resend verification." });
+  }
+}
+
 // ---------------- REGISTER ----------------
 export async function register(req: Request, res: Response) {
   try {
