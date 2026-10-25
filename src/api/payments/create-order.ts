@@ -1,10 +1,4 @@
 import { Request, Response } from "express";
-import {
-  isBusinessProfileComplete,
-} from "../../business-profile/businessProfile.service";
-import {
-  isDomesticBillingComplete,
-} from "../../billing/billingProfile.service";
 import Razorpay from "razorpay";
 
 import {
@@ -46,30 +40,6 @@ export const createOrder =
         return res.status(401).json({
           error:
             "Unauthorized",
-        });
-      }
-
-      const businessProfileComplete =
-        await isBusinessProfileComplete(
-          userId
-        );
-
-      if (!businessProfileComplete) {
-        return res.status(409).json({
-          error:
-            "BUSINESS_PROFILE_REQUIRED",
-        });
-      }
-
-      const billingComplete =
-        await isDomesticBillingComplete(
-          userId
-        );
-
-      if (!billingComplete) {
-        return res.status(409).json({
-          error:
-            "BILLING_PROFILE_REQUIRED",
         });
       }
 
