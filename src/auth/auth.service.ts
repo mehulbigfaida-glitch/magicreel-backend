@@ -5,6 +5,7 @@ import { prisma } from "../magicreel/db/prisma";
 import { SubscriptionService } from "../subscription/subscription.service";
 import { zernioProvider } from "../publish/providers/zernio.provider";
 import { MailService } from "../mail/mail.service";
+import { sendUserVerification } from "./email-verification.service";
 
 const JWT_SECRET = process.env.JWT_SECRET || "dev_secret";
 
@@ -130,7 +131,8 @@ await tx.userProfile.create({
     return createdUser;
   });
 
-  return generateToken(user.id);
+  await sendUserVerification(user.id);
+  return { id: user.id, email: user.email };
 }
 
 // ----------------------------
