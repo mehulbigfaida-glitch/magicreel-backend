@@ -360,7 +360,7 @@ export async function verifyUserEmail(rawToken: string) {
     data: { emailVerified: true, emailVerificationToken: null, emailVerificationExpiresAt: null },
   });
   if (updated.count !== 1) throw new Error("This verification link is invalid, expired, or already used.");
-  return { success: true, token: generateToken(found.id) };
+  return { success: true, token: generateToken(found.id), userId: found.id };
 }
 
 export async function resendUserVerification(emailInput: string) {
