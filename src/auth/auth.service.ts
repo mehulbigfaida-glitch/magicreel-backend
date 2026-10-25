@@ -83,10 +83,12 @@ export async function registerUser(
     // ------------------------------------------------
 // Create Zernio Profile
 // ------------------------------------------------
-const zernioProfile = await zernioProvider.createProfile(fullName);
-
-// TEMP: log response
-console.log("Zernio Profile Response:", zernioProfile);
+let zernioProfileId: string | null = null;
+if (!input.skipZernioProfile) {
+  const zernioProfile = await zernioProvider.createProfile(fullName);
+  zernioProfileId = zernioProfile.data.profile._id;
+  console.log("Zernio Profile Response:", zernioProfile);
+}
 
 // ------------------------------------------------
 // Create Business Profile
@@ -94,7 +96,7 @@ console.log("Zernio Profile Response:", zernioProfile);
 await tx.businessProfile.create({
   data: {
     userId: createdUser.id,
-    zernioProfileId: zernioProfile.data.profile._id,
+    zernioProfileId,
   },
 });
 
