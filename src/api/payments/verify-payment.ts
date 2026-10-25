@@ -23,16 +23,6 @@ import {
   calculateSubscriptionEnd,
 } from "../../subscription/subscription.utils";
 
-const key_id =
-  process.env.RAZORPAY_KEY_ID;
-
-const key_secret =
-  process.env.RAZORPAY_KEY_SECRET;
-
-const razorpay = new Razorpay({
-  key_id: key_id!,
-  key_secret: key_secret!,
-});
 
 export const verifyPayment =
   async (
@@ -41,6 +31,16 @@ export const verifyPayment =
   ) => {
 
     try {
+
+      const key_id = process.env.RAZORPAY_KEY_ID;
+      const key_secret = process.env.RAZORPAY_KEY_SECRET;
+      if (!key_id || !key_secret) {
+        return res.status(503).json({
+          error: "Payments temporarily unavailable",
+          code: "PAYMENTS_UNAVAILABLE",
+        });
+      }
+      const razorpay = new Razorpay({ key_id, key_secret });
 
       const {
         razorpay_order_id,
