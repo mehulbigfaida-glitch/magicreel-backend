@@ -14,6 +14,7 @@ export interface RegisterUserInput {
   mobileNumber?: string;
   password: string;
   emailVerified?: boolean;
+  skipZernioProfile?: boolean;
 }
 
 // ----------------------------
@@ -338,7 +339,7 @@ export async function registerPendingUser(input: RegisterUserInput) {
 
   // Reuse the established account, subscription and profile creation path.
   const fullName = input.fullName?.trim() || email.split("@")[0] || "MagicReel User";
-  await registerUser({ ...input, fullName, email, emailVerified: false });
+  await registerUser({ ...input, fullName, email, emailVerified: false, skipZernioProfile: true });
   const { rawToken, tokenHash, expiresAt } = createVerificationToken();
   await prisma.user.update({
     where: { email },
