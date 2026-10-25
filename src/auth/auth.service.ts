@@ -336,7 +336,7 @@ export async function registerPendingUser(input: RegisterUserInput) {
 
   // Reuse the established account, subscription and profile creation path.
   const fullName = input.fullName?.trim() || email.split("@")[0] || "MagicReel User";
-  await registerUser({ ...input, fullName, email });
+  await registerUser({ ...input, fullName, email, emailVerified: false });
   const { rawToken, tokenHash, expiresAt } = createVerificationToken();
   await prisma.user.update({
     where: { email },
