@@ -3,7 +3,7 @@ import { prisma } from "../magicreel/db/prisma";
 import { MailService } from "../mail/mail.service";
 
 const TOKEN_TTL_MS = 30 * 60 * 1000;
-const FRONTEND_URL = (process.env.FRONTEND_URL || "https://magicreel.in").replace(/\/$/, "");
+const FRONTEND_URL = (process.env.EMAIL_VERIFICATION_FRONTEND_URL || process.env.FRONTEND_URL || "https://magicreel.in").replace(/\/$/, "");
 
 const PERSONAL_EMAIL_DOMAINS = new Set((
   "gmail.com,googlemail.com,yahoo.com,yahoo.co.in,yahoo.co.uk,ymail.com,rocketmail.com,hotmail.com,hotmail.co.uk,outlook.com,outlook.in,live.com,live.co.uk,msn.com,aol.com,icloud.com,me.com,mac.com,proton.me,protonmail.com,pm.me,tutanota.com,tuta.com,fastmail.com,gmx.com,gmx.net,mail.com,yandex.com,yandex.ru,inbox.com,zoho.com,rediffmail.com,rediff.com,hey.com,duck.com,privaterelay.appleid.com,qq.com,163.com,126.com,yeah.net,web.de,orange.fr,free.fr,laposte.net,btinternet.com,virginmedia.com,comcast.net,verizon.net,att.net,shaw.ca,hotmail.fr,outlook.fr,live.fr,hotmail.de,outlook.de,mail.ru,list.ru,bk.ru,internet.ru,dispostable.com,tempmail.com,guerrillamail.com,mailinator.com,10minutemail.com,yopmail.com,trashmail.com,sharklasers.com,throwawaymail.com,tempmailo.com,minuteinbox.com"
