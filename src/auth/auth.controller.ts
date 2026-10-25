@@ -25,7 +25,7 @@ export async function verifyEmail(req: Request, res: Response) {
     const { token } = req.body;
     if (!token) return res.status(400).json({ error: "Verification token is required." });
     const result = await verifyUserEmail(token);
-    const user = await prisma.user.findUnique({ where: { emailVerificationToken: null, emailVerified: true }, orderBy: { updatedAt: "desc" } });
+    const user = await prisma.user.findUnique({ where: { id: result.userId } });
     // Token is issued only after the single-use verification succeeds.
     if (!user || !result.token) return res.status(500).json({ error: "Verification succeeded but session creation failed. Please log in." });
     const { passwordHash, ...safeUser } = user as any;
