@@ -5,6 +5,7 @@ import { Plan, BillingCycle } from "@prisma/client";
 import { prisma } from "../../magicreel/db/prisma";
 import { calculateSubscriptionEnd } from "../../subscription/subscription.utils";
 import { MailService } from "../../mail/mail.service";
+import { isCompanyEmail, sendTestingRequestVerification } from "../../auth/email-verification.service";
 
 export async function requestTestingCredits(
   req: Request,
@@ -39,6 +40,14 @@ export async function requestTestingCredits(
       });
     }
 
+    const normalizedEmail = String(email || "").trim().toLowerCase();
+    if (!isCompanyEmail(normalizedEmail)) {
+      return res.status(400).json({
+        success: false,
+        error: "Please use a company email address. Free/personal email providers such as Gmail, Yahoo, and Outlook.com are not eligible for testing-credit requests.",
+      });
+    }
+
     // ============================================
     // CREATE REQUEST
     // ============================================
@@ -65,6 +74,25 @@ export async function requestTestingCredits(
               : [],
         },
       });
+
+    // Shared verification service: requests are not sent to the review queue until the business email is verified.
+    try {
+      await sendTestingRequestVerification(request.id);
+    } catch (verificationError: any) {
+      console.error("TESTING CREDIT VERIFICATION EMAIL ERROR:", verificationError);
+      await prisma.testingCreditRequest.delete({ where: { id: request.id } }).catch(() => undefined);
+      return res.status(503).json({
+        success: false,
+        error: "We could not send the verification email right now. Please try again shortly.",
+      });
+    }
+
+    return res.status(202).json({
+      success: true,
+      verificationRequired: true,
+      email: normalizedEmail,
+      message: "Please check your company inbox and click the verification link. Your request will be reviewed after email verification.",
+    });
 
     // ============================================
     // ADMIN NOTIFICATION EMAIL
