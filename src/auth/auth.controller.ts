@@ -23,29 +23,18 @@ export async function register(req: Request, res: Response) {
       return res.status(400).json({ error: "Email and password are required" });
     }
 
-    // ✅ Create user + get token
-    const registration = await registerUser({
-  fullName,
-  email,
-  mobileNumber,
-  password,
-});
-
-    const user = await prisma.user.findUnique({
-      where: { email },
+    // Create account, then require email verification before issuing any session token.
+    await registerUser({
+      fullName,
+      email,
+      mobileNumber,
+      password,
     });
 
-    if (!user) {
-      return res.status(500).json({ error: "User creation failed" });
-    }
-
-    // ✅ Remove sensitive fields
-    const { passwordHash, ...safeUser } = user as any;
-
-    // ✅ SAME RESPONSE SHAPE AS LOGIN
-    res.json({
-      token,
-      user: safeUser,
+    return res.status(202).json({
+      verificationRequired: true,
+      email: String(email).trim().toLowerCase(),
+      message: "Account created. Please verify your email using the link we sent before signing in.",
     });
   } catch (err: any) {
     res.status(400).json({ error: err.message });
