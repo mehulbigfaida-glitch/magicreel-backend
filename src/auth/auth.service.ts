@@ -297,3 +297,83 @@ export async function resetPassword(
     success: true,
   };
 }
+
+// ----------------------------
+// Email verification
+// ----------------------------
+function createVerificationToken() {
+  const rawToken = crypto.randomBytes(32).toString("hex");
+  const tokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
+  const expiresAt = new Date(Date.now() + 30 * 60 * 1000);
+  return { rawToken, tokenHash, expiresAt };
+}
+
+async function sendVerificationEmail(email: string, rawToken: string) {
+  const frontendUrl = (process.env.EMAIL_VERIFICATION_FRONTEND_URL || process.env.FRONTEND_URL || "https://magicreel.in").replace(/\/$/, "");
+  const verifyUrl = `${frontendUrl}/verify-email?token=${encodeURIComponent(rawToken)}`;
+  const result = await MailService.sendEmail(
+    email,
+    "Verify your MagicReel email",
+    `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#0f172a">
+      <h1 style="color:#172554">Welcome to MagicReel</h1>
+      <p>Please verify your email address to continue creating professional fashion content.</p>
+      <p style="margin:28px 0"><a href="${verifyUrl}" style="background:#172554;color:#fff;text-decoration:none;padding:14px 22px;border-radius:8px;display:inline-block;font-weight:bold">Verify email</a></p>
+      <p>This link can be used once and expires in 30 minutes.</p>
+      <p>If you did not request a MagicReel account, you can ignore this email.</p>
+    </div>`
+  );
+  if (result.error) throw new Error("Verification email could not be sent. Please try again.");
+}
+
+export async function registerPendingUser(input: RegisterUserInput) {
+  const email = input.email?.trim().toLowerCase();
+  if (!email || !input.password) throw new Error("Email and password are required.");
+  const existing = await prisma.user.findUnique({ where: { email } });
+  if (existing) {
+    if (!existing.emailVerified) throw new Error("An account is already awaiting verification. Use resend verification.");
+    throw new Error("An account already exists for this email. Please log in.");
+  }
+
+  // Reuse the established account, subscription and profile creation path.
+  const fullName = input.fullName?.trim() || email.split("@")[0] || "MagicReel User";
+  await registerUser({ ...input, fullName, email });
+  const { rawToken, tokenHash, expiresAt } = createVerificationToken();
+  await prisma.user.update({
+    where: { email },
+    data: { emailVerified: false, emailVerificationToken: tokenHash, emailVerificationExpiresAt: expiresAt },
+  });
+  await sendVerificationEmail(email, rawToken);
+  return { success: true };
+}
+
+export async function verifyUserEmail(rawToken: string) {
+  if (!rawToken) throw new Error("Verification token is required.");
+  const tokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
+  const now = new Date();
+  const found = await prisma.user.findFirst({
+    where: { emailVerificationToken: tokenHash, emailVerificationExpiresAt: { gt: now }, emailVerified: false },
+    select: { id: true },
+  });
+  if (!found) throw new Error("This verification link is invalid, expired, or already used.");
+  const updated = await prisma.user.updateMany({
+    where: { id: found.id, emailVerificationToken: tokenHash, emailVerificationExpiresAt: { gt: now }, emailVerified: false },
+    data: { emailVerified: true, emailVerificationToken: null, emailVerificationExpiresAt: null },
+  });
+  if (updated.count !== 1) throw new Error("This verification link is invalid, expired, or already used.");
+  return { success: true };
+}
+
+export async function resendUserVerification(emailInput: string) {
+  const email = emailInput?.trim().toLowerCase();
+  if (!email) throw new Error("Email is required.");
+  const user = await prisma.user.findUnique({ where: { email } });
+  // Same generic response avoids revealing whether an address is registered.
+  if (!user || user.emailVerified) return { success: true };
+  const { rawToken, tokenHash, expiresAt } = createVerificationToken();
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { emailVerificationToken: tokenHash, emailVerificationExpiresAt: expiresAt },
+  });
+  await sendVerificationEmail(email, rawToken);
+  return { success: true };
+}
