@@ -1,64 +1,158 @@
 import { Request, Response } from "express";
-import { isBusinessProfileComplete } from "../../business-profile/businessProfile.service";
-import { isDomesticBillingComplete } from "../../billing/billingProfile.service";
+import {
+  isBusinessProfileComplete,
+} from "../../business-profile/businessProfile.service";
+import {
+  isDomesticBillingComplete,
+} from "../../billing/billingProfile.service";
 import Razorpay from "razorpay";
-import { PLAN_CONFIG, withGST } from "./paymentConfig";
 
-const key_id = process.env.RAZORPAY_KEY_ID;
-const key_secret = process.env.RAZORPAY_KEY_SECRET;
+import {
+  PLAN_CONFIG,
+  withGST,
+} from "./paymentConfig";
 
-type PlanType = "BASIC" | "PRO" | "ADVANCE";
+const key_id =
+  process.env.RAZORPAY_KEY_ID;
 
-export const createOrder = async (req: Request, res: Response) => {
-  try {
-    const plan = req.body?.plan as PlanType;
-    const userId = (req as any).user?.id;
+const key_secret =
+  process.env.RAZORPAY_KEY_SECRET;
 
-    if (!userId) return res.status(401).json({ error: "Unauthorized" });
 
-    if (!key_id || !key_secret) {
-      console.error("Razorpay is not configured: missing payment credentials.");
-      return res.status(503).json({
-        error: "PAYMENTS_UNAVAILABLE",
-        message: "Payments are temporarily unavailable. Please try again later.",
+type PlanType =
+  | "BASIC"
+  | "PRO"
+  | "ADVANCE";
+
+export const createOrder =
+  async (
+    req: Request,
+    res: Response
+  ) => {
+
+    try {
+
+      const plan =
+        req.body?.plan as PlanType;
+
+      const userId =
+        (req as any).user?.id;
+
+      if (!userId) {
+        return res.status(401).json({
+          error:
+            "Unauthorized",
+        });
+      }
+
+      if (!key_id || !key_secret) {
+        return res.status(503).json({
+          error: "PAYMENTS_UNAVAILABLE",
+          message: "Payments are temporarily unavailable. Please try again later.",
+        });
+      }
+
+      const businessProfileComplete =
+        await isBusinessProfileComplete(
+          userId
+        );
+
+      if (!businessProfileComplete) {
+        return res.status(409).json({
+          error:
+            "BUSINESS_PROFILE_REQUIRED",
+        });
+      }
+
+      const billingComplete =
+        await isDomesticBillingComplete(
+          userId
+        );
+
+      if (!billingComplete) {
+        return res.status(409).json({
+          error:
+            "BILLING_PROFILE_REQUIRED",
+        });
+      }
+
+      if (
+        !plan ||
+        !PLAN_CONFIG[plan]
+      ) {
+        return res.status(400).json({
+          error:
+            "Invalid plan",
+        });
+      }
+
+      const razorpay = new Razorpay({
+        key_id,
+        key_secret,
       });
+
+      const baseAmount =
+        PLAN_CONFIG[
+          plan
+        ].baseAmountPaise;
+
+      const amount =
+        withGST(baseAmount);
+
+      const order =
+        await razorpay.orders.create({
+          amount,
+
+          currency:
+            "INR",
+
+          receipt:
+            `plan_${Date.now()
+              .toString()
+              .slice(-8)}`,
+
+          notes: {
+            kind:
+              "PLAN_PURCHASE",
+
+            userId,
+
+            plan,
+          },
+        });
+
+      return res.json({
+        success:
+          true,
+
+        orderId:
+          order.id,
+
+        amount:
+          order.amount,
+
+        currency:
+          order.currency,
+
+        key:
+          key_id,
+      });
+
+    } catch (error: any) {
+
+      console.error(
+        "❌ RAZORPAY PLAN ORDER ERROR:",
+        error
+      );
+
+      return res.status(500).json({
+        error:
+          "Failed to create order",
+
+        message:
+          error?.message,
+      });
+
     }
 
-    const businessProfileComplete = await isBusinessProfileComplete(userId);
-    if (!businessProfileComplete) {
-      return res.status(409).json({ error: "BUSINESS_PROFILE_REQUIRED" });
-    }
-
-    const billingComplete = await isDomesticBillingComplete(userId);
-    if (!billingComplete) {
-      return res.status(409).json({ error: "BILLING_PROFILE_REQUIRED" });
-    }
-
-    if (!plan || !PLAN_CONFIG[plan]) {
-      return res.status(400).json({ error: "Invalid plan" });
-    }
-
-    const razorpay = new Razorpay({ key_id, key_secret });
-    const amount = withGST(PLAN_CONFIG[plan].baseAmountPaise);
-    const order = await razorpay.orders.create({
-      amount,
-      currency: "INR",
-      receipt: `plan_${Date.now().toString().slice(-8)}`,
-      notes: { kind: "PLAN_PURCHASE", userId, plan },
-    });
-
-    return res.json({
-      success: true,
-      orderId: order.id,
-      amount: order.amount,
-      currency: order.currency,
-      key: key_id,
-    });
-  } catch (error: any) {
-    console.error("❌ RAZORPAY PLAN ORDER ERROR:", error);
-    return res.status(500).json({
-      error: "Failed to create order",
-      message: error?.message,
-    });
-  }
-};
+  };
