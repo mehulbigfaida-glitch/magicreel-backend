@@ -215,6 +215,7 @@ export async function getTestingCreditRequests(
   try {
     const requests =
       await prisma.testingCreditRequest.findMany({
+        where: { emailVerified: true },
         orderBy: {
           createdAt: "desc",
         },
@@ -356,6 +357,10 @@ export async function rejectTestingCreditRequest(
       });
     }
 
+    if (!request.emailVerified) {
+      return res.status(403).json({ success: false, error: "Verify the business email before processing this request." });
+    }
+
     if (request.status !== "PENDING") {
       return res.status(400).json({
         success: false,
@@ -435,6 +440,10 @@ export async function approveTestingCreditRequest(
         error:
           "Testing credit request not found.",
       });
+    }
+
+    if (!request.emailVerified) {
+      return res.status(403).json({ success: false, error: "Verify the business email before processing this request." });
     }
 
     if (request.status !== "PENDING") {
