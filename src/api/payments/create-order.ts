@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import Razorpay from "razorpay";
+import { prisma } from "../../magicreel/db/prisma";
 
 import {
   PLAN_CONFIG,
@@ -50,6 +51,32 @@ export const createOrder =
         return res.status(400).json({
           error:
             "Invalid plan",
+        });
+      }
+
+      const businessProfile = await prisma.businessProfile.findUnique({
+        where: { userId },
+      });
+      const billingProfile = await prisma.billingProfile.findUnique({
+        where: { userId },
+      });
+
+      const billingComplete = Boolean(
+        businessProfile?.completed === true &&
+        billingProfile?.billingName?.trim() &&
+        billingProfile?.email?.trim() &&
+        billingProfile?.addressLine1?.trim() &&
+        billingProfile?.city?.trim() &&
+        billingProfile?.state?.trim() &&
+        billingProfile?.postalCode?.trim() &&
+        billingProfile?.country?.trim()
+      );
+
+      if (!billingComplete) {
+        return res.status(409).json({
+          success: false,
+          code: "BILLING_PROFILE_REQUIRED",
+          error: "Complete your business and billing details before purchasing a plan.",
         });
       }
 
