@@ -54,17 +54,14 @@ export const createOrder =
         });
       }
 
-      const businessProfile = await prisma.businessProfile.findUnique({
-        where: { userId },
-      });
-      const billingProfile = await prisma.billingProfile.findUnique({
+      // Require complete invoice identity/address before creating a paid order.
+      // Brand/social onboarding is not a prerequisite for purchasing.
+      const billingProfile = await prisma.userProfile.findUnique({
         where: { userId },
       });
 
       const billingComplete = Boolean(
-        businessProfile?.completed === true &&
-        billingProfile?.billingName?.trim() &&
-        billingProfile?.email?.trim() &&
+        billingProfile?.fullName?.trim() &&
         billingProfile?.addressLine1?.trim() &&
         billingProfile?.city?.trim() &&
         billingProfile?.state?.trim() &&
@@ -76,7 +73,7 @@ export const createOrder =
         return res.status(409).json({
           success: false,
           code: "BILLING_PROFILE_REQUIRED",
-          error: "Complete your business and billing details before purchasing a plan.",
+          error: "Complete your billing details before purchasing a plan.",
         });
       }
 
