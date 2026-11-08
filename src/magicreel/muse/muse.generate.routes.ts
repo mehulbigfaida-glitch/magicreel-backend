@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import axios from "axios";
 import { fal } from "@fal-ai/client";
 import { v2 as cloudinary } from "cloudinary";
+import sharp from "sharp";
 import { buildMusePrompt } from "./muse.prompt";
 
 const router = Router();
@@ -100,6 +101,70 @@ router.post("/generate-faces", authenticateMuseRequest, async (req: MuseRequest,
       },
     });
 
+    // Split the stored collage into eight independently selectable portrait assets.
+    const collageResponse = await axios.get(cloudinaryResult.secure_url, { responseType: "arraybuffer" });
+    const collageBuffer = Buffer.from(collageResponse.data);
+    const metadata = await sharp(collageBuffer).metadata();
+    if (!metadata.width || !metadata.height || metadata.width < 4 || metadata.height < 2) {
+      throw new Error("The generated Muse collage has invalid dimensions.");
+    }
+
+    const cellWidth = Math.floor(metadata.width / 4);
+    const cellHeight = Math.floor(metadata.height / 2);
+    const inset = 3;
+    const candidates = await Promise.all(
+      Array.from({ length: 8 }, async (_unused, index) => {
+        const row = Math.floor(index / 4);
+        const column = index % 4;
+        const left = column * cellWidth + inset;
+        const top = row * cellHeight + inset;
+        const width = Math.min(cellWidth - inset * 2, metadata.width - left);
+        const height = Math.min(cellHeight - inset * 2, metadata.height - top);
+        const candidateBuffer = await sharp(collageBuffer)
+          .extract({ left, top, width, height })
+          .png()
+          .toBuffer();
+
+        const candidateAsset = await new Promise<{ secure_url: string; public_id: string; width?: number; height?: number }>((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            {
+              folder: "magicreel/muse/candidates",
+              resource_type: "image",
+              format: "png",
+              tags: ["muse-candidate", "muse-generated"],
+              context: {
+                owner_id: userId,
+                prompt_version: "distinctive-muse-v1",
+                reference_public_id: referencePublicId,
+                collage_public_id: cloudinaryResult.public_id,
+                candidate_number: String(index + 1),
+              },
+            },
+            (error, uploaded) => {
+              if (error || !uploaded?.secure_url || !uploaded.public_id) {
+                return reject(error || new Error("Cloudinary did not return a Muse candidate image."));
+              }
+              resolve({
+                secure_url: uploaded.secure_url,
+                public_id: uploaded.public_id,
+                width: uploaded.width,
+                height: uploaded.height,
+              });
+            }
+          );
+          stream.end(candidateBuffer);
+        });
+
+        return {
+          candidateNumber: index + 1,
+          imageUrl: candidateAsset.secure_url,
+          publicId: candidateAsset.public_id,
+          width: candidateAsset.width || width,
+          height: candidateAsset.height || height,
+        };
+      })
+    );
+
     return res.status(201).json({
       success: true,
       data: {
@@ -109,6 +174,7 @@ router.post("/generate-faces", authenticateMuseRequest, async (req: MuseRequest,
         height: cloudinaryResult.height || generatedImage.height,
         candidateCount: 8,
         layout: "4x2",
+        candidates,
       },
     });
   } catch (error: any) {
