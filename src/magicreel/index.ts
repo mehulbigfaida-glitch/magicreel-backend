@@ -122,6 +122,7 @@ import cinematicRoutes from "../api/cinematic";
 import createAIRoutes from "./create-ai/createAI.routes";
 import campaignGenerationRoutes
   from "./campaign-v2/routes/campaignGeneration.routes";
+import museRoutes from "./muse/muse.routes";
 
 // CORE APIs
 app.use("/api/predictions", predictionsRoutes);
@@ -163,6 +164,9 @@ app.use(
   "/api/campaign-v2",
   campaignGenerationRoutes
 );
+
+// MUSE STUDIO - isolated authenticated reference upload
+app.use("/api/muse", museRoutes);
 
 /* ---------------------------------- */
 /* 🧪 QUEUE TEST */
