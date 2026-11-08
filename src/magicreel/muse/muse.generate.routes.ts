@@ -1,3 +1,4 @@
+// Muse collage generation and candidate asset extraction.
 import { Router, Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import axios from "axios";
