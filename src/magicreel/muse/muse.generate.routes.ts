@@ -14,7 +14,7 @@ type MuseRequest = Request & { user?: { id: string } };
 
 fal.config({ credentials: process.env.FAL_KEY! });
 
-function authenticateMuseRequest(req: Request, res: Response, next: () => void) {
+function authenticateMuseRequest(req: Request, res: Response, next: NextFunction) {
   const authorization = req.headers.authorization;
   const token = authorization?.startsWith("Bearer ") ? authorization.slice(7).trim() : undefined;
   if (!token) return res.status(401).json({ success: false, message: "Authentication required." });
