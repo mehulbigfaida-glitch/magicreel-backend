@@ -4,5 +4,5 @@ export function buildMusePrompt(age: number, gender: "auto" | "female" | "male")
   const genderInstruction = gender === "auto"
     ? ""
     : `\n\n### OPTIONAL GENDER PRESENTATION\nCreate the fictional fashion-model identities with a ${gender} presentation, while retaining broad visual inspiration from the uploaded reference.`;
-  return MUSE_MASTER_PROMPT.replaceAll("{{AGE}}", String(age)) + genderInstruction;
+  return MUSE_MASTER_PROMPT.replace(/\{\{AGE\}\}/g, String(age)) + genderInstruction;
 }
