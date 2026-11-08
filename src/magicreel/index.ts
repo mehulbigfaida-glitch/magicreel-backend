@@ -123,6 +123,7 @@ import createAIRoutes from "./create-ai/createAI.routes";
 import campaignGenerationRoutes
   from "./campaign-v2/routes/campaignGeneration.routes";
 import museRoutes from "./muse/muse.routes";
+import museGenerationRoutes from "./muse/muse.generate.routes";
 
 // CORE APIs
 app.use("/api/predictions", predictionsRoutes);
@@ -167,6 +168,7 @@ app.use(
 
 // MUSE STUDIO - isolated authenticated reference upload
 app.use("/api/muse", museRoutes);
+app.use("/api/muse", museGenerationRoutes);
 
 /* ---------------------------------- */
 /* 🧪 QUEUE TEST */
