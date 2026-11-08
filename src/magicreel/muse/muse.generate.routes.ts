@@ -188,4 +188,5 @@ router.post("/generate-faces", authenticateMuseRequest, async (req: MuseRequest,
   }
 });
 
+// Railway production rebuild trigger: keep deployment source on main.
 export default router;
