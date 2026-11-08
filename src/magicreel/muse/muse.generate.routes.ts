@@ -110,8 +110,11 @@ router.post("/generate-faces", authenticateMuseRequest, async (req: MuseRequest,
       throw new Error("The generated Muse collage has invalid dimensions.");
     }
 
-    const cellWidth = Math.floor(metadata.width / 4);
-    const cellHeight = Math.floor(metadata.height / 2);
+    // Copy validated dimensions to locals so strict TypeScript retains the narrowing inside callbacks.
+    const collageWidth = metadata.width;
+    const collageHeight = metadata.height;
+    const cellWidth = Math.floor(collageWidth / 4);
+    const cellHeight = Math.floor(collageHeight / 2);
     const inset = 3;
     const candidates = await Promise.all(
       Array.from({ length: 8 }, async (_unused, index) => {
@@ -119,8 +122,8 @@ router.post("/generate-faces", authenticateMuseRequest, async (req: MuseRequest,
         const column = index % 4;
         const left = column * cellWidth + inset;
         const top = row * cellHeight + inset;
-        const width = Math.min(cellWidth - inset * 2, metadata.width - left);
-        const height = Math.min(cellHeight - inset * 2, metadata.height - top);
+        const width = Math.min(cellWidth - inset * 2, collageWidth - left);
+        const height = Math.min(cellHeight - inset * 2, collageHeight - top);
         const candidateBuffer = await sharp(collageBuffer)
           .extract({ left, top, width, height })
           .png()
