@@ -6,6 +6,7 @@ export interface BuildGptHeroPromptRequest {
   categoryKey: string;
   avatarGender: string;
   styling?: string;
+  bodyType?: "Slim" | "Athletic" | "Curvy" | "Plus Size";
   heroView: "front" | "back";
 }
 
@@ -17,6 +18,7 @@ export function buildGptHeroPrompt(
     categoryKey,
     avatarGender,
     styling,
+    bodyType = "Athletic",
     heroView,
   } = request;
 
@@ -37,9 +39,9 @@ export function buildGptHeroPrompt(
     return `
 The first uploaded image is the garment image and is the absolute source of truth.
 
-Transfer the uploaded garment onto the provided full-body fashion model.
+Transfer the uploaded garment onto a full-body ${bodyType} fashion model.
 
-The uploaded model is the body reference only.
+The second uploaded image is a face reference only. Use it to preserve facial identity, hairstyle and visible skin appearance. Generate the full body independently according to the selected body type.
 
 Completely replace the model's clothing with the uploaded garment.
 
@@ -80,19 +82,13 @@ The garment remains the primary commercial product.
   function buildBodyReferenceSection(): string {
 
     return `
-The second uploaded image is the full-body fashion model reference.
+The second uploaded image is a face reference only, not a full-body or body-proportion reference.
 
-Use the model image as the absolute reference for the model's body proportions, body shape, face, hairstyle, skin appearance, hands, arms, legs and overall physical identity.
+Preserve the facial identity, facial structure, hairstyle and visible skin appearance from this image. Do not copy or infer body proportions from the face-reference image.
 
-Do not redesign, slim, enlarge, reshape or otherwise alter the model's body.
+Generate a complete, anatomically realistic full-body fashion model matching the selected body type: ${bodyType}.
 
-Preserve the model's natural body proportions.
-
-The garment must be fitted naturally to this specific body.
-
-Do not force the garment onto an unrealistically different body shape.
-
-The final garment fit must respect the model's actual body volume, proportions and anatomy.
+The garment must be fitted naturally to the generated body while preserving the garment's original construction and proportions.
 `.trim();
 
   }
