@@ -16,7 +16,13 @@ export async function generateHeroV3(req: Request, res: Response) {
   styling,
   avatarBackImageUrl,
   garmentBackImageUrl,
+  bodyType: requestedBodyType,
 } = req.body;
+
+    const allowedBodyTypes = ["Slim", "Athletic", "Curvy", "Plus Size"] as const;
+    const bodyType = allowedBodyTypes.includes(requestedBodyType)
+      ? requestedBodyType
+      : "Athletic";
 
     if (
       !categoryKey ||
@@ -79,6 +85,7 @@ console.log("=== HERO REQUEST ===", {
   categoryKey,
   avatarGender,
   styling,
+  bodyType,
   heroView: "front",
 });
 
@@ -137,6 +144,7 @@ const frontRunId = frontJob.id;
   categoryKey: backCategoryKey,
   avatarGender,
   styling,
+  bodyType,
   heroView: "back",
 });
 
