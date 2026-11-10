@@ -358,13 +358,13 @@ router.post("/create-from-candidate", authenticateMuseRequest, async (req: MuseR
     const masterPortrait = await generateAndStoreMuseAsset(userId, candidateUrl, "master-portrait");
     createdPublicIds.push(masterPortrait.public_id);
 
-    const placeholder = await generateAndStoreMuseAsset(userId, candidateAsset.secure_url, "placeholder");
+    const placeholder = await generateAndStoreMuseAsset(userId, candidateUrl, "placeholder");
     createdPublicIds.push(placeholder.public_id);
 
-    const frontHero = await generateAndStoreMuseAsset(userId, candidateAsset.secure_url, "front-hero");
+    const frontHero = await generateAndStoreMuseAsset(userId, candidateUrl, "front-hero");
     createdPublicIds.push(frontHero.public_id);
 
-    const backHero = await generateAndStoreMuseAsset(userId, candidateAsset.secure_url, "back-hero");
+    const backHero = await generateAndStoreMuseAsset(userId, candidateUrl, "back-hero");
     createdPublicIds.push(backHero.public_id);
 
     const muse = await prisma.muse.create({
@@ -374,7 +374,7 @@ router.post("/create-from-candidate", authenticateMuseRequest, async (req: MuseR
         age: numericAge,
         gender,
         candidateNumber: numericCandidateNumber,
-        candidateImageUrl: candidateAsset.secure_url,
+        candidateImageUrl: candidateUrl,
         candidatePublicId,
         masterPortraitUrl: masterPortrait.secure_url,
         masterPortraitPublicId: masterPortrait.public_id,
