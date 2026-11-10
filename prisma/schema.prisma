@@ -101,6 +101,7 @@ model User {
   campaigns            Campaign[]
   editorialGenerations EditorialGeneration[]
   socialGenerations    SocialGeneration[]
+  muses                Muse[]
 
   profile         UserProfile?
   businessProfile BusinessProfile?
@@ -562,4 +563,45 @@ model TestingCreditRequest {
   @@index([company])
   @@index([status])
   @@index([userId])
+}
+
+
+////////////////////////////////////////////////////////
+// PRIVATE USER MUSES
+////////////////////////////////////////////////////////
+
+model Muse {
+  id String @id @default(uuid())
+
+  userId String @map("user_id")
+  name   String @default("My Muse")
+  age    Int
+  gender String
+
+  candidateNumber  Int    @map("candidate_number")
+  candidateImageUrl String @map("candidate_image_url")
+  candidatePublicId String @map("candidate_public_id")
+
+  masterPortraitUrl     String @map("master_portrait_url")
+  masterPortraitPublicId String @map("master_portrait_public_id")
+
+  placeholderImageUrl  String @map("placeholder_image_url")
+  placeholderPublicId  String @map("placeholder_public_id")
+
+  processingImageUrl   String @map("processing_image_url")
+  processingPublicId   String @map("processing_public_id")
+
+  processingBackImageUrl String @map("processing_back_image_url")
+  processingBackPublicId String @map("processing_back_public_id")
+
+  promptVersion String @default("distinctive-muse-v1") @map("prompt_version")
+  status        String @default("READY")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("muses")
 }
