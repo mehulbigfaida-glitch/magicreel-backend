@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
+import { getRazorpayClient } from "./razorpayClient";
 import crypto from "crypto";
-import Razorpay from "razorpay";
 import { Prisma } from "@prisma/client";
 
 import {
@@ -15,17 +15,6 @@ import {
   PUBLISHING_BASE_AMOUNT_PAISE,
   withGST,
 } from "./paymentConfig";
-
-const key_id =
-  process.env.RAZORPAY_KEY_ID;
-
-const key_secret =
-  process.env.RAZORPAY_KEY_SECRET;
-
-const razorpay = new Razorpay({
-  key_id: key_id!,
-  key_secret: key_secret!,
-});
 
 function calculatePublishingEnd(
   startDate: Date
@@ -52,6 +41,8 @@ export const verifyPublishing =
   ) => {
 
     try {
+      const { client: razorpay, keyId, keySecret } = getRazorpayClient();
+
 
       const {
         razorpay_order_id,
@@ -89,8 +80,7 @@ export const verifyPublishing =
         crypto
           .createHmac(
             "sha256",
-            process.env
-              .RAZORPAY_KEY_SECRET!
+            keySecret
           )
           .update(body)
           .digest("hex");
