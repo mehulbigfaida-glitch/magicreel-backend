@@ -1,21 +1,10 @@
 import { Request, Response } from "express";
-import Razorpay from "razorpay";
+import { getRazorpayClient } from "./razorpayClient";
 
 import {
   PLAN_CONFIG,
   withGST,
 } from "./paymentConfig";
-
-const key_id =
-  process.env.RAZORPAY_KEY_ID;
-
-const key_secret =
-  process.env.RAZORPAY_KEY_SECRET;
-
-const razorpay = new Razorpay({
-  key_id: key_id!,
-  key_secret: key_secret!,
-});
 
 type PlanType =
   | "BASIC"
@@ -29,6 +18,8 @@ export const createOrder =
   ) => {
 
     try {
+      const { client: razorpay, keyId, keySecret } = getRazorpayClient();
+
 
       const plan =
         req.body?.plan as PlanType;
@@ -97,7 +88,7 @@ export const createOrder =
           order.currency,
 
         key:
-          key_id,
+          keyId,
       });
 
     } catch (error: any) {

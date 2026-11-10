@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
+import { getRazorpayClient } from "./razorpayClient";
 import crypto from "crypto";
-import Razorpay from "razorpay";
 import { Prisma } from "@prisma/client";
 
 import { prisma } from "../../magicreel/db/prisma";
@@ -23,17 +23,6 @@ import {
   calculateSubscriptionEnd,
 } from "../../subscription/subscription.utils";
 
-const key_id =
-  process.env.RAZORPAY_KEY_ID;
-
-const key_secret =
-  process.env.RAZORPAY_KEY_SECRET;
-
-const razorpay = new Razorpay({
-  key_id: key_id!,
-  key_secret: key_secret!,
-});
-
 export const verifyPayment =
   async (
     req: Request,
@@ -41,6 +30,8 @@ export const verifyPayment =
   ) => {
 
     try {
+      const { client: razorpay, keyId, keySecret } = getRazorpayClient();
+
 
       const {
         razorpay_order_id,
@@ -82,8 +73,7 @@ export const verifyPayment =
         crypto
           .createHmac(
             "sha256",
-            process.env
-              .RAZORPAY_KEY_SECRET!
+            keySecret
           )
           .update(body)
           .digest("hex");

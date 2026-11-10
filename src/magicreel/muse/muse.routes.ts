@@ -2,10 +2,19 @@ import { Router, Request, Response, NextFunction } from "express";
 import multer from "multer";
 import jwt from "jsonwebtoken";
 import { v2 as cloudinary } from "cloudinary";
+import { prisma } from "../db/prisma";
 
 const router = Router();
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const JWT_SECRET = process.env.JWT_SECRET || "dev_secret";
+
+function signedMuseUrl(publicId: string): string {
+  return cloudinary.url(publicId, {
+    secure: true,
+    type: "authenticated",
+    sign_url: true
+  });
+}
 
 type TokenPayload = jwt.JwtPayload & { id?: string; userId?: string };
 
@@ -58,6 +67,93 @@ const upload = multer({
   },
 });
 
+
+router.get("/my-muses", authenticateMuseRequest, async (req: Request, res: Response) => {
+  try {
+    const userId = (req as Request & { user?: { id: string } }).user?.id;
+    if (!userId) return res.status(401).json({ success: false, message: "Authentication required." });
+
+    const muses = await prisma.muse.findMany({
+      where: { userId, status: "READY" },
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        name: true,
+        age: true,
+        gender: true,
+        candidateNumber: true,
+        masterPortraitPublicId: true,
+        placeholderPublicId: true,
+        processingPublicId: true,
+        processingBackPublicId: true,
+        status: true,
+        createdAt: true
+      }
+    });
+
+    const privateMuses = muses.map((muse) => ({
+      id: muse.id,
+      name: muse.name,
+      age: muse.age,
+      gender: muse.gender,
+      candidateNumber: muse.candidateNumber,
+      masterPortraitUrl: signedMuseUrl(muse.masterPortraitPublicId),
+      placeholderImageUrl: signedMuseUrl(muse.placeholderPublicId),
+      processingImageUrl: signedMuseUrl(muse.processingPublicId),
+      processingBackImageUrl: signedMuseUrl(muse.processingBackPublicId),
+      status: muse.status,
+      createdAt: muse.createdAt
+    }));
+
+    return res.status(200).json({ success: true, data: { muses: privateMuses } });
+  } catch (error) {
+    console.error("Fetching private Muses failed:", error instanceof Error ? error.message : "Unknown error");
+    return res.status(500).json({ success: false, message: "Could not load your saved Muses." });
+  }
+});
+
+router.get("/my-muses/:id", authenticateMuseRequest, async (req: Request, res: Response) => {
+  try {
+    const userId = (req as Request & { user?: { id: string } }).user?.id;
+    if (!userId) return res.status(401).json({ success: false, message: "Authentication required." });
+
+    const muse = await prisma.muse.findFirst({
+      where: { id: req.params.id, userId, status: "READY" },
+      select: {
+        id: true,
+        name: true,
+        age: true,
+        gender: true,
+        candidateNumber: true,
+        masterPortraitPublicId: true,
+        placeholderPublicId: true,
+        processingPublicId: true,
+        processingBackPublicId: true,
+        status: true,
+        createdAt: true
+      }
+    });
+    if (!muse) return res.status(404).json({ success: false, message: "Muse not found." });
+    const privateMuse = {
+      id: muse.id,
+      name: muse.name,
+      age: muse.age,
+      gender: muse.gender,
+      candidateNumber: muse.candidateNumber,
+      masterPortraitUrl: signedMuseUrl(muse.masterPortraitPublicId),
+      placeholderImageUrl: signedMuseUrl(muse.placeholderPublicId),
+      processingImageUrl: signedMuseUrl(muse.processingPublicId),
+      processingBackImageUrl: signedMuseUrl(muse.processingBackPublicId),
+      status: muse.status,
+      createdAt: muse.createdAt
+    };
+    return res.status(200).json({ success: true, data: { muse: privateMuse } });
+  } catch (error) {
+    console.error("Fetching private Muse failed:", error instanceof Error ? error.message : "Unknown error");
+    return res.status(500).json({ success: false, message: "Could not load this Muse." });
+  }
+});
+
 router.post(
   "/upload-reference",
   authenticateMuseRequest,
@@ -92,6 +188,7 @@ router.post(
           {
             folder: "magicreel/muse/references",
             resource_type: "image",
+            type: "authenticated",
             allowed_formats: ["jpg", "jpeg", "png", "webp"],
             tags: ["muse-reference"],
             context: { owner_id: userId },
@@ -108,7 +205,7 @@ router.post(
 
       return res.status(201).json({
         success: true,
-        data: { imageUrl: result.secure_url, publicId: result.public_id },
+        data: { imageUrl: signedMuseUrl(result.public_id), publicId: result.public_id },
       });
     } catch (error) {
       console.error("Muse reference upload failed:", error instanceof Error ? error.message : "Unknown error");
