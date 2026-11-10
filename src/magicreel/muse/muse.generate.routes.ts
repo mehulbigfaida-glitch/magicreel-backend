@@ -408,7 +408,7 @@ router.post("/create-from-candidate", authenticateMuseRequest, async (req: MuseR
   } catch (error: any) {
     if (createdPublicIds.length) {
       try {
-        await cloudinary.api.delete_resources(createdPublicIds, { resource_type: "image" });
+        await cloudinary.api.delete_resources(createdPublicIds, { resource_type: "image", type: "authenticated" });
       } catch (cleanupError) {
         console.error("[Muse] Failed to clean up incomplete asset set:", cleanupError instanceof Error ? cleanupError.message : "Unknown cleanup error");
       }
