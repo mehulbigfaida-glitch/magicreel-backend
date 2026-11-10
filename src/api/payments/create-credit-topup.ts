@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import Razorpay from "razorpay";
+import { getRazorpayClient } from "./razorpayClient";
 
 import {
   CREDIT_RATES,
@@ -14,17 +14,6 @@ import {
   isDomesticBillingComplete,
 } from "../../billing/billingProfile.service";
 
-const key_id =
-  process.env.RAZORPAY_KEY_ID;
-
-const key_secret =
-  process.env.RAZORPAY_KEY_SECRET;
-
-const razorpay = new Razorpay({
-  key_id: key_id!,
-  key_secret: key_secret!,
-});
-
 export const createCreditTopupOrder =
   async (
     req: Request,
@@ -32,6 +21,8 @@ export const createCreditTopupOrder =
   ) => {
 
     try {
+      const { client: razorpay, keyId, keySecret } = getRazorpayClient();
+
 
       const userId =
         (req as any).user?.id;
@@ -172,7 +163,7 @@ export const createCreditTopupOrder =
           order.currency,
 
         key:
-          key_id,
+          keyId,
 
         credits,
 
