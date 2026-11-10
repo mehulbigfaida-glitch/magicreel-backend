@@ -2,6 +2,7 @@ import { Router, Request, Response, NextFunction } from "express";
 import multer from "multer";
 import jwt from "jsonwebtoken";
 import { v2 as cloudinary } from "cloudinary";
+import { prisma } from "../db/prisma";
 
 const router = Router();
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
@@ -56,6 +57,66 @@ const upload = multer({
     }
     callback(null, true);
   },
+});
+
+
+router.get("/my-muses", authenticateMuseRequest, async (req: Request, res: Response) => {
+  try {
+    const userId = (req as Request & { user?: { id: string } }).user?.id;
+    if (!userId) return res.status(401).json({ success: false, message: "Authentication required." });
+
+    const muses = await prisma.muse.findMany({
+      where: { userId, status: "READY" },
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        name: true,
+        age: true,
+        gender: true,
+        candidateNumber: true,
+        masterPortraitUrl: true,
+        placeholderImageUrl: true,
+        processingImageUrl: true,
+        processingBackImageUrl: true,
+        status: true,
+        createdAt: true
+      }
+    });
+
+    return res.status(200).json({ success: true, data: { muses } });
+  } catch (error) {
+    console.error("Fetching private Muses failed:", error instanceof Error ? error.message : "Unknown error");
+    return res.status(500).json({ success: false, message: "Could not load your saved Muses." });
+  }
+});
+
+router.get("/my-muses/:id", authenticateMuseRequest, async (req: Request, res: Response) => {
+  try {
+    const userId = (req as Request & { user?: { id: string } }).user?.id;
+    if (!userId) return res.status(401).json({ success: false, message: "Authentication required." });
+
+    const muse = await prisma.muse.findFirst({
+      where: { id: req.params.id, userId, status: "READY" },
+      select: {
+        id: true,
+        name: true,
+        age: true,
+        gender: true,
+        candidateNumber: true,
+        masterPortraitUrl: true,
+        placeholderImageUrl: true,
+        processingImageUrl: true,
+        processingBackImageUrl: true,
+        status: true,
+        createdAt: true
+      }
+    });
+    if (!muse) return res.status(404).json({ success: false, message: "Muse not found." });
+    return res.status(200).json({ success: true, data: { muse } });
+  } catch (error) {
+    console.error("Fetching private Muse failed:", error instanceof Error ? error.message : "Unknown error");
+    return res.status(500).json({ success: false, message: "Could not load this Muse." });
+  }
 });
 
 router.post(
