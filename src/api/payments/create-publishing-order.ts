@@ -1,27 +1,16 @@
 import { Request, Response } from "express";
+import { getRazorpayClient } from "./razorpayClient";
 import {
   isBusinessProfileComplete,
 } from "../../business-profile/businessProfile.service";
 import {
   isDomesticBillingComplete,
 } from "../../billing/billingProfile.service";
-import Razorpay from "razorpay";
 
 import {
   PUBLISHING_BASE_AMOUNT_PAISE,
   withGST,
 } from "./paymentConfig";
-
-const key_id =
-  process.env.RAZORPAY_KEY_ID;
-
-const key_secret =
-  process.env.RAZORPAY_KEY_SECRET;
-
-const razorpay = new Razorpay({
-  key_id: key_id!,
-  key_secret: key_secret!,
-});
 
 export const createPublishingOrder =
   async (
@@ -30,6 +19,8 @@ export const createPublishingOrder =
   ) => {
 
     try {
+      const { client: razorpay, keyId, keySecret } = getRazorpayClient();
+
 
       const userId =
         (req as any).user?.id;
@@ -104,7 +95,7 @@ export const createPublishingOrder =
           order.currency,
 
         key:
-          key_id,
+          keyId,
       });
 
     } catch (error: any) {
