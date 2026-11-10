@@ -12,6 +12,14 @@ const router = Router();
 const JWT_SECRET = process.env.JWT_SECRET || "dev_secret";
 const MAX_REFERENCE_AGE = 60;
 
+function signedMuseUrl(publicId: string): string {
+  return cloudinary.url(publicId, {
+    secure: true,
+    type: "authenticated",
+    sign_url: true
+  });
+}
+
 type TokenPayload = jwt.JwtPayload & { id?: string; userId?: string };
 type MuseRequest = Request & { user?: { id: string } };
 
@@ -64,7 +72,7 @@ router.post("/generate-faces", authenticateMuseRequest, async (req: MuseRequest,
       return res.status(403).json({ success: false, message: "You do not have permission to use this reference photo." });
     }
 
-    const referenceUrl = referenceAsset.secure_url;
+    const referenceUrl = signedMuseUrl(referencePublicId);
     if (!referenceUrl) throw new Error("The reference photo is missing its secure Cloudinary URL.");
 
     const prompt = buildMusePrompt(numericAge, gender);
@@ -94,6 +102,7 @@ router.post("/generate-faces", authenticateMuseRequest, async (req: MuseRequest,
     const cloudinaryResult = await cloudinary.uploader.upload(generatedImage.url, {
       folder: "magicreel/muse/generated",
       resource_type: "image",
+      type: "authenticated",
       format: "png",
       tags: ["muse-generated", "muse-collage"],
       context: {
@@ -104,7 +113,8 @@ router.post("/generate-faces", authenticateMuseRequest, async (req: MuseRequest,
     });
 
     // Split the stored collage into eight independently selectable portrait assets.
-    const collageResponse = await axios.get(cloudinaryResult.secure_url, { responseType: "arraybuffer" });
+    const collageUrl = signedMuseUrl(cloudinaryResult.public_id);
+    const collageResponse = await axios.get(collageUrl, { responseType: "arraybuffer" });
     const collageBuffer = Buffer.from(collageResponse.data);
     const metadata = await sharp(collageBuffer).metadata();
     if (!metadata.width || !metadata.height || metadata.width < 4 || metadata.height < 2) {
@@ -135,6 +145,7 @@ router.post("/generate-faces", authenticateMuseRequest, async (req: MuseRequest,
             {
               folder: "magicreel/muse/candidates",
               resource_type: "image",
+              type: "authenticated",
               format: "png",
               tags: ["muse-candidate", "muse-generated"],
               context: {
@@ -162,7 +173,7 @@ router.post("/generate-faces", authenticateMuseRequest, async (req: MuseRequest,
 
         return {
           candidateNumber: index + 1,
-          imageUrl: candidateAsset.secure_url,
+          imageUrl: signedMuseUrl(candidateAsset.public_id),
           publicId: candidateAsset.public_id,
           width: candidateAsset.width || width,
           height: candidateAsset.height || height,
@@ -173,7 +184,7 @@ router.post("/generate-faces", authenticateMuseRequest, async (req: MuseRequest,
     return res.status(201).json({
       success: true,
       data: {
-        imageUrl: cloudinaryResult.secure_url,
+        imageUrl: collageUrl,
         publicId: cloudinaryResult.public_id,
         width: cloudinaryResult.width || generatedImage.width,
         height: cloudinaryResult.height || generatedImage.height,
@@ -274,6 +285,7 @@ async function generateAndStoreMuseAsset(
       {
         folder: "magicreel/muse/assets",
         resource_type: "image",
+        type: "authenticated",
         format: "png",
         tags: ["muse-generated", "muse-private-asset", role],
         context: {
@@ -339,11 +351,11 @@ router.post("/create-from-candidate", authenticateMuseRequest, async (req: MuseR
     if (candidateContext.candidate_number && Number(candidateContext.candidate_number) !== numericCandidateNumber) {
       return res.status(400).json({ success: false, message: "The selected candidate number does not match the uploaded candidate." });
     }
-    if (!candidateAsset.secure_url) throw new Error("The selected candidate image has no secure Cloudinary URL.");
+    const candidateUrl = signedMuseUrl(candidatePublicId);
 
     console.info("[Muse] Generating four selected-identity assets", { userId, candidateNumber: numericCandidateNumber });
 
-    const masterPortrait = await generateAndStoreMuseAsset(userId, candidateAsset.secure_url, "master-portrait");
+    const masterPortrait = await generateAndStoreMuseAsset(userId, candidateUrl, "master-portrait");
     createdPublicIds.push(masterPortrait.public_id);
 
     const placeholder = await generateAndStoreMuseAsset(userId, candidateAsset.secure_url, "placeholder");
@@ -385,10 +397,10 @@ router.post("/create-from-candidate", authenticateMuseRequest, async (req: MuseR
         age: muse.age,
         gender: muse.gender,
         candidateNumber: muse.candidateNumber,
-        masterPortraitUrl: muse.masterPortraitUrl,
-        placeholderImageUrl: muse.placeholderImageUrl,
-        processingImageUrl: muse.processingImageUrl,
-        processingBackImageUrl: muse.processingBackImageUrl,
+        masterPortraitUrl: signedMuseUrl(muse.masterPortraitPublicId),
+        placeholderImageUrl: signedMuseUrl(muse.placeholderPublicId),
+        processingImageUrl: signedMuseUrl(muse.processingPublicId),
+        processingBackImageUrl: signedMuseUrl(muse.processingBackPublicId),
         status: muse.status,
         createdAt: muse.createdAt
       }
