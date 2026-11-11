@@ -12,7 +12,7 @@ const router = Router();
 const JWT_SECRET = process.env.JWT_SECRET || "dev_secret";
 const MAX_REFERENCE_AGE = 60;
 const MUSE_CONSENT_VERSION = "muse-consent-v1";
-const MUSE_CONSENT_TEXT = "I confirm that I have the right and necessary consent to use this photograph and the depicted adult person's likeness for AI-generated commercial fashion content.";
+const MUSE_CONSENT_TEXT = "I confirm that I own this photograph or have permission to use it, and that the adult person shown has given permission for it to be used to create an AI-generated fashion identity and related commercial fashion content. I understand that the generated identity may resemble other people or independently generated images.";
 const MUSE_IMAGE_MODEL = "openai/gpt-image-2.5/sunburst/edit";
 
 function signedMuseUrl(publicId: string): string {
@@ -53,10 +53,10 @@ router.post("/generate-faces", authenticateMuseRequest, async (req: MuseRequest,
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ success: false, message: "Authentication required." });
 
-    const { referencePublicId, age, gender, consent } = req.body ?? {};
+    const { referencePublicId, age, gender, consent, consentVersion } = req.body ?? {};
     const numericAge = Number(age);
 
-    if (consent !== true) {
+    if (consent !== true || consentVersion !== MUSE_CONSENT_VERSION) {
       return res.status(400).json({ success: false, message: "Please confirm that you have the right and necessary consent to use this photograph." });
     }
     if (!Number.isInteger(numericAge) || numericAge < 18 || numericAge > MAX_REFERENCE_AGE) {
@@ -376,7 +376,7 @@ router.post("/create-from-candidate", authenticateMuseRequest, async (req: MuseR
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ success: false, message: "Authentication required." });
 
-    const { candidatePublicId, candidateNumber, age, gender, consent, name } = req.body ?? {};
+    const { candidatePublicId, candidateNumber, age, gender, consent, consentVersion, name } = req.body ?? {};
     const numericAge = Number(age);
     const numericCandidateNumber = Number(candidateNumber);
 
