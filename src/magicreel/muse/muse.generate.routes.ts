@@ -66,6 +66,12 @@ router.post("/generate-faces", authenticateMuseRequest, async (req: MuseRequest,
       return res.status(400).json({ success: false, message: "A valid uploaded Muse reference photo is required." });
     }
 
+    // Check the Muse fee before starting paid image generation.
+    const account = await prisma.user.findUnique({ where: { id: userId }, select: { creditsAvailable: true } });
+    if (!account || Number(account.creditsAvailable) < 5) {
+      return res.status(402).json({ success: false, message: "You need at least 5 credits to generate Muse candidates." });
+    }
+
     // Verify the reference asset belongs to the signed-in user; do not trust a browser-supplied URL.
     const referenceAsset = await cloudinary.api.resource(referencePublicId, { resource_type: "image", type: "authenticated", context: true });
     if (getCustomContext(referenceAsset).owner_id !== userId) {
@@ -180,6 +186,26 @@ router.post("/generate-faces", authenticateMuseRequest, async (req: MuseRequest,
         };
       })
     );
+
+    // Charge immediately after the eight selectable candidates are safely stored.
+    // This prevents refreshing the page after generation from making the collage free.
+    await prisma.$transaction(async (tx: any) => {
+      const debit = await tx.user.updateMany({
+        where: { id: userId, creditsAvailable: { gte: 5 } },
+        data: { creditsAvailable: { decrement: 5 } }
+      });
+      if (debit.count !== 1) throw new Error("INSUFFICIENT_MUSE_CREDITS");
+      await tx.creditTransaction.create({
+        data: {
+          userId,
+          feature: "MUSE_GENERATION",
+          credits: 5,
+          type: "DEBIT",
+          status: "COMPLETED",
+          referenceId: cloudinaryResult.public_id
+        }
+      });
+    });
 
     return res.status(201).json({
       success: true,
@@ -368,26 +394,9 @@ router.post("/create-from-candidate", authenticateMuseRequest, async (req: MuseR
     const backHero = await generateAndStoreMuseAsset(userId, candidateUrl, "back-hero");
     createdPublicIds.push(backHero.public_id);
 
-    // Save all four private assets against the authenticated user and deduct
-    // the fixed 5-credit Muse fee in the same database transaction.
-    // updateMany with a balance condition prevents concurrent requests
-    // from spending the same credits twice.
-    const muse = await prisma.$transaction(async (tx: any) => {
-      const debit = await tx.user.updateMany({
-        where: {
-          id: userId,
-          creditsAvailable: { gte: 5 }
-        },
-        data: {
-          creditsAvailable: { decrement: 5 }
-        }
-      });
-
-      if (debit.count !== 1) {
-        throw new Error("INSUFFICIENT_MUSE_CREDITS");
-      }
-
-      const savedMuse = await tx.muse.create({
+    // Save the four private production assets against the authenticated user.
+    // The Muse fee was already charged when the eight candidates were generated.
+    const muse = await prisma.muse.create({
         data: {
           userId,
           name: museName,
@@ -407,20 +416,6 @@ router.post("/create-from-candidate", authenticateMuseRequest, async (req: MuseR
           promptVersion: "distinctive-muse-v1",
           status: "READY"
         }
-      });
-
-      await tx.creditTransaction.create({
-        data: {
-          userId,
-          feature: "MUSE_GENERATION",
-          credits: 5,
-          type: "DEBIT",
-          status: "COMPLETED",
-          referenceId: savedMuse.id
-        }
-      });
-
-      return savedMuse;
     });
 
     return res.status(201).json({
