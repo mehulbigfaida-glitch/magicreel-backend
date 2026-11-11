@@ -67,7 +67,7 @@ router.post("/generate-faces", authenticateMuseRequest, async (req: MuseRequest,
     }
 
     // Verify the reference asset belongs to the signed-in user; do not trust a browser-supplied URL.
-    const referenceAsset = await cloudinary.api.resource(referencePublicId, { context: true });
+    const referenceAsset = await cloudinary.api.resource(referencePublicId, { resource_type: "image", type: "authenticated", context: true });
     if (getCustomContext(referenceAsset).owner_id !== userId) {
       return res.status(403).json({ success: false, message: "You do not have permission to use this reference photo." });
     }
@@ -195,7 +195,7 @@ router.post("/generate-faces", authenticateMuseRequest, async (req: MuseRequest,
     });
   } catch (error: any) {
     const message = error instanceof Error ? error.message : "Muse generation failed.";
-    console.error("[Muse] Generation failed:", message);
+    console.error("[Muse] Generation failed:", { message, name: error?.name, httpStatus: error?.http_code || error?.status || error?.response?.status, providerBody: error?.response?.data || error?.error || undefined, stack: error?.stack });
     if (axios.isAxiosError(error)) {
       return res.status(502).json({ success: false, message: "The image generation provider could not complete the request. Please try again." });
     }
@@ -343,7 +343,7 @@ router.post("/create-from-candidate", authenticateMuseRequest, async (req: MuseR
     }
     const museName = typeof name === "string" && name.trim() ? name.trim().slice(0, 48) : `My Muse ${numericCandidateNumber}`;
 
-    const candidateAsset = await cloudinary.api.resource(candidatePublicId, { context: true });
+    const candidateAsset = await cloudinary.api.resource(candidatePublicId, { resource_type: "image", type: "authenticated", context: true });
     const candidateContext = getCustomContext(candidateAsset);
     if (candidateContext.owner_id !== userId) {
       return res.status(403).json({ success: false, message: "You do not have permission to use this Muse candidate." });
@@ -447,7 +447,7 @@ router.post("/create-from-candidate", authenticateMuseRequest, async (req: MuseR
       }
     }
     const message = error instanceof Error ? error.message : "Muse asset generation failed.";
-    console.error("[Muse] Selected-identity asset generation failed:", message);
+    console.error("[Muse] Selected-identity asset generation failed:", { message, name: error?.name, httpStatus: error?.http_code || error?.status || error?.response?.status, providerBody: error?.response?.data || error?.error || undefined, stack: error?.stack });
     if (message === "INSUFFICIENT_MUSE_CREDITS") {
       return res.status(402).json({ success: false, message: "You need at least 5 credits to create a Muse. No credits were deducted." });
     }
