@@ -257,7 +257,7 @@ router.post("/generate-faces", authenticateMuseRequest, async (req: MuseRequest,
 });
 
 
-const MUSE_IMAGE_MODEL = "openai/gpt-image-2.5/sunburst/edit";
+
 const MUSE_ASSET_WIDTH = 1856;
 const MUSE_ASSET_HEIGHT = 2304;
 
