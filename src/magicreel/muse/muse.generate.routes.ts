@@ -11,6 +11,9 @@ import { prisma } from "../db/prisma";
 const router = Router();
 const JWT_SECRET = process.env.JWT_SECRET || "dev_secret";
 const MAX_REFERENCE_AGE = 60;
+const MUSE_CONSENT_VERSION = "muse-consent-v1";
+const MUSE_CONSENT_TEXT = "I confirm that I own this photograph or have permission to use it, and that the adult person shown has given permission for it to be used to create an AI-generated fashion identity and related commercial fashion content. I understand that the generated identity may resemble other people or independently generated images.";
+const MUSE_IMAGE_MODEL = "openai/gpt-image-2.5/sunburst/edit";
 
 function signedMuseUrl(publicId: string): string {
   return cloudinary.url(publicId, {
@@ -50,10 +53,10 @@ router.post("/generate-faces", authenticateMuseRequest, async (req: MuseRequest,
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ success: false, message: "Authentication required." });
 
-    const { referencePublicId, age, gender, consent } = req.body ?? {};
+    const { referencePublicId, age, gender, consent, consentVersion } = req.body ?? {};
     const numericAge = Number(age);
 
-    if (consent !== true) {
+    if (consent !== true || consentVersion !== MUSE_CONSENT_VERSION) {
       return res.status(400).json({ success: false, message: "Please confirm that you have the right and necessary consent to use this photograph." });
     }
     if (!Number.isInteger(numericAge) || numericAge < 18 || numericAge > MAX_REFERENCE_AGE) {
@@ -80,6 +83,20 @@ router.post("/generate-faces", authenticateMuseRequest, async (req: MuseRequest,
 
     const referenceUrl = signedMuseUrl(referencePublicId);
     if (!referenceUrl) throw new Error("The reference photo is missing its secure Cloudinary URL.");
+
+    // Persist the exact consent wording and version before paid generation begins.
+    const consentRecord = await prisma.museConsentRecord.create({
+      data: {
+        userId,
+        eventType: "GENERATION_CONSENT_ACCEPTED",
+        consentVersion: MUSE_CONSENT_VERSION,
+        consentText: MUSE_CONSENT_TEXT,
+        referencePublicId,
+        generationModel: MUSE_IMAGE_MODEL,
+        promptVersion: "distinctive-muse-v1"
+      },
+      select: { id: true }
+    });
 
     const prompt = buildMusePrompt(numericAge, gender);
     console.info("[Muse] Starting eight-face collage generation", { userId, age: numericAge, gender });
@@ -115,6 +132,7 @@ router.post("/generate-faces", authenticateMuseRequest, async (req: MuseRequest,
         owner_id: userId,
         prompt_version: "distinctive-muse-v1",
         reference_public_id: referencePublicId,
+        consent_record_id: consentRecord.id,
       },
     });
 
@@ -159,6 +177,7 @@ router.post("/generate-faces", authenticateMuseRequest, async (req: MuseRequest,
                 prompt_version: "distinctive-muse-v1",
                 reference_public_id: referencePublicId,
                 collage_public_id: cloudinaryResult.public_id,
+                consent_record_id: consentRecord.id,
                 candidate_number: String(index + 1),
               },
             },
@@ -186,6 +205,11 @@ router.post("/generate-faces", authenticateMuseRequest, async (req: MuseRequest,
         };
       })
     );
+
+    await prisma.museConsentRecord.update({
+      where: { id: consentRecord.id },
+      data: { candidateCollagePublicId: cloudinaryResult.public_id }
+    });
 
     // Charge immediately after the eight selectable candidates are safely stored.
     // This prevents refreshing the page after generation from making the collage free.
@@ -233,7 +257,7 @@ router.post("/generate-faces", authenticateMuseRequest, async (req: MuseRequest,
 });
 
 
-const MUSE_IMAGE_MODEL = "openai/gpt-image-2.5/sunburst/edit";
+
 const MUSE_ASSET_WIDTH = 1856;
 const MUSE_ASSET_HEIGHT = 2304;
 
@@ -352,7 +376,7 @@ router.post("/create-from-candidate", authenticateMuseRequest, async (req: MuseR
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ success: false, message: "Authentication required." });
 
-    const { candidatePublicId, candidateNumber, age, gender, consent, name } = req.body ?? {};
+    const { candidatePublicId, candidateNumber, age, gender, consent, consentVersion, name } = req.body ?? {};
     const numericAge = Number(age);
     const numericCandidateNumber = Number(candidateNumber);
 
@@ -382,6 +406,16 @@ router.post("/create-from-candidate", authenticateMuseRequest, async (req: MuseR
       return res.status(400).json({ success: false, message: "The selected candidate number does not match the uploaded candidate." });
     }
     const candidateUrl = signedMuseUrl(candidatePublicId);
+    const consentRecordId = candidateContext.consent_record_id;
+    if (!consentRecordId) {
+      return res.status(400).json({ success: false, message: "This candidate is missing its consent record. Please generate your Muse candidates again." });
+    }
+    const consentRecord = await prisma.museConsentRecord.findFirst({
+      where: { id: consentRecordId, userId, referencePublicId: candidateContext.reference_public_id }
+    });
+    if (!consentRecord || consentRecord.consentVersion !== MUSE_CONSENT_VERSION) {
+      return res.status(403).json({ success: false, message: "A valid consent record is required to save this Muse." });
+    }
 
     console.info("[Muse] Generating four selected-identity assets", { userId, candidateNumber: numericCandidateNumber });
 
@@ -407,6 +441,10 @@ router.post("/create-from-candidate", authenticateMuseRequest, async (req: MuseR
           gender,
           candidateNumber: numericCandidateNumber,
           candidateImageUrl: candidateUrl,
+          referencePublicId: candidateContext.reference_public_id,
+          candidateCollagePublicId: candidateContext.collage_public_id,
+          consentRecordId: consentRecord.id,
+          generationModel: MUSE_IMAGE_MODEL,
           candidatePublicId,
           masterPortraitUrl: masterPortrait.secure_url,
           masterPortraitPublicId: masterPortrait.public_id,
@@ -419,6 +457,15 @@ router.post("/create-from-candidate", authenticateMuseRequest, async (req: MuseR
           promptVersion: "distinctive-muse-v1",
           status: "READY"
         }
+    });
+
+    await prisma.museConsentRecord.update({
+      where: { id: consentRecord.id },
+      data: {
+        museId: muse.id,
+        candidatePublicId,
+        candidateNumber: numericCandidateNumber
+      }
     });
 
     return res.status(201).json({

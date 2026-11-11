@@ -597,6 +597,12 @@ model Muse {
   promptVersion String @default("distinctive-muse-v1") @map("prompt_version")
   status        String @default("READY")
 
+  // Provenance fields are nullable for compatibility with Muses created before this release.
+  referencePublicId       String? @map("reference_public_id")
+  candidateCollagePublicId String? @map("candidate_collage_public_id")
+  consentRecordId         String? @map("consent_record_id")
+  generationModel         String? @map("generation_model")
+
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -604,4 +610,30 @@ model Muse {
 
   @@index([userId, createdAt])
   @@map("muses")
+}
+
+
+////////////////////////////////////////////////////////
+// MUSE CONSENT & PROVENANCE AUDIT
+////////////////////////////////////////////////////////
+
+model MuseConsentRecord {
+  id                    String   @id @default(uuid())
+  userId                String   @map("user_id")
+  museId                String?  @map("muse_id")
+  eventType             String   @map("event_type")
+  consentVersion        String   @map("consent_version")
+  consentText           String   @map("consent_text")
+  acceptedAt            DateTime @default(now()) @map("accepted_at")
+  referencePublicId     String?  @map("reference_public_id")
+  candidateCollagePublicId String? @map("candidate_collage_public_id")
+  candidatePublicId     String?  @map("candidate_public_id")
+  candidateNumber       Int?     @map("candidate_number")
+  generationModel       String?  @map("generation_model")
+  promptVersion         String?  @map("prompt_version")
+  createdAt             DateTime @default(now()) @map("created_at")
+
+  @@index([userId, acceptedAt])
+  @@index([museId])
+  @@map("muse_consent_records")
 }
