@@ -236,11 +236,12 @@ const MUSE_ASSET_PROMPTS: Record<MuseAssetRole, string> = {
   "back-hero": [
     "Create a photorealistic BACK Hero reference image for the exact same adult fashion model shown in the reference image.",
     "Preserve the same identity, hair colour, hairstyle, hair length, skin tone and body proportions.",
-    "The torso is almost directly rear-facing, with the back of the shoulders and upper back toward the camera. BOTH shoulders must be clearly visible and balanced.",
-    "Turn the model's head toward the model's OWN RIGHT shoulder, showing a partial three-quarter facial profile. Do not turn toward the model's left shoulder.",
+    "Show a true rear three-quarter fashion reference: rotate the model's torso only about 25–30 degrees away from a full back view, so the upper back is visible while the full width of BOTH shoulders remains inside the frame.",
+    "Keep the shoulder line horizontal and unobstructed. Frame wide enough to include the complete left shoulder tip, right shoulder tip, neck, and upper back with generous space on both sides. Do not crop either shoulder or let either shoulder disappear behind the torso.",
+    "Turn the model's head gently toward the model's OWN RIGHT shoulder, showing only a subtle partial profile. Keep the head aligned naturally with the neck; do not over-rotate the head or torso.",
     "Bare shoulders and upper back, modest non-sexual fashion-model reference styling, no garment, no jewellery, no accessories.",
-    "Light grey studio background, soft even studio lighting, natural skin texture and realistic anatomy.",
-    "Vertical 4:5 composition. Keep head, neck and both shoulders fully inside frame."
+    "Light grey studio background, soft even studio lighting, natural skin texture and realistic anatomy. Anatomically correct shoulder width and symmetrical shoulder placement.",
+    "Vertical 4:5 composition, medium upper-body crop from head to mid-back. The complete head, neck, both shoulder caps and full shoulder width must be visible with no cropping."
   ].join(" ")
 };
 
