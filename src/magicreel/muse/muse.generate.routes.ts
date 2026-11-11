@@ -367,26 +367,59 @@ router.post("/create-from-candidate", authenticateMuseRequest, async (req: MuseR
     const backHero = await generateAndStoreMuseAsset(userId, candidateUrl, "back-hero");
     createdPublicIds.push(backHero.public_id);
 
-    const muse = await prisma.muse.create({
-      data: {
-        userId,
-        name: museName,
-        age: numericAge,
-        gender,
-        candidateNumber: numericCandidateNumber,
-        candidateImageUrl: candidateUrl,
-        candidatePublicId,
-        masterPortraitUrl: masterPortrait.secure_url,
-        masterPortraitPublicId: masterPortrait.public_id,
-        placeholderImageUrl: placeholder.secure_url,
-        placeholderPublicId: placeholder.public_id,
-        processingImageUrl: frontHero.secure_url,
-        processingPublicId: frontHero.public_id,
-        processingBackImageUrl: backHero.secure_url,
-        processingBackPublicId: backHero.public_id,
-        promptVersion: "distinctive-muse-v1",
-        status: "READY"
+    // Save all four private assets against the authenticated user and deduct
+    // the fixed 5-credit Muse fee in the same database transaction.
+    // updateMany with a balance condition prevents concurrent requests
+    // from spending the same credits twice.
+    const muse = await prisma.$transaction(async (tx: any) => {
+      const debit = await tx.user.updateMany({
+        where: {
+          id: userId,
+          creditsAvailable: { gte: 5 }
+        },
+        data: {
+          creditsAvailable: { decrement: 5 }
+        }
+      });
+
+      if (debit.count !== 1) {
+        throw new Error("INSUFFICIENT_MUSE_CREDITS");
       }
+
+      const savedMuse = await tx.muse.create({
+        data: {
+          userId,
+          name: museName,
+          age: numericAge,
+          gender,
+          candidateNumber: numericCandidateNumber,
+          candidateImageUrl: candidateUrl,
+          candidatePublicId,
+          masterPortraitUrl: masterPortrait.secure_url,
+          masterPortraitPublicId: masterPortrait.public_id,
+          placeholderImageUrl: placeholder.secure_url,
+          placeholderPublicId: placeholder.public_id,
+          processingImageUrl: frontHero.secure_url,
+          processingPublicId: frontHero.public_id,
+          processingBackImageUrl: backHero.secure_url,
+          processingBackPublicId: backHero.public_id,
+          promptVersion: "distinctive-muse-v1",
+          status: "READY"
+        }
+      });
+
+      await tx.creditTransaction.create({
+        data: {
+          userId,
+          feature: "MUSE_GENERATION",
+          credits: 5,
+          type: "DEBIT",
+          status: "COMPLETED",
+          referenceId: savedMuse.id
+        }
+      });
+
+      return savedMuse;
     });
 
     return res.status(201).json({
@@ -415,6 +448,9 @@ router.post("/create-from-candidate", authenticateMuseRequest, async (req: MuseR
     }
     const message = error instanceof Error ? error.message : "Muse asset generation failed.";
     console.error("[Muse] Selected-identity asset generation failed:", message);
+    if (message === "INSUFFICIENT_MUSE_CREDITS") {
+      return res.status(402).json({ success: false, message: "You need at least 5 credits to create a Muse. No credits were deducted." });
+    }
     if (axios.isAxiosError(error)) {
       return res.status(502).json({ success: false, message: "The image generation provider could not complete the Muse assets. Please try again." });
     }
