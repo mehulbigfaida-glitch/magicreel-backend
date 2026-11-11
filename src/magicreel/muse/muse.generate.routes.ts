@@ -222,6 +222,9 @@ router.post("/generate-faces", authenticateMuseRequest, async (req: MuseRequest,
   } catch (error: any) {
     const message = error instanceof Error ? error.message : "Muse generation failed.";
     console.error("[Muse] Generation failed:", { message, name: error?.name, httpStatus: error?.http_code || error?.status || error?.response?.status, providerBody: error?.response?.data || error?.error || undefined, stack: error?.stack });
+    if (message === "INSUFFICIENT_MUSE_CREDITS") {
+      return res.status(402).json({ success: false, message: "You need at least 5 credits to generate Muse candidates." });
+    }
     if (axios.isAxiosError(error)) {
       return res.status(502).json({ success: false, message: "The image generation provider could not complete the request. Please try again." });
     }
