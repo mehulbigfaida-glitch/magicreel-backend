@@ -73,8 +73,12 @@ This selection is fixed and must be followed exactly for this image.
 The front and back images represent the SAME fashion model and the SAME body type.
 For the back view, recreate the same overall body build and silhouette used for the front view: consistent shoulder width, torso volume, waist definition, hip width, and leg proportions appropriate to the selected body type.
 Do not make the back-view model slimmer, fuller, more athletic, or otherwise different from the selected body type.
+MUSE IDENTITY AND ASSET PRESERVATION
+
+The selected Muse is an existing, approved MagicReel model. Preserve that Muse's recognizable facial identity, facial structure, hairstyle and visible skin appearance. Do not redesign, reinterpret, replace, age-shift or create a different face for this Hero.
 The uploaded Muse image is a face/identity reference only. It does not determine body shape.
 Generate the full body according to the selected body type, not according to the headshot crop.
+This operation creates new Hero output images only. Never modify, overwrite, delete or replace the original Muse, its saved reference images, its placeholder image, or its reusable Muse assets.
 `.trim();
 
     console.log("=== HERO REQUEST ===", {
