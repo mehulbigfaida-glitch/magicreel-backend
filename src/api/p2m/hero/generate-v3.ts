@@ -9,15 +9,15 @@ import { finalizeBilling } from "../../../billing/billing.middleware";
 export async function generateHeroV3(req: Request, res: Response) {
   try {
     const {
-  categoryKey,
-  avatarGender,
-  avatarFaceImageUrl,
-  garmentFrontImageUrl,
-  styling,
-  avatarBackImageUrl,
-  garmentBackImageUrl,
-  bodyType: requestedBodyType,
-} = req.body;
+      categoryKey,
+      avatarGender,
+      avatarFaceImageUrl,
+      garmentFrontImageUrl,
+      styling,
+      avatarBackImageUrl,
+      garmentBackImageUrl,
+      bodyType: requestedBodyType,
+    } = req.body;
 
     const allowedBodyTypes = ["Slim", "Athletic", "Curvy", "Plus Size"] as const;
     const bodyType = allowedBodyTypes.includes(requestedBodyType)
@@ -35,101 +35,99 @@ export async function generateHeroV3(req: Request, res: Response) {
       });
     }
 
-    /* =========================
-       USER FETCH (SAFE)
-    ========================= */
-
     let user = (req as any).user;
 
-if (!user || !user.id) {
-  return res.status(401).json({
-    error: "Unauthorized",
-  });
-}
+    if (!user || !user.id) {
+      return res.status(401).json({
+        error: "Unauthorized",
+      });
+    }
 
-const userId = user.userId || user.id;
+    const userId = user.userId || user.id;
 
-/* =========================
-   CREDIT GUARD (ADD HERE)
-========================= */
+    const dbUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        creditsAvailable: true,
+      },
+    });
 
-const dbUser = await prisma.user.findUnique({
-  where: { id: userId },
-  select: {
-    creditsAvailable: true,
-  },
-});
+    if (!dbUser) {
+      return res.status(404).json({ error: "User not found" });
+    }
 
-if (!dbUser) {
-  return res.status(404).json({ error: "User not found" });
-}
+    if (dbUser.creditsAvailable <= 0) {
+      return res.status(403).json({
+        error: "No credits left",
+      });
+    }
 
-// ❌ BLOCK if no credits
-if (dbUser.creditsAvailable <= 0) {
-  return res.status(403).json({
-    error: "No credits left",
-  });
-}
+    // One body-type selection governs BOTH views. The rear view must not
+    // infer a different physique from the head/neck reference image.
+    const sharedBodyTypeInstruction = `
+BODY TYPE CONSISTENCY — FRONT AND BACK VIEWS
 
-/* =========================
-   FRONT HERO
-========================= */
-console.log("=== HERO REQUEST ===", {
-  categoryKey,
-  avatarGender,
-  styling,
-  });
+The selected body type for this paired front-and-back product shoot is: ${bodyType}.
 
+This selection is fixed and must be followed exactly for this image.
+The front and back images represent the SAME fashion model and the SAME body type.
+For the back view, recreate the same overall body build and silhouette used for the front view: consistent shoulder width, torso volume, waist definition, hip width, and leg proportions appropriate to the selected body type.
+Do not make the back-view model slimmer, fuller, more athletic, or otherwise different from the selected body type.
+The uploaded Muse image is a face/identity reference only. It does not determine body shape.
+Generate the full body according to the selected body type, not according to the headshot crop.
+`.trim();
 
-    const frontPrompt = buildGptHeroPrompt({
-  categoryKey,
-  avatarGender,
-  styling,
-  bodyType,
-  heroView: "front",
-});
+    console.log("=== HERO REQUEST ===", {
+      categoryKey,
+      avatarGender,
+      styling,
+      bodyType,
+    });
 
-console.log(
-  "✅ Front prompt built:",
-  frontPrompt.length,
-  "characters"
-);
+    const frontPrompt = `${buildGptHeroPrompt({
+      categoryKey,
+      avatarGender,
+      styling,
+      bodyType,
+      heroView: "front",
+    })}
 
-console.log("=== FRONT HERO PROMPT ===");
-console.log(frontPrompt);
+${sharedBodyTypeInstruction}`;
+
+    console.log("Front prompt built:", frontPrompt.length, "characters");
+    console.log("=== FRONT HERO PROMPT ===");
+    console.log(frontPrompt);
 
     const frontJob = await prisma.productToModelJob.create({
-  data: {
-    userId,
-    productImageUrl: garmentFrontImageUrl,
-    modelImageUrl: avatarFaceImageUrl,
-    engine: "gpt-image-2.5-sunburst",
-    engineJobId: "pending",
-    status: "running",
-    avatarGender,
-    categoryKey,
-  },
-});
+      data: {
+        userId,
+        productImageUrl: garmentFrontImageUrl,
+        modelImageUrl: avatarFaceImageUrl,
+        engine: "gpt-image-2.5-sunburst",
+        engineJobId: "pending",
+        status: "running",
+        avatarGender,
+        categoryKey,
+      },
+    });
 
-// ✅ ADD THIS LINE
-(req as any).billing.predictionId = frontJob.id;
+    (req as any).billing.predictionId = frontJob.id;
 
-    const frontResult =
-  await gptHeroProvider.generateHero({
-    garmentImageUrl: garmentFrontImageUrl,
-    modelImageUrl: avatarFaceImageUrl,
-    prompt: frontPrompt,
-  });
+    const frontResult = await gptHeroProvider.generateHero({
+      garmentImageUrl: garmentFrontImageUrl,
+      modelImageUrl: avatarFaceImageUrl,
+      prompt: frontPrompt,
+    });
 
-await prisma.productToModelJob.update({
-  where: { id: frontJob.id },
-  data: {
-    status: "completed",
-    resultImageUrl: frontResult.imageUrl,
-  },
-});
+    await prisma.productToModelJob.update({
+      where: { id: frontJob.id },
+      data: {
+        status: "completed",
+        resultImageUrl: frontResult.imageUrl,
+      },
+    });
 
-const frontRunId = frontJob.id;
+    const frontRunId = frontJob.id;
 
     /* =========================
        BACK HERO (OPTIONAL)
@@ -140,63 +138,61 @@ const frontRunId = frontJob.id;
     if (avatarBackImageUrl && garmentBackImageUrl) {
       const backCategoryKey = `${categoryKey}_BACK`;
 
-      const backPrompt = buildGptHeroPrompt({
-  categoryKey: backCategoryKey,
-  avatarGender,
-  styling,
-  bodyType,
-  heroView: "back",
-});
+      const backPrompt = `${buildGptHeroPrompt({
+        categoryKey: backCategoryKey,
+        avatarGender,
+        styling,
+        bodyType,
+        heroView: "back",
+      })}
+
+${sharedBodyTypeInstruction}`;
 
       const backJob = await prisma.productToModelJob.create({
         data: {
           userId,
           productImageUrl: garmentBackImageUrl,
           modelImageUrl: avatarBackImageUrl,
-          engine: "gpt-image-2",
+          // Keep the recorded engine consistent with the GPT Image 2.5
+          // Sunburst provider used for both hero views.
+          engine: "gpt-image-2.5-sunburst",
           engineJobId: "pending",
           status: "running",
           avatarGender,
-          categoryKey,
+          categoryKey: backCategoryKey,
         },
       });
 
-      const backResult =
-  await gptHeroProvider.generateHero({
-    garmentImageUrl: garmentBackImageUrl,
-    modelImageUrl: avatarBackImageUrl,
-    prompt: backPrompt,
-  });
+      const backResult = await gptHeroProvider.generateHero({
+        garmentImageUrl: garmentBackImageUrl,
+        modelImageUrl: avatarBackImageUrl,
+        prompt: backPrompt,
+      });
 
-await prisma.productToModelJob.update({
-  where: { id: backJob.id },
-  data: {
-    status: "completed",
-    resultImageUrl: backResult.imageUrl,
-  },
-});
+      await prisma.productToModelJob.update({
+        where: { id: backJob.id },
+        data: {
+          status: "completed",
+          resultImageUrl: backResult.imageUrl,
+        },
+      });
 
-backRunId = backJob.id;
+      backRunId = backJob.id;
     }
 
-    /* =========================
-   BILLING
-========================= */
+    // Billing remains attached to the front job as in the existing flow.
+    (req as any).predictionId = frontJob.id;
 
-// ✅ attach prediction id for billing linkage
-(req as any).predictionId = frontJob.id;
-
-try {
-  await finalizeBilling(req);
-} catch (e) {
-  console.error("Billing failed AFTER success:", e);
-}
+    try {
+      await finalizeBilling(req);
+    } catch (e) {
+      console.error("Billing failed AFTER success:", e);
+    }
 
     return res.json({
       frontRunId,
       backRunId,
     });
-
   } catch (err: any) {
     console.error("HERO V3 ERROR:", err);
 
