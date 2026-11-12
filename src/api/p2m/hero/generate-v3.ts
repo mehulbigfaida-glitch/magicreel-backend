@@ -139,7 +139,7 @@ ${sharedBodyTypeInstruction}`;
       const backCategoryKey = `${categoryKey}_BACK`;
 
       const backPrompt = `${buildGptHeroPrompt({
-        categoryKey,
+        categoryKey: backCategoryKey,
         avatarGender,
         styling,
         bodyType,
@@ -159,7 +159,7 @@ ${sharedBodyTypeInstruction}`;
           engineJobId: "pending",
           status: "running",
           avatarGender,
-          categoryKey: backCategoryKey,
+          categoryKey,
         },
       });
 
