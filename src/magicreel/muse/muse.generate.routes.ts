@@ -280,21 +280,23 @@ const MUSE_ASSET_PROMPTS: Record<MuseAssetRole, string> = {
     "Vertical 4:5 composition. Show head, shoulders and upper torso."
   ].join(" "),
   "front-hero": [
-    "Create a photorealistic front Hero reference image for the exact adult fashion model in the reference image.",
-    "Preserve the selected face identity and hairstyle precisely. Straight-on, directly front-facing, symmetrical head position and level shoulders; both shoulders evenly visible.",
-    "Bare shoulders and upper chest, modest non-sexual fashion-model reference styling, no garment, no jewellery, no accessories.",
-    "Light grey studio background, soft even studio lighting, neutral expression, natural skin texture, realistic anatomy.",
-    "Vertical 4:5 composition. Keep head, neck, shoulders and upper chest fully inside frame."
+    "Create the approved FRONT identity reference portrait for this exact adult Muse. The uploaded selected candidate is the sole source of facial identity.",
+    "Preserve the same recognizable person with maximum identity fidelity: facial geometry, eye shape and spacing, nose, lips, jawline, skin tone, age appearance and distinctive natural features. Do not beautify, age-shift, reinterpret or substitute the face.",
+    "Show a natural, perfectly front-facing head-and-neck portrait. Head upright, eyes looking directly into camera, neutral relaxed expression, neck fully visible and unobstructed. Keep only a modest portion of both shoulders in frame.",
+    "Preserve the candidate's hairstyle, hairline, hair colour, texture, length and any ponytail exactly. Keep hair clear of the neck where possible.",
+    "Neck and shoulder area must remain uncovered: no garment, neckline, collar, scarf, jewellery, accessories or hair covering the neck. This is a neutral fashion-model identity reference, not a styled fashion photograph.",
+    "Plain light grey seamless studio background, soft even frontal lighting, natural skin texture and realistic anatomy. No text, logo or watermark.",
+    "Portrait framing in the existing 1856 x 2304 output canvas. Keep the complete head, hair, neck and shoulder line comfortably inside the frame; do not crop the crown or chin."
   ].join(" "),
   "back-hero": [
-    "Create a photorealistic BACK Hero reference image for the exact same adult fashion model shown in the reference image.",
-    "Preserve the same identity, hair colour, hairstyle, hair length, skin tone and body proportions.",
-    "Show a true rear three-quarter fashion reference: rotate the model's torso only about 25–30 degrees away from a full back view, so the upper back is visible while the full width of BOTH shoulders remains inside the frame.",
-    "Keep the shoulder line horizontal and unobstructed. Frame wide enough to include the complete left shoulder tip, right shoulder tip, neck, and upper back with generous space on both sides. Do not crop either shoulder or let either shoulder disappear behind the torso.",
-    "Turn the model's head gently toward the model's OWN RIGHT shoulder, showing only a subtle partial profile. Keep the head aligned naturally with the neck; do not over-rotate the head or torso.",
-    "Bare shoulders and upper back, modest non-sexual fashion-model reference styling, no garment, no jewellery, no accessories.",
-    "Light grey studio background, soft even studio lighting, natural skin texture and realistic anatomy. Anatomically correct shoulder width and symmetrical shoulder placement.",
-    "Vertical 4:5 composition, medium upper-body crop from head to mid-back. The complete head, neck, both shoulder caps and full shoulder width must be visible with no cropping."
+    "Create the BACK/SIDE identity reference of the exact same adult Muse shown in the approved FRONT identity reference image supplied as input. The front reference is the source of truth for facial identity and hairstyle.",
+    "Preserve the same recognizable person and do not invent a new face. Maintain the exact hair colour, hairline, texture, length, hairstyle and ponytail placement from the front reference.",
+    "Create a natural rear three-quarter view: turn the upper torso nearly away from camera so the back of the head, neck, shoulders and upper back are clearly visible, while retaining a natural three-quarter facial profile.",
+    "Turn the head gently toward the Muse's OWN RIGHT shoulder. The face should appear in a subtle, believable side profile; do not twist the neck unnaturally or over-rotate the head.",
+    "Keep the neck completely uncovered and clearly visible. Hair may fall naturally behind the shoulders but must not obscure the neck or shoulder line. No garment, neckline, collar, scarf, jewellery or accessories.",
+    "Show both shoulders and the upper-back contour with natural anatomy. Keep the shoulder line believable and avoid cropping the shoulder caps. Do not turn this into a straight front portrait or a fully featureless rear view.",
+    "Plain light grey seamless studio background, soft even studio lighting, natural skin texture and realistic anatomy. No text, logo or watermark.",
+    "Portrait framing in the existing 1856 x 2304 output canvas. Keep the full head, hairstyle, uncovered neck and shoulder/upper-back area inside frame."
   ].join(" ")
 };
 
@@ -428,7 +430,7 @@ router.post("/create-from-candidate", authenticateMuseRequest, async (req: MuseR
     const frontHero = await generateAndStoreMuseAsset(userId, candidateUrl, "front-hero");
     createdPublicIds.push(frontHero.public_id);
 
-    const backHero = await generateAndStoreMuseAsset(userId, candidateUrl, "back-hero");
+    const backHero = await generateAndStoreMuseAsset(userId, frontHero.secure_url, "back-hero");
     createdPublicIds.push(backHero.public_id);
 
     // Save the four private production assets against the authenticated user.
