@@ -282,9 +282,10 @@ const MUSE_ASSET_PROMPTS: Record<MuseAssetRole, string> = {
   "front-hero": [
     "Create a photorealistic front Hero reference image for the exact adult fashion model in the reference image.",
     "Preserve the selected face identity and hairstyle precisely. Straight-on, directly front-facing, symmetrical head position and level shoulders; both shoulders evenly visible.",
-    "Bare shoulders and upper chest, modest non-sexual fashion-model reference styling, no garment, no jewellery, no accessories.",
-    "Light grey studio background, soft even studio lighting, neutral expression, natural skin texture, realistic anatomy.",
-    "Vertical 4:5 composition. Keep head, neck, shoulders and upper chest fully inside frame."
+    "Create a strictly fully clothed head-and-shoulders portrait, framed from the top of the head to the upper chest only; do not generate a bare torso or exposed chest.",
+    "The model must wear a simple, opaque, neutral-coloured crew-neck top that fully covers the chest and shoulders. No cleavage, no lingerie, no swimwear, no transparent fabric, no nudity, no jewellery and no accessories.",
+    "Light grey studio background, soft even studio lighting, neutral expression, natural skin texture, realistic anatomy. Keep the face, neck and both shoulders clearly visible.",
+    "Vertical 4:5 composition. Strict upper-body portrait crop only; do not extend the frame below the upper chest."
   ].join(" "),
   "back-hero": [
     "Create a photorealistic BACK Hero reference image for the exact same adult fashion model shown in the reference image.",
