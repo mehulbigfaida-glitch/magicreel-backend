@@ -1,6 +1,7 @@
 // Muse collage generation and candidate asset extraction.
 import { Router, Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
+import { createHash } from "crypto";
 import axios from "axios";
 import { fal } from "@fal-ai/client";
 import { v2 as cloudinary } from "cloudinary";
@@ -470,6 +471,33 @@ router.post("/create-from-candidate", authenticateMuseRequest, async (req: MuseR
       }
     });
 
+    // Record lineage and asset identifiers; this is not statutory IPR registration.
+    const certificateId = `MR-MUSE-${muse.id.replace(/-/g, "").slice(0, 12).toUpperCase()}`;
+    const issuedAt = new Date();
+    const manifest = {
+      schemaVersion: "1.0",
+      certificateId,
+      museId: muse.id,
+      createdAt: muse.createdAt.toISOString(),
+      certificateIssuedAt: issuedAt.toISOString(),
+      ownerAccountId: userId,
+      museName: muse.name,
+      selectedCandidateNumber: numericCandidateNumber,
+      consentRecordId: consentRecord.id,
+      consentVersion: consentRecord.consentVersion,
+      referenceAssetId: candidateContext.reference_public_id,
+      candidateCollageAssetId: candidateContext.collage_public_id || null,
+      selectedCandidateAssetId: candidatePublicId,
+      generatedAssets: { masterPortrait: masterPortrait.public_id, placeholder: placeholder.public_id, frontReference: frontHero.public_id, backReference: backHero.public_id },
+      generationModel: MUSE_IMAGE_MODEL,
+      promptVersion: "distinctive-muse-v1",
+      attestationScope: "creation_provenance_and_asset_integrity_record",
+      legalNotice: "This issuer-created record is evidence of recorded creation provenance. It is not statutory IPR registration, a legal opinion, or a guarantee of copyright or exclusive rights in a facial identity."
+    };
+    const manifestHash = createHash("sha256").update(JSON.stringify(manifest)).digest("hex");
+    await prisma.museCertificate.create({ data: { museId: muse.id, certificateId, manifest, manifestHash, status: "ACTIVE", issuedAt } });
+    await prisma.muse.update({ where: { id: muse.id }, data: { certificateId, provenanceHash: manifestHash, certificateCreatedAt: issuedAt } });
+
     return res.status(201).json({
       success: true,
       data: {
@@ -483,7 +511,8 @@ router.post("/create-from-candidate", authenticateMuseRequest, async (req: MuseR
         processingImageUrl: signedMuseUrl(muse.processingPublicId),
         processingBackImageUrl: signedMuseUrl(muse.processingBackPublicId),
         status: muse.status,
-        createdAt: muse.createdAt
+        createdAt: muse.createdAt,
+        certificate: { certificateId, manifestHash, issuedAt: issuedAt.toISOString(), verificationPath: `/api/muse/verify/${certificateId}`, status: "ACTIVE", notice: "Creation provenance record; not statutory IPR registration." }
       }
     });
   } catch (error: any) {
