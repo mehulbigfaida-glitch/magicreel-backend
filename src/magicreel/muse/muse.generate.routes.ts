@@ -495,7 +495,7 @@ router.post("/create-from-candidate", authenticateMuseRequest, async (req: MuseR
       legalNotice: "This issuer-created record is evidence of recorded creation provenance. It is not statutory IPR registration, a legal opinion, or a guarantee of copyright or exclusive rights in a facial identity."
     };
     const manifestHash = createHash("sha256").update(JSON.stringify(manifest)).digest("hex");
-    await prisma.museCertificate.create({ data: { museId: muse.id, certificateId, manifest, manifestHash, status: "ACTIVE", issuedAt } });
+    await prisma.museCertificate.create({ data: { museId: muse.id, certificateId, manifest, manifestHash, status: "PROVISIONAL", issuedAt } });
     await prisma.muse.update({ where: { id: muse.id }, data: { certificateId, provenanceHash: manifestHash, certificateCreatedAt: issuedAt } });
 
     return res.status(201).json({
@@ -512,7 +512,7 @@ router.post("/create-from-candidate", authenticateMuseRequest, async (req: MuseR
         processingBackImageUrl: signedMuseUrl(muse.processingBackPublicId),
         status: muse.status,
         createdAt: muse.createdAt,
-        certificate: { certificateId, manifestHash, issuedAt: issuedAt.toISOString(), verificationPath: `/api/muse/verify/${certificateId}`, status: "ACTIVE", notice: "Creation provenance record; not statutory IPR registration." }
+        certificate: { certificateId, manifestHash, issuedAt: issuedAt.toISOString(), verificationPath: `/api/muse/verify/${certificateId}`, status: "PROVISIONAL", notice: "Provisional creation provenance record; not statutory IPR registration." }
       }
     });
   } catch (error: any) {
