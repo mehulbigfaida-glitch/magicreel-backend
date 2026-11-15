@@ -602,6 +602,9 @@ model Muse {
   candidateCollagePublicId String? @map("candidate_collage_public_id")
   consentRecordId         String? @map("consent_record_id")
   generationModel         String? @map("generation_model")
+  certificateId           String? @unique @map("certificate_id")
+  provenanceHash           String? @map("provenance_hash")
+  certificateCreatedAt     DateTime? @map("certificate_created_at")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -636,4 +639,19 @@ model MuseConsentRecord {
   @@index([userId, acceptedAt])
   @@index([museId])
   @@map("muse_consent_records")
+}
+
+model MuseCertificate {
+  id             String   @id @default(uuid())
+  museId         String   @unique @map("muse_id")
+  certificateId  String   @unique @map("certificate_id")
+  manifest       Json
+  manifestHash   String   @map("manifest_hash")
+  status         String   @default("ACTIVE")
+  issuedAt       DateTime @default(now()) @map("issued_at")
+  revokedAt      DateTime? @map("revoked_at")
+  revocationNote String?  @map("revocation_note")
+
+  @@index([certificateId, status])
+  @@map("muse_certificates")
 }
