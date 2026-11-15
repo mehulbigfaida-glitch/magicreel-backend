@@ -239,6 +239,19 @@ router.get("/my-muses/:id/provenance", authenticateMuseRequest, async (req: Requ
         publicKeyPem: certificate.publicKeyPem,
         signingKeyId: certificate.signingKeyId,
         consent: consent ? { eventType: consent.eventType, consentVersion: consent.consentVersion, consentText: consent.consentText, acceptedAt: consent.acceptedAt, referencePublicId: consent.referencePublicId, candidatePublicId: consent.candidatePublicId, candidateNumber: consent.candidateNumber } : null,
+        visualEvidence: (() => {
+          const manifest = certificate.manifest as Record<string, any>;
+          const assetIds = manifest.generatedAssets && typeof manifest.generatedAssets === "object" ? manifest.generatedAssets : {};
+          const referenceAssetId = typeof manifest.referenceAssetId === "string" ? manifest.referenceAssetId : consent?.referencePublicId;
+          const selectedCandidateAssetId = typeof manifest.selectedCandidateAssetId === "string" ? manifest.selectedCandidateAssetId : consent?.candidatePublicId;
+          const finalMuseAssetId = typeof assetIds.placeholder === "string" ? assetIds.placeholder : null;
+          return {
+            sourceReferenceUrl: referenceAssetId ? signedMuseUrl(referenceAssetId) : null,
+            selectedIdentityUrl: selectedCandidateAssetId ? signedMuseUrl(selectedCandidateAssetId) : null,
+            finalMuseUrl: finalMuseAssetId ? signedMuseUrl(finalMuseAssetId) : null,
+            assetIds: { sourceReference: referenceAssetId || null, selectedIdentity: selectedCandidateAssetId || null, finalMuse: finalMuseAssetId }
+          };
+        })(),
         legalNotice: "This evidence export records the workflow and declarations held by MagicReel. It is not statutory IPR registration or a legal opinion."
       }
     });
