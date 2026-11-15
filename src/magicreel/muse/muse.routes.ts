@@ -3,6 +3,7 @@ import multer from "multer";
 import jwt from "jsonwebtoken";
 import { v2 as cloudinary } from "cloudinary";
 import { prisma } from "../db/prisma";
+import { hashManifest, verifyManifestHash } from "./muse.provenance";
 
 const router = Router();
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
@@ -213,5 +214,77 @@ router.post(
     }
   }
 );
+
+// Private evidence export. Only the authenticated owner can retrieve the complete provenance and consent record.
+router.get("/my-muses/:id/provenance", authenticateMuseRequest, async (req: Request, res: Response) => {
+  try {
+    const userId = (req as Request & { user?: { id: string } }).user?.id;
+    if (!userId) return res.status(401).json({ success: false, message: "Authentication required." });
+    const muse = await prisma.muse.findFirst({ where: { id: req.params.id, userId, status: "READY" }, select: { id: true } });
+    if (!muse) return res.status(404).json({ success: false, message: "Muse not found." });
+    const [certificate, consent] = await Promise.all([
+      prisma.museCertificate.findUnique({ where: { museId: muse.id } }),
+      prisma.museConsentRecord.findFirst({ where: { museId: muse.id, userId }, orderBy: { acceptedAt: "desc" } })
+    ]);
+    if (!certificate) return res.status(404).json({ success: false, message: "No provenance certificate exists for this Muse." });
+    return res.status(200).json({
+      success: true,
+      data: {
+        certificateId: certificate.certificateId,
+        status: certificate.status,
+        issuedAt: certificate.issuedAt,
+        manifest: certificate.manifest,
+        manifestHash: certificate.manifestHash,
+        signature: certificate.signature,
+        publicKeyPem: certificate.publicKeyPem,
+        signingKeyId: certificate.signingKeyId,
+        consent: consent ? { eventType: consent.eventType, consentVersion: consent.consentVersion, consentText: consent.consentText, acceptedAt: consent.acceptedAt, referencePublicId: consent.referencePublicId, candidatePublicId: consent.candidatePublicId, candidateNumber: consent.candidateNumber } : null,
+        legalNotice: "This evidence export records the workflow and declarations held by MagicReel. It is not statutory IPR registration or a legal opinion."
+      }
+    });
+  } catch (error) {
+    console.error("Muse provenance export failed:", error instanceof Error ? error.message : "Unknown error");
+    return res.status(500).json({ success: false, message: "Muse provenance export is temporarily unavailable." });
+  }
+});
+
+// Public, privacy-preserving certificate verification. No customer identity or private assets are exposed.
+router.get("/verify/:certificateId", async (req: Request, res: Response) => {
+  try {
+    const certificate = await prisma.museCertificate.findUnique({
+      where: { certificateId: req.params.certificateId },
+      select: { certificateId: true, manifestHash: true, status: true, issuedAt: true, revokedAt: true, manifest: true, signature: true, publicKeyPem: true, signingKeyId: true }
+    });
+    if (!certificate) return res.status(404).json({ success: false, message: "Certificate not found." });
+    const manifest = certificate.manifest as Record<string, unknown>;
+    const recomputedHash = hashManifest(manifest);
+    const hashValid = recomputedHash === certificate.manifestHash;
+    const signatureValid = hashValid ? verifyManifestHash(certificate.manifestHash, certificate.signature, certificate.publicKeyPem) : false;
+    const verificationResult = !hashValid ? "MANIFEST_HASH_MISMATCH" : signatureValid === true ? "SIGNATURE_VALID" : signatureValid === false ? "SIGNATURE_INVALID" : "HASH_ONLY_UNSIGNED";
+    return res.status(200).json({
+      success: true,
+      data: {
+        certificateId: certificate.certificateId,
+        status: certificate.status,
+        verificationResult,
+        hashValid,
+        signatureValid,
+        issuedAt: certificate.issuedAt,
+        revokedAt: certificate.revokedAt,
+        manifestHash: certificate.manifestHash,
+        signature: certificate.signature,
+        publicKeyPem: certificate.publicKeyPem,
+        signingKeyId: certificate.signingKeyId,
+        museName: typeof manifest.museName === "string" ? manifest.museName : "Private Muse",
+        assetFingerprintCount: manifest.assetHashes && typeof manifest.assetHashes === "object" ? Object.keys(manifest.assetHashes as object).length : 0,
+        scope: "Creation provenance and asset integrity record",
+        legalNotice: "This issuer-created record is not statutory IPR registration, a legal opinion, or a guarantee of copyright or exclusive rights in a facial identity."
+      }
+    });
+  } catch (error) {
+    console.error("Muse certificate verification failed:", error instanceof Error ? error.message : "Unknown error");
+    return res.status(500).json({ success: false, message: "Certificate verification is temporarily unavailable." });
+  }
+});
 
 export default router;

@@ -1,6 +1,7 @@
 // Muse collage generation and candidate asset extraction.
 import { Router, Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
+import { hashManifest, hashRemoteImage, signManifestHash } from "./muse.provenance";
 import axios from "axios";
 import { fal } from "@fal-ai/client";
 import { v2 as cloudinary } from "cloudinary";
@@ -433,6 +434,17 @@ router.post("/create-from-candidate", authenticateMuseRequest, async (req: MuseR
     const backHero = await generateAndStoreMuseAsset(userId, frontHero.secure_url, "back-hero");
     createdPublicIds.push(backHero.public_id);
 
+    // Fingerprint the actual image bytes, not only provider URLs or asset identifiers.
+    const assetHashes = {
+      sourceReference: await hashRemoteImage(signedMuseUrl(candidateContext.reference_public_id)),
+      candidateCollage: candidateContext.collage_public_id ? await hashRemoteImage(signedMuseUrl(candidateContext.collage_public_id)) : null,
+      selectedCandidate: await hashRemoteImage(candidateUrl),
+      masterPortrait: await hashRemoteImage(masterPortrait.secure_url),
+      placeholder: await hashRemoteImage(placeholder.secure_url),
+      frontReference: await hashRemoteImage(frontHero.secure_url),
+      backReference: await hashRemoteImage(backHero.secure_url)
+    };
+
     // Save the four private production assets against the authenticated user.
     // The Muse fee was already charged when the eight candidates were generated.
     const muse = await prisma.muse.create({
@@ -470,6 +482,38 @@ router.post("/create-from-candidate", authenticateMuseRequest, async (req: MuseR
       }
     });
 
+    // Record lineage and asset identifiers; this is not statutory IPR registration.
+    const certificateId = `MR-MUSE-${muse.id.replace(/-/g, "").slice(0, 12).toUpperCase()}`;
+    const issuedAt = new Date();
+    const manifest = {
+      schemaVersion: "1.0",
+      certificateId,
+      museId: muse.id,
+      createdAt: muse.createdAt.toISOString(),
+      certificateIssuedAt: issuedAt.toISOString(),
+      ownerAccountId: userId,
+      museName: muse.name,
+      selectedCandidateNumber: numericCandidateNumber,
+      consentRecordId: consentRecord.id,
+      consentVersion: consentRecord.consentVersion,
+      referenceAssetId: candidateContext.reference_public_id,
+      candidateCollageAssetId: candidateContext.collage_public_id || null,
+      selectedCandidateAssetId: candidatePublicId,
+      generatedAssets: { masterPortrait: masterPortrait.public_id, placeholder: placeholder.public_id, frontReference: frontHero.public_id, backReference: backHero.public_id },
+      assetHashes,
+      generationModel: MUSE_IMAGE_MODEL,
+      promptVersion: "distinctive-muse-v1",
+      attestationScope: "creation_provenance_and_asset_integrity_record",
+      legalNotice: "This issuer-created record is evidence of recorded creation provenance. It is not statutory IPR registration, a legal opinion, or a guarantee of copyright or exclusive rights in a facial identity."
+    };
+    const manifestHash = hashManifest(manifest);
+    const signing = signManifestHash(manifestHash);
+    const certificateStatus = signing.signature ? "PROVISIONAL" : "PROVISIONAL_UNSIGNED";
+    await prisma.museCertificate.create({
+      data: { museId: muse.id, certificateId, manifest, manifestHash, signature: signing.signature, publicKeyPem: signing.publicKeyPem, signingKeyId: signing.keyId, status: certificateStatus, issuedAt }
+    });
+    await prisma.muse.update({ where: { id: muse.id }, data: { certificateId, provenanceHash: manifestHash, certificateCreatedAt: issuedAt } });
+
     return res.status(201).json({
       success: true,
       data: {
@@ -483,7 +527,8 @@ router.post("/create-from-candidate", authenticateMuseRequest, async (req: MuseR
         processingImageUrl: signedMuseUrl(muse.processingPublicId),
         processingBackImageUrl: signedMuseUrl(muse.processingBackPublicId),
         status: muse.status,
-        createdAt: muse.createdAt
+        createdAt: muse.createdAt,
+        certificate: { certificateId, manifestHash, issuedAt: issuedAt.toISOString(), verificationPath: `/api/muse/verify/${certificateId}`, status: certificateStatus, signatureStatus: signing.signature ? "SIGNED" : "SIGNING_KEY_NOT_CONFIGURED", signingKeyId: signing.keyId, notice: "Provisional creation provenance record; not statutory IPR registration." }
       }
     });
   } catch (error: any) {
