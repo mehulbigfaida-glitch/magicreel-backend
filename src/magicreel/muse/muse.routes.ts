@@ -214,4 +214,32 @@ router.post(
   }
 );
 
+// Public, privacy-preserving certificate verification. No customer identity or private assets are exposed.
+router.get("/verify/:certificateId", async (req: Request, res: Response) => {
+  try {
+    const certificate = await prisma.museCertificate.findUnique({
+      where: { certificateId: req.params.certificateId },
+      select: { certificateId: true, manifestHash: true, status: true, issuedAt: true, revokedAt: true, manifest: true }
+    });
+    if (!certificate) return res.status(404).json({ success: false, message: "Certificate not found." });
+    const manifest = certificate.manifest as Record<string, unknown>;
+    return res.status(200).json({
+      success: true,
+      data: {
+        certificateId: certificate.certificateId,
+        status: certificate.status,
+        issuedAt: certificate.issuedAt,
+        revokedAt: certificate.revokedAt,
+        manifestHash: certificate.manifestHash,
+        museName: typeof manifest.museName === "string" ? manifest.museName : "Private Muse",
+        scope: "Creation provenance and asset integrity record",
+        legalNotice: "This issuer-created record is not statutory IPR registration, a legal opinion, or a guarantee of copyright or exclusive rights in a facial identity."
+      }
+    });
+  } catch (error) {
+    console.error("Muse certificate verification failed:", error instanceof Error ? error.message : "Unknown error");
+    return res.status(500).json({ success: false, message: "Certificate verification is temporarily unavailable." });
+  }
+});
+
 export default router;
