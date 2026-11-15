@@ -23,7 +23,9 @@ export function signManifestHash(hash: string): { signature: string | null; publ
   if (!privatePem || !publicPem) return { signature: null, publicKeyPem: null, keyId: null };
   const privateKey = createPrivateKey(privatePem);
   const publicKey = createPublicKey(publicPem);
-  const signature = sign(null, Buffer.from(hash, "hex"), privateKey).toString("base64");
+  const signatureBuffer = sign(null, Buffer.from(hash, "hex"), privateKey);
+  if (!verify(null, Buffer.from(hash, "hex"), publicKey, signatureBuffer)) throw new Error("Muse provenance signing key pair does not match.");
+  const signature = signatureBuffer.toString("base64");
   const keyId = createHash("sha256").update(publicKey.export({ type: "spki", format: "der" })).digest("hex").slice(0, 16);
   return { signature, publicKeyPem: publicKey.export({ type: "spki", format: "pem" }).toString(), keyId };
 }
