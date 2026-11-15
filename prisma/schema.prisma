@@ -647,6 +647,9 @@ model MuseCertificate {
   certificateId  String   @unique @map("certificate_id")
   manifest       Json
   manifestHash   String   @map("manifest_hash")
+  signature      String?
+  publicKeyPem   String?  @map("public_key_pem")
+  signingKeyId   String?  @map("signing_key_id")
   status         String   @default("PROVISIONAL")
   issuedAt       DateTime @default(now()) @map("issued_at")
   revokedAt      DateTime? @map("revoked_at")
