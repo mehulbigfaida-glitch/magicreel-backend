@@ -3,6 +3,7 @@ import multer from "multer";
 import jwt from "jsonwebtoken";
 import { v2 as cloudinary } from "cloudinary";
 import { prisma } from "../db/prisma";
+import { hashManifest, verifyManifestHash } from "./muse.provenance";
 
 const router = Router();
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
@@ -219,19 +220,30 @@ router.get("/verify/:certificateId", async (req: Request, res: Response) => {
   try {
     const certificate = await prisma.museCertificate.findUnique({
       where: { certificateId: req.params.certificateId },
-      select: { certificateId: true, manifestHash: true, status: true, issuedAt: true, revokedAt: true, manifest: true }
+      select: { certificateId: true, manifestHash: true, status: true, issuedAt: true, revokedAt: true, manifest: true, signature: true, publicKeyPem: true, signingKeyId: true }
     });
     if (!certificate) return res.status(404).json({ success: false, message: "Certificate not found." });
     const manifest = certificate.manifest as Record<string, unknown>;
+    const recomputedHash = hashManifest(manifest);
+    const hashValid = recomputedHash === certificate.manifestHash;
+    const signatureValid = hashValid ? verifyManifestHash(certificate.manifestHash, certificate.signature, certificate.publicKeyPem) : false;
+    const verificationResult = !hashValid ? "MANIFEST_HASH_MISMATCH" : signatureValid === true ? "SIGNATURE_VALID" : signatureValid === false ? "SIGNATURE_INVALID" : "HASH_ONLY_UNSIGNED";
     return res.status(200).json({
       success: true,
       data: {
         certificateId: certificate.certificateId,
         status: certificate.status,
+        verificationResult,
+        hashValid,
+        signatureValid,
         issuedAt: certificate.issuedAt,
         revokedAt: certificate.revokedAt,
         manifestHash: certificate.manifestHash,
+        signature: certificate.signature,
+        publicKeyPem: certificate.publicKeyPem,
+        signingKeyId: certificate.signingKeyId,
         museName: typeof manifest.museName === "string" ? manifest.museName : "Private Muse",
+        assetFingerprintCount: manifest.assetHashes && typeof manifest.assetHashes === "object" ? Object.keys(manifest.assetHashes as object).length : 0,
         scope: "Creation provenance and asset integrity record",
         legalNotice: "This issuer-created record is not statutory IPR registration, a legal opinion, or a guarantee of copyright or exclusive rights in a facial identity."
       }
