@@ -215,6 +215,39 @@ router.post(
   }
 );
 
+// Private evidence export. Only the authenticated owner can retrieve the complete provenance and consent record.
+router.get("/my-muses/:id/provenance", authenticateMuseRequest, async (req: Request, res: Response) => {
+  try {
+    const userId = (req as Request & { user?: { id: string } }).user?.id;
+    if (!userId) return res.status(401).json({ success: false, message: "Authentication required." });
+    const muse = await prisma.muse.findFirst({ where: { id: req.params.id, userId, status: "READY" }, select: { id: true } });
+    if (!muse) return res.status(404).json({ success: false, message: "Muse not found." });
+    const [certificate, consent] = await Promise.all([
+      prisma.museCertificate.findUnique({ where: { museId: muse.id } }),
+      prisma.museConsentRecord.findFirst({ where: { museId: muse.id, userId }, orderBy: { acceptedAt: "desc" } })
+    ]);
+    if (!certificate) return res.status(404).json({ success: false, message: "No provenance certificate exists for this Muse." });
+    return res.status(200).json({
+      success: true,
+      data: {
+        certificateId: certificate.certificateId,
+        status: certificate.status,
+        issuedAt: certificate.issuedAt,
+        manifest: certificate.manifest,
+        manifestHash: certificate.manifestHash,
+        signature: certificate.signature,
+        publicKeyPem: certificate.publicKeyPem,
+        signingKeyId: certificate.signingKeyId,
+        consent: consent ? { eventType: consent.eventType, consentVersion: consent.consentVersion, consentText: consent.consentText, acceptedAt: consent.acceptedAt, referencePublicId: consent.referencePublicId, candidatePublicId: consent.candidatePublicId, candidateNumber: consent.candidateNumber } : null,
+        legalNotice: "This evidence export records the workflow and declarations held by MagicReel. It is not statutory IPR registration or a legal opinion."
+      }
+    });
+  } catch (error) {
+    console.error("Muse provenance export failed:", error instanceof Error ? error.message : "Unknown error");
+    return res.status(500).json({ success: false, message: "Muse provenance export is temporarily unavailable." });
+  }
+});
+
 // Public, privacy-preserving certificate verification. No customer identity or private assets are exposed.
 router.get("/verify/:certificateId", async (req: Request, res: Response) => {
   try {
