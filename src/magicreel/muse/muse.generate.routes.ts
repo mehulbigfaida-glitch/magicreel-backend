@@ -63,8 +63,8 @@ router.post("/generate-faces", authenticateMuseRequest, async (req: MuseRequest,
     if (!Number.isInteger(numericAge) || numericAge < 18 || numericAge > MAX_REFERENCE_AGE) {
       return res.status(400).json({ success: false, message: "Target age must be between 18 and 60." });
     }
-    if (!["auto", "female", "male"].includes(gender)) {
-      return res.status(400).json({ success: false, message: "Gender must be Auto, Female or Male." });
+    if (!["female", "male", "androgynous"].includes(gender)) {
+      return res.status(400).json({ success: false, message: "Choose Female, Male or Androgynous gender presentation." });
     }
     if (typeof referencePublicId !== "string" || !referencePublicId.startsWith("magicreel/muse/references/")) {
       return res.status(400).json({ success: false, message: "A valid uploaded Muse reference photo is required." });
@@ -389,8 +389,8 @@ router.post("/create-from-candidate", authenticateMuseRequest, async (req: MuseR
     if (!Number.isInteger(numericAge) || numericAge < 18 || numericAge > MAX_REFERENCE_AGE) {
       return res.status(400).json({ success: false, message: "Muse age must be between 18 and 60." });
     }
-    if (![ "auto", "female", "male" ].includes(gender)) {
-      return res.status(400).json({ success: false, message: "Gender must be Auto, Female or Male." });
+    if (![ "female", "male", "androgynous" ].includes(gender)) {
+      return res.status(400).json({ success: false, message: "Choose Female, Male or Androgynous gender presentation." });
     }
     if (!Number.isInteger(numericCandidateNumber) || numericCandidateNumber < 1 || numericCandidateNumber > 8) {
       return res.status(400).json({ success: false, message: "Select one of the eight generated Muse candidates." });
