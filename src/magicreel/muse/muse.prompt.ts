@@ -2,7 +2,7 @@ const MUSE_MASTER_PROMPT = "# MAGICREEL – DISTINCTIVE MUSE GENERATION\n## Eigh
 
 export function buildMusePrompt(age: number, gender: "female" | "male" | "androgynous"): string {
   const genderInstruction = gender === "androgynous"
-    ? "\\n\\n### REQUIRED GENDER PRESENTATION\\nCreate all eight fictional fashion-model identities with a deliberately androgynous, gender-neutral visual presentation. Avoid strongly masculine or feminine facial styling, grooming, makeup and hair cues. Keep the result suitable for fashion modelling across collections."
-    : `\\n\\n### REQUIRED GENDER PRESENTATION\\nCreate all eight fictional fashion-model identities with a clearly ${gender} presentation. Keep the face, hairstyle and grooming consistently aligned with this presentation across all eight candidates.`;
+    ? "\n\n### REQUIRED GENDER PRESENTATION\nCreate all eight fictional fashion-model identities with a deliberately androgynous, gender-neutral visual presentation. Avoid strongly masculine or feminine facial styling, grooming, makeup and hair cues. Keep the result suitable for fashion modelling across collections."
+    : `\n\n### REQUIRED GENDER PRESENTATION\nCreate all eight fictional fashion-model identities with a clearly ${gender} presentation. Keep the face, hairstyle and grooming consistently aligned with this presentation across all eight candidates.`;
   return MUSE_MASTER_PROMPT.replace(/\{\{AGE\}\}/g, String(age)) + genderInstruction;
 }
