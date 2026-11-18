@@ -113,6 +113,43 @@ router.get("/my-muses", authenticateMuseRequest, async (req: Request, res: Respo
   }
 });
 
+// Soft-delete a customer's Muse: hide it from active workflows while retaining certificate/audit evidence.
+router.delete("/my-muses/:id", authenticateMuseRequest, async (req: Request, res: Response) => {
+  try {
+    const userId = (req as Request & { user?: { id: string } }).user?.id;
+    if (!userId) return res.status(401).json({ success: false, message: "Authentication required." });
+
+    const muse = await prisma.muse.findFirst({
+      where: { id: req.params.id, userId, status: "READY" },
+      select: { id: true }
+    });
+    if (!muse) return res.status(404).json({ success: false, message: "Muse not found or already deleted." });
+
+    await prisma.$transaction([
+      prisma.muse.updateMany({
+        where: { id: muse.id, userId, status: "READY" },
+        data: { status: "DELETED" }
+      }),
+      prisma.museCertificate.updateMany({
+        where: { museId: muse.id, status: { not: "REVOKED" } },
+        data: {
+          status: "REVOKED",
+          revokedAt: new Date(),
+          revocationNote: "Muse archived at the account owner's request."
+        }
+      })
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      message: "Muse deleted from active use. Its provenance record has been retained and marked revoked."
+    });
+  } catch (error) {
+    console.error("Deleting private Muse failed:", error instanceof Error ? error.message : "Unknown error");
+    return res.status(500).json({ success: false, message: "Could not delete this Muse. Please try again." });
+  }
+});
+
 router.get("/my-muses/:id", authenticateMuseRequest, async (req: Request, res: Response) => {
   try {
     const userId = (req as Request & { user?: { id: string } }).user?.id;
