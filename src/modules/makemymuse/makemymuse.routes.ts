@@ -13,7 +13,8 @@ import { sha256Buffer, sha256Text, differenceHash, hashDistance, signCertificate
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 15 * 1024 * 1024 }, fileFilter: (_req, file, cb) => {
   const allowed = ["image/jpeg", "image/png", "image/webp"];
-  if (allowed.includes(file.mimetype)) cb(null, true);\n  else cb(new Error("Only JPG, PNG or WEBP images are accepted."));
+  if (allowed.includes(file.mimetype)) cb(null, true);
+  else cb(new Error("Only JPG, PNG or WEBP images are accepted."));
 }});
 const MODEL_ENDPOINT = process.env.MAKEMYMUSE_IMAGE_MODEL || "openai/gpt-image-2.5/sunburst/edit";
 const MODEL_NAME = process.env.MAKEMYMUSE_MODEL_NAME || "GPT Image 2.5 Sunburst Edit";
