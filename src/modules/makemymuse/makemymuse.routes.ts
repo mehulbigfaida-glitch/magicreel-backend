@@ -215,6 +215,15 @@ router.get("/sessions/:id/history", auth, async (req: AuthRequest, res: Response
   }catch(e:any){return res.status(500).json({success:false,message:e?.message||"History retrieval failed."});}
 });
 
+
+router.get("/muses", auth, async (req: AuthRequest, res: Response) => {
+  try {
+    const uid=userId(req);
+    const rows=await prisma.$queryRawUnsafe<any[]>("SELECT id,muse_name,final_model_url,selected_body_type,created_at,updated_at FROM makemymuse.creation_sessions WHERE user_id=$1 AND status='SAVED' ORDER BY created_at DESC",uid);
+    return res.json({success:true,data:{muses:rows.map((r:any)=>({id:r.id,name:r.muse_name,image:r.final_model_url,body:r.selected_body_type,created:r.created_at,updatedAt:r.updated_at}))}});
+  }catch(e:any){return res.status(500).json({success:false,message:e?.message||"Muse collection retrieval failed."});}
+});
+
 router.get("/sessions/:id/certificate", auth, async (req: AuthRequest, res: Response) => {
   try {
     const uid=userId(req);const id=req.params.id;
