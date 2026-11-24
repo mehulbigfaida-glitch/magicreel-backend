@@ -18,8 +18,8 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 15 
 const MODEL_ENDPOINT = process.env.MAKEMYMUSE_IMAGE_MODEL || "openai/gpt-image-2.5/sunburst/edit";
 const MODEL_NAME = process.env.MAKEMYMUSE_MODEL_NAME || "GPT Image 2.5 Sunburst Edit";
 const PROVIDER = "fal.ai";
-const CONSENT_VERSION = "makemymuse-consent-v1";
-const CONSENT_TEXT = "I confirm I own this reference image or have permission and consent to use it for synthetic fashion identity creation. I understand generated identities may not be globally unique and this process does not guarantee copyright or patent protection.";
+const CONSENT_VERSION = "makemymuse-consent-v2";
+const CONSENT_TEXT = "I confirm the person shown is an adult, I own this reference image or have permission and consent to use it, and I authorize its processing by the AI image-generation provider and private asset storage for synthetic fashion identity creation. I understand generated identities may not be globally unique and this process does not guarantee copyright or patent protection.";
 fal.config({ credentials: process.env.FAL_KEY! });
 
 type AuthRequest = Request & { user?: { id: string } };
