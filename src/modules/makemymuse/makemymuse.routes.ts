@@ -67,10 +67,13 @@ async function generateImage(prompt: string, referenceUrl: string, size: {width:
   const response = await axios.get<ArrayBuffer>(image.url, { responseType: "arraybuffer", timeout: 90000, maxContentLength: 30 * 1024 * 1024 });
   return { buffer: Buffer.from(response.data), width: image.width || size.width, height: image.height || size.height, requestId: (result as any).requestId || null };
 }
-async function ownsReference(publicId: string, uid: string) {
+async function ownsReference(publicId: string, uid: string, expectedHash?: string) {
   if (!publicId.startsWith("makemymuse/references/")) return false;
   const asset = await cloudinary.api.resource(publicId, { resource_type: "image", type: "authenticated", context: true });
-  return asset.context?.custom?.owner_id === uid;
+  const custom=asset.context?.custom||{};
+  if(custom.owner_id!==uid)return false;
+  if(expectedHash && custom.source_sha256!==expectedHash)return false;
+  return true;
 }
 
 function validateRefinement(value: any) {
@@ -107,7 +110,7 @@ router.post("/sessions", auth, async (req: AuthRequest, res: Response) => {
   try {
     const uid=userId(req); const publicId=req.body?.referencePublicId; const sourceHash=String(req.body?.sourceHash||""); const consent=req.body?.consent;
     if(consent!==true) return res.status(400).json({success:false,message:"Explicit reference-use consent is required."});
-    if (typeof publicId!=="string" || !(await ownsReference(publicId,uid))) return res.status(403).json({success:false,message:"Reference asset not found or not owned by this account."});
+    if (typeof publicId!=="string" || !(await ownsReference(publicId,uid,sourceHash))) return res.status(403).json({success:false,message:"Reference asset not found or not owned by this account."});
     const result=await prisma.$queryRawUnsafe<any[]>("INSERT INTO makemymuse.creation_sessions (user_id, reference_public_id, reference_image_url, status) VALUES ($1, $2, $3, 'REFERENCE_UPLOADED') RETURNING id",uid,publicId,privateUrl(publicId));
     const id=result[0].id;
     await prisma.$executeRawUnsafe("INSERT INTO makemymuse.identity_blueprints (session_id,preview_image_url,preview_public_id,anchor_summary) VALUES ($1,$2,$3,$4::jsonb)",id,privateUrl(publicId),publicId,JSON.stringify({type:"visual creative reference",analysisStatus:"NOT_AUTOMATICALLY_ANALYZED",note:"The Blueprint overlay is a visual UI treatment, not biometric measurement."}));
