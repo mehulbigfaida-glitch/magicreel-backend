@@ -110,6 +110,8 @@ router.post("/sessions", auth, async (req: AuthRequest, res: Response) => {
     if (typeof publicId!=="string" || !(await ownsReference(publicId,uid))) return res.status(403).json({success:false,message:"Reference asset not found or not owned by this account."});
     const result=await prisma.$queryRawUnsafe<any[]>("INSERT INTO makemymuse.creation_sessions (user_id, reference_public_id, reference_image_url, status) VALUES ($1, $2, $3, 'REFERENCE_UPLOADED') RETURNING id",uid,publicId,privateUrl(publicId));
     const id=result[0].id;
+    await prisma.$executeRawUnsafe("INSERT INTO makemymuse.identity_blueprints (session_id,preview_image_url,preview_public_id,anchor_summary) VALUES ($1,$2,$3,$4::jsonb)",id,privateUrl(publicId),publicId,JSON.stringify({type:"visual creative reference",analysisStatus:"NOT_AUTOMATICALLY_ANALYZED",note:"The Blueprint overlay is a visual UI treatment, not biometric measurement."}));
+    await history(id,"IDENTITY_BLUEPRINT_PRESENTED",{referencePublicId:publicId,blueprintType:"visual creative-reference overlay",biometricAnalysis:false});
     await history(id,"REFERENCE_UPLOADED",{referencePublicId:publicId,referenceSha256:sourceHash,consentVersion:CONSENT_VERSION,consentText:CONSENT_TEXT});
     await prisma.$executeRawUnsafe("INSERT INTO makemymuse.consent_records (user_id, session_id, consent_type, consent_version, consent_text, reference_public_id) VALUES ($1, $2, 'REFERENCE_USE', $3, $4, $5)",uid,id,CONSENT_VERSION,CONSENT_TEXT,publicId);
     return res.status(201).json({success:true,data:{sessionId:id}});
@@ -297,7 +299,7 @@ router.get("/sessions/:id/certificate", auth, async (req: AuthRequest, res: Resp
       approvalEvents:events.filter((e:any)=>e.event_type==="FACE_APPROVED").map((e:any)=>e.event_data),
       finalAssets:assets,
       creationEvents:events.map((e:any)=>({type:e.event_type,createdAt:e.created_at,data:e.event_data})),
-      licenseNote:"This record documents the creation process and stored assets. It is not a guarantee of global uniqueness, copyright ownership, or patent protection."
+      licenseStatus:"CREATION_RECORD_ONLY_LICENSE_TERMS_PENDING",licenseNote:"This record documents the creation process and stored assets. It is not a guarantee of global uniqueness, copyright ownership, or patent protection. Exclusive license terms are not issued until legally reviewed terms are approved and accepted."
     };
     const manifestHash=sha256Text(JSON.stringify(manifest));
     const signature=signCertificateHash(manifestHash);
