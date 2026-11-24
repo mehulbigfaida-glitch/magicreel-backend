@@ -72,6 +72,24 @@ async function ownsReference(publicId: string, uid: string) {
   const asset = await cloudinary.api.resource(publicId, { resource_type: "image", type: "authenticated", context: true });
   return asset.context?.custom?.owner_id === uid;
 }
+
+function validateRefinement(value: any) {
+  const allowed: Record<string,string[]> = {
+    eyes:["natural","almond","soft-round","defined","lifted"],
+    faceShape:["soft-oval","heart","round","defined","long"],
+    hair:["long-waves","straight","soft-curls","short","layered"],
+    lips:["balanced","fuller","soft","defined"],
+  };
+  const clean: Record<string,string> = {};
+  for(const key of Object.keys(allowed)){
+    if(value?.[key]!==undefined){
+      if(!allowed[key].includes(String(value[key]))) throw new Error("Invalid refinement option for "+key+".");
+      clean[key]=String(value[key]);
+    }
+  }
+  return clean;
+}
+
 async function history(sessionId: string, event: string, data: unknown) {
   await prisma.$executeRawUnsafe("INSERT INTO makemymuse.creation_history (session_id, event_type, event_data) VALUES ($1, $2, $3::jsonb)", sessionId, event, JSON.stringify(data));
 }
@@ -153,7 +171,7 @@ router.post("/sessions/:id/refine-preview", auth, async (req: AuthRequest, res: 
     if(Number(previewCount[0]?.count||0)>=3)return res.status(429).json({success:false,message:"You have reached the three-preview limit for this creation session. Approve a face or start a new creation."});
     const owned=await prisma.$queryRawUnsafe<any[]>("SELECT s.id,c.id AS candidate_id,c.cloudinary_public_id FROM makemymuse.creation_sessions s JOIN makemymuse.face_generation_batches b ON b.session_id=s.id JOIN makemymuse.face_candidates c ON c.batch_id=b.id WHERE s.id=$1 AND s.user_id=$2 AND c.cloudinary_public_id=$3",id,uid,candidatePublicId);
     if(!owned.length) return res.status(403).json({success:false,message:"Selected candidate is not part of this session."});
-    const refinement=req.body?.refinement||{};const prompt=buildRefinementPrompt(refinement);
+    const refinement=validateRefinement(req.body?.refinement||{});const prompt=buildRefinementPrompt(refinement);
     const preview=await generateImage(prompt,privateUrl(candidatePublicId),{width:1024,height:1536});
     const asset=await uploadPrivateBuffer(preview.buffer,"makemymuse/refinements",{owner_id:uid,session_id:id,candidate_public_id:candidatePublicId,refinement_hash:sha256Text(JSON.stringify(refinement))});
     const url=privateUrl(asset.public_id);
