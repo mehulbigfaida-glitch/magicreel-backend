@@ -1,4 +1,4 @@
-import { createHash, createPrivateKey, createPublicKey, sign, verify } from "crypto";
+import { createHash, createPrivateKey, createPublicKey, sign, verify } from "crypto";\nimport sharp from "sharp";
 import { PromptBuildResult } from "./types";
 
 export function sha256Buffer(buffer: Buffer): string {
@@ -30,4 +30,23 @@ export function signCertificateHash(hash: string) {
   const signature = sig.toString("base64");
   const keyId = createHash("sha256").update(publicKey.export({ type: "spki", format: "der" })).digest("hex").slice(0, 16);
   return { signature, publicKeyPem: publicKey.export({ type: "spki", format: "pem" }).toString(), keyId, signatureStatus: "SIGNED" as const };
+}
+
+export async function differenceHash(buffer: Buffer): Promise<string> {
+  const pixels = await sharp(buffer).resize(9, 8, { fit: "fill" }).grayscale().raw().toBuffer();
+  let bits = 0n;
+  let index = 0;
+  for (let y = 0; y < 8; y++) {
+    for (let x = 0; x < 8; x++) {
+      if (pixels[y * 9 + x] > pixels[y * 9 + x + 1]) bits |= 1n << BigInt(index);
+      index++;
+    }
+  }
+  return bits.toString(16).padStart(16, "0");
+}
+export function hashDistance(a: string, b: string): number {
+  let value = BigInt("0x" + a) ^ BigInt("0x" + b);
+  let count = 0;
+  while (value) { count += Number(value & 1n); value >>= 1n; }
+  return count;
 }
