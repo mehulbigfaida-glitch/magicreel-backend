@@ -1,4 +1,5 @@
-import { createHash, createPrivateKey, createPublicKey, sign, verify } from "crypto";\nimport sharp from "sharp";
+import { createHash, createPrivateKey, createPublicKey, sign, verify } from "crypto";
+import sharp from "sharp";
 import { PromptBuildResult } from "./types";
 
 export function sha256Buffer(buffer: Buffer): string {
