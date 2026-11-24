@@ -149,6 +149,8 @@ router.post("/sessions/:id/generate-candidates", auth, async (req: AuthRequest, 
 router.post("/sessions/:id/refine-preview", auth, async (req: AuthRequest, res: Response) => {
   try {
     const uid=userId(req);const id=req.params.id;const candidatePublicId=req.body?.candidatePublicId;
+    const previewCount=await prisma.$queryRawUnsafe<any[]>("SELECT count(*)::int AS count FROM makemymuse.creation_history WHERE session_id=$1 AND event_type='REFINEMENT_PREVIEW_GENERATED'",id);
+    if(Number(previewCount[0]?.count||0)>=3)return res.status(429).json({success:false,message:"You have reached the three-preview limit for this creation session. Approve a face or start a new creation."});
     const owned=await prisma.$queryRawUnsafe<any[]>("SELECT s.id,c.id AS candidate_id,c.cloudinary_public_id FROM makemymuse.creation_sessions s JOIN makemymuse.face_generation_batches b ON b.session_id=s.id JOIN makemymuse.face_candidates c ON c.batch_id=b.id WHERE s.id=$1 AND s.user_id=$2 AND c.cloudinary_public_id=$3",id,uid,candidatePublicId);
     if(!owned.length) return res.status(403).json({success:false,message:"Selected candidate is not part of this session."});
     const refinement=req.body?.refinement||{};const prompt=buildRefinementPrompt(refinement);
@@ -182,6 +184,8 @@ router.post("/sessions/:id/generate-final", auth, async (req: AuthRequest, res: 
   try {
     const uid=userId(req);const id=req.params.id;const bodyType=String(req.body?.bodyType||"").slice(0,50);
     if(!bodyType)return res.status(400).json({success:false,message:"Body type required."});
+    const existing=await prisma.$queryRawUnsafe<any[]>("SELECT final_model_url,final_model_public_id,selected_body_type FROM makemymuse.creation_sessions WHERE id=$1 AND user_id=$2 AND status='MODEL_GENERATED'",id,uid);
+    if(existing.length)return res.json({success:true,data:{imageUrl:existing[0].final_model_url,publicId:existing[0].final_model_public_id,bodyType:existing[0].selected_body_type,cached:true}});
     const rows=await prisma.$queryRawUnsafe<any[]>("SELECT s.id,a.approved_image_url,a.approved_public_id FROM makemymuse.creation_sessions s JOIN makemymuse.face_approvals a ON a.session_id=s.id WHERE s.id=$1 AND s.user_id=$2",id,uid);
     if(!rows.length)return res.status(409).json({success:false,message:"Approve a face before generating the final model."});
     const prompt="Create a full-length adult fashion model using the attached approved face identity as the identity reference. Preserve the approved face and broad facial proportions. Body silhouette direction: "+bodyType+". Photorealistic, neutral studio, standing natural fashion pose, simple fitted neutral clothing, full body visible, no text, no logos, no watermark. This is a synthetic fashion model, clearly adult.";
