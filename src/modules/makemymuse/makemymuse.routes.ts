@@ -216,6 +216,26 @@ router.get("/sessions/:id/history", auth, async (req: AuthRequest, res: Response
 });
 
 
+
+router.delete("/sessions/:id", auth, async (req: AuthRequest, res: Response) => {
+  try {
+    const uid=userId(req);const id=req.params.id;
+    const session=await prisma.$queryRawUnsafe<any[]>("SELECT id,reference_public_id,final_model_public_id FROM makemymuse.creation_sessions WHERE id=$1 AND user_id=$2",id,uid);
+    if(!session.length)return res.status(404).json({success:false,message:"Muse session not found."});
+    const assets=await prisma.$queryRawUnsafe<any[]>("SELECT cloudinary_public_id FROM makemymuse.face_generation_batches WHERE session_id=$1 UNION SELECT cloudinary_public_id FROM makemymuse.face_candidates c JOIN makemymuse.face_generation_batches b ON b.id=c.batch_id WHERE b.session_id=$1 UNION SELECT preview_public_id FROM makemymuse.face_refinements r JOIN makemymuse.face_candidates c ON c.id=r.candidate_id JOIN makemymuse.face_generation_batches b ON b.id=c.batch_id WHERE b.session_id=$1 UNION SELECT cloudinary_public_id FROM makemymuse.model_assets WHERE session_id=$1",id);
+    const ids=[session[0].reference_public_id,session[0].final_model_public_id,...assets.map((a:any)=>a.cloudinary_public_id)].filter(Boolean);
+    const unique=[...new Set(ids)];
+    const results=await Promise.all(unique.map(async (publicId:string)=>{
+      try{return await cloudinary.uploader.destroy(publicId,{resource_type:"image",type:"authenticated"});}
+      catch(error:any){return {result:"error",error:error?.message||"Cloudinary delete failed",publicId};}
+    }));
+    const failures=results.filter((r:any)=>r.result!=="ok"&&r.result!=="not found");
+    if(failures.length)return res.status(502).json({success:false,message:"Some private assets could not be deleted. Session retained so deletion can be retried.",failures});
+    await prisma.$executeRawUnsafe("DELETE FROM makemymuse.creation_sessions WHERE id=$1 AND user_id=$2",id,uid);
+    return res.json({success:true,data:{deleted:true,assetCount:unique.length}});
+  }catch(e:any){return res.status(500).json({success:false,message:e?.message||"Muse deletion failed."});}
+});
+
 router.get("/muses", auth, async (req: AuthRequest, res: Response) => {
   try {
     const uid=userId(req);
