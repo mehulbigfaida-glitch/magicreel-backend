@@ -8,12 +8,12 @@ import { cloudinary } from "../../config/cloudinary";
 import { prisma } from "../../magicreel/db/prisma";
 import { buildEightFacePrompt, buildRefinementPrompt } from "./promptBuilder";
 import { MuseCreativeBrief } from "./types";
-import { sha256Buffer, sha256Text, differenceHash, hashDistance } from "./provenance";
+import { sha256Buffer, sha256Text, differenceHash, hashDistance, signCertificateHash } from "./provenance";
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 15 * 1024 * 1024 }, fileFilter: (_req, file, cb) => {
   const allowed = ["image/jpeg", "image/png", "image/webp"];
-  cb(allowed.includes(file.mimetype) ? null : new Error("Only JPG, PNG or WEBP images are accepted."), allowed.includes(file.mimetype));
+  if (allowed.includes(file.mimetype)) cb(null, true);\n  else cb(new Error("Only JPG, PNG or WEBP images are accepted."));
 }});
 const MODEL_ENDPOINT = process.env.MAKEMYMUSE_IMAGE_MODEL || "openai/gpt-image-2.5/sunburst/edit";
 const MODEL_NAME = process.env.MAKEMYMUSE_MODEL_NAME || "GPT Image 2.5 Sunburst Edit";
@@ -155,7 +155,7 @@ router.post("/sessions/:id/generate-candidates", auth, async (req: AuthRequest, 
     const crops=await Promise.all(Array.from({length:8},async(_,index)=>{
       const row=Math.floor(index/4),col=index%4; const left=col*cellW,top=row*cellH;
       const inset=Math.max(2,Math.round(Math.min(cellW,cellH)*0.005));
-      const crop={left:left+inset,top:top+inset,width:Math.max(1,Math.min(cellW-inset*2,meta.width-left-inset)),height:Math.max(1,Math.min(cellH-inset*2,meta.height-top-inset))};
+      const crop={left:left+inset,top:top+inset,width:Math.max(1,Math.min(cellW-inset*2,(meta.width || 0)-left-inset)),height:Math.max(1,Math.min(cellH-inset*2,(meta.height || 0)-top-inset))};
       const candidateBuffer=await sharp(buffer).extract(crop).png().toBuffer();
       const perceptualHash=await differenceHash(candidateBuffer);
       const asset=await uploadPrivateBuffer(candidateBuffer,"makemymuse/candidates",{owner_id:uid,session_id:id,batch_public_id:collageAsset.public_id,candidate_number:String(index+1),prompt_version:build.promptVersion});
