@@ -289,6 +289,27 @@ router.get("/sessions/:id/certificate", auth, async (req: AuthRequest, res: Resp
     const candidates=await prisma.$queryRawUnsafe<any[]>("SELECT b.id AS batch_id,b.provider,b.model_name,b.age_appearance,b.gender_presentation,b.collage_public_id,c.candidate_number,c.cloudinary_public_id,c.is_selected FROM makemymuse.face_generation_batches b JOIN makemymuse.face_candidates c ON c.batch_id=b.id WHERE b.session_id=$1 ORDER BY b.created_at ASC,c.candidate_number ASC",id);
     const assets=await prisma.$queryRawUnsafe<any[]>("SELECT asset_type,cloudinary_public_id,metadata,created_at FROM makemymuse.model_assets WHERE session_id=$1 ORDER BY created_at ASC",id);
     const session=sessions[0];
+    const generationBatches:any[]=[];
+    for(const batchId of Array.from(new Set(candidates.map((c:any)=>c.batch_id)))){
+      const rows=candidates.filter((c:any)=>c.batch_id===batchId);
+      const event=events.find((e:any)=>e.event_type==="CANDIDATES_GENERATED"&&e.event_data?.batchId===batchId);
+      generationBatches.push({
+        batchId,
+        provider:rows[0]?.provider,
+        model:rows[0]?.model_name,
+        genderPresentation:rows[0]?.gender_presentation,
+        apparentAge:rows[0]?.age_appearance,
+        collageAssetId:rows[0]?.collage_public_id,
+        candidates:rows.map((r:any)=>({
+          number:r.candidate_number,
+          assetId:r.cloudinary_public_id,
+          selected:r.is_selected,
+          sha256:event?.event_data?.candidateAssets?.find((a:any)=>a.candidateNumber===r.candidate_number)?.sha256||null
+        })),
+        promptVersion:event?.event_data?.promptVersion||null,
+        promptHash:event?.event_data?.promptHash||null
+      });
+    }
     const manifest={
       schemaVersion:"makemymuse-certificate-v1",
       product:"MakeMyMuse",
@@ -301,10 +322,7 @@ router.get("/sessions/:id/certificate", auth, async (req: AuthRequest, res: Resp
       referenceAssetId:session.reference_public_id,
       referenceSha256:events.find((e:any)=>e.event_type==="REFERENCE_UPLOADED")?.event_data?.referenceSha256||null,
       consentVersion:events.find((e:any)=>e.event_type==="REFERENCE_UPLOADED")?.event_data?.consentVersion||null,
-      generationBatches:candidates.length?Array.from(new Set(candidates.map((c:any)=>c.batch_id))).map(batchId=>{
-        const rows=candidates.filter((c:any)=>c.batch_id===batchId);
-        const event=events.find((e:any)=>e.event_type==="CANDIDATES_GENERATED"&&e.event_data?.batchId===batchId);
-        return {batchId,provider:rows[0]?.provider,model:rows[0]?.model_name,genderPresentation:rows[0]?.gender_presentation,apparentAge:rows[0]?.age_appearance,collageAssetId:rows[0]?.collage_public_id,candidates:rows.map((r:any)=>({number:r.candidate_number,assetId:r.cloudinary_public_id,selected:r.is_selected,sha256:event?.event_data?.candidateAssets?.find((a:any)=>a.candidateNumber===r.candidate_number)?.sha256||null})),promptVersion:event?.event_data?.promptVersion||null,promptHash:event?.event_data?.promptHash||null}}):[],
+      generationBatches,
       refinementEvents:events.filter((e:any)=>e.event_type==="REFINEMENT_PREVIEW_GENERATED").map((e:any)=>e.event_data),
       approvalEvents:events.filter((e:any)=>e.event_type==="FACE_APPROVED").map((e:any)=>e.event_data),
       finalAssets:assets,
