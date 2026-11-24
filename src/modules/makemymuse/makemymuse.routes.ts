@@ -8,7 +8,7 @@ import { cloudinary } from "../../config/cloudinary";
 import { prisma } from "../../magicreel/db/prisma";
 import { buildEightFacePrompt, buildRefinementPrompt } from "./promptBuilder";
 import { MuseCreativeBrief } from "./types";
-import { sha256Buffer, sha256Text } from "./provenance";
+import { sha256Buffer, sha256Text, differenceHash, hashDistance } from "./provenance";
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 15 * 1024 * 1024 }, fileFilter: (_req, file, cb) => {
@@ -157,15 +157,22 @@ router.post("/sessions/:id/generate-candidates", auth, async (req: AuthRequest, 
       const inset=Math.max(2,Math.round(Math.min(cellW,cellH)*0.005));
       const crop={left:left+inset,top:top+inset,width:Math.max(1,Math.min(cellW-inset*2,meta.width-left-inset)),height:Math.max(1,Math.min(cellH-inset*2,meta.height-top-inset))};
       const candidateBuffer=await sharp(buffer).extract(crop).png().toBuffer();
+      const perceptualHash=await differenceHash(candidateBuffer);
       const asset=await uploadPrivateBuffer(candidateBuffer,"makemymuse/candidates",{owner_id:uid,session_id:id,batch_public_id:collageAsset.public_id,candidate_number:String(index+1),prompt_version:build.promptVersion});
-      return {candidateNumber:index+1,publicId:asset.public_id,imageUrl:privateUrl(asset.public_id),width:asset.width,height:asset.height,sha256:sha256Buffer(candidateBuffer)};
+      return {candidateNumber:index+1,publicId:asset.public_id,imageUrl:privateUrl(asset.public_id),width:asset.width,height:asset.height,sha256:sha256Buffer(candidateBuffer),perceptualHash};
     }));
+    const previousEvents=await prisma.$queryRawUnsafe<any[]>("SELECT session_id,event_data FROM makemymuse.creation_history WHERE event_type='CANDIDATES_GENERATED'");
+    const priorHashes=previousEvents.flatMap((e:any)=>(e.event_data?.candidateAssets||[]).filter((a:any)=>a.perceptualHash).map((a:any)=>({sessionId:e.session_id,hash:a.perceptualHash})));
+    const batchPairs:any[]=[];
+    for(let i=0;i<crops.length;i++)for(let j=i+1;j<crops.length;j++){const distance=hashDistance(crops[i].perceptualHash,crops[j].perceptualHash);if(distance<=5)batchPairs.push({candidateNumbers:[i+1,j+1],distance});}
+    const catalogFlags=crops.map((candidate:any)=>({candidateNumber:candidate.candidateNumber,similarPriorAssets:priorHashes.filter((p:any)=>hashDistance(candidate.perceptualHash,p.hash)<=5).map((p:any)=>({priorSessionId:p.sessionId,distance:hashDistance(candidate.perceptualHash,p.hash)}))}));
+    const candidateScreening={method:"64-bit dHash over full candidate image (not facial recognition)",thresholdHammingDistance:5,withinBatchNearDuplicates:batchPairs,catalogNearDuplicateFlags:catalogFlags,interpretation:"Visual near-duplicate screen only; does not prove face uniqueness or copyright."};
     const batch=await prisma.$queryRawUnsafe<any[]>("INSERT INTO makemymuse.face_generation_batches (session_id, age_appearance, gender_presentation, collage_url, collage_public_id, provider, model_name, status) VALUES ($1,$2,$3,$4,$5,$6,$7,'COMPLETED') RETURNING id",id,brief.apparentAge,brief.genderPresentation,privateUrl(collageAsset.public_id),collageAsset.public_id,PROVIDER,MODEL_NAME);
     const batchId=batch[0].id;
     for(const candidate of crops) await prisma.$executeRawUnsafe("INSERT INTO makemymuse.face_candidates (batch_id,candidate_number,image_url,cloudinary_public_id) VALUES ($1,$2,$3,$4)",batchId,candidate.candidateNumber,candidate.imageUrl,candidate.publicId);
     await prisma.$executeRawUnsafe("UPDATE makemymuse.creation_sessions SET status='CANDIDATES_READY', gender_presentation=$2, age_appearance=$3, skin_direction=$4, updated_at=now() WHERE id=$1",id,brief.genderPresentation,brief.apparentAge,brief.skinDirection);
-    await history(id,"CANDIDATES_GENERATED",{batchId,provider:PROVIDER,model:MODEL_NAME,endpoint:MODEL_ENDPOINT,providerRequestId:collage.requestId,promptVersion:build.promptVersion,promptHash:sha256Text(build.prompt),promptText:build.prompt,brief,requestConfig:{numImages:1,outputFormat:"png",quality:"medium",imageSize:{width:2048,height:1024},layout:"4x2"},collagePublicId:collageAsset.public_id,candidateAssets:crops,automatedQa:{collageDownloadVerified:true,dimensionsVerified:true,eightCropsExtracted:true,visualFaceQa:"NOT_AUTOMATED"}});
-    return res.status(201).json({success:true,data:{batchId,candidateCount:8,layout:"4x2",collage:{publicId:collageAsset.public_id,imageUrl:privateUrl(collageAsset.public_id),width:meta.width,height:meta.height},candidates:crops,promptVersion:build.promptVersion,promptHash:sha256Text(build.prompt)}});
+    await history(id,"CANDIDATES_GENERATED",{batchId,provider:PROVIDER,model:MODEL_NAME,endpoint:MODEL_ENDPOINT,providerRequestId:collage.requestId,promptVersion:build.promptVersion,promptHash:sha256Text(build.prompt),promptText:build.prompt,brief,requestConfig:{numImages:1,outputFormat:"png",quality:"medium",imageSize:{width:2048,height:1024},layout:"4x2"},collagePublicId:collageAsset.public_id,candidateAssets:crops,candidateScreening,automatedQa:{collageDownloadVerified:true,dimensionsVerified:true,eightCropsExtracted:true,visualFaceQa:"NOT_AUTOMATED"}});
+    return res.status(201).json({success:true,data:{batchId,candidateCount:8,layout:"4x2",collage:{publicId:collageAsset.public_id,imageUrl:privateUrl(collageAsset.public_id),width:meta.width,height:meta.height},candidates:crops,candidateScreening,promptVersion:build.promptVersion,promptHash:sha256Text(build.prompt)}});
   }catch(e:any){console.error("[MakeMyMuse] candidate generation error",e?.message);await prisma.$executeRawUnsafe("UPDATE makemymuse.creation_sessions SET status='GENERATION_FAILED',updated_at=now() WHERE id=$1 AND status='GENERATING'",req.params.id).catch(()=>{});return res.status(502).json({success:false,message:e?.message||"Candidate generation failed."});}
 });
 
