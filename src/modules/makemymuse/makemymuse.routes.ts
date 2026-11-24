@@ -111,8 +111,15 @@ router.post("/sessions/:id/prompt-preview", auth, async (req: AuthRequest, res: 
 router.post("/sessions/:id/generate-candidates", auth, async (req: AuthRequest, res: Response) => {
   try {
     const uid=userId(req); const id=req.params.id;
-    const session=await prisma.$queryRawUnsafe<any[]>("SELECT id, reference_public_id FROM makemymuse.creation_sessions WHERE id=$1 AND user_id=$2",id,uid);
+    const session=await prisma.$queryRawUnsafe<any[]>("SELECT id, reference_public_id, status FROM makemymuse.creation_sessions WHERE id=$1 AND user_id=$2",id,uid);
     if(!session.length) return res.status(404).json({success:false,message:"Session not found."});
+    if(session[0].status==="GENERATING") return res.status(409).json({success:false,message:"Candidate generation is already in progress."});
+    if(session[0].status==="CANDIDATES_READY") {
+      const prior=await prisma.$queryRawUnsafe<any[]>("SELECT b.id AS batch_id,b.collage_url,b.collage_public_id,c.candidate_number,c.image_url,c.cloudinary_public_id FROM makemymuse.face_generation_batches b JOIN makemymuse.face_candidates c ON c.batch_id=b.id WHERE b.session_id=$1 ORDER BY c.candidate_number",id);
+      if(prior.length===8) return res.json({success:true,data:{batchId:prior[0].batch_id,candidateCount:8,layout:"4x2",collage:{publicId:prior[0].collage_public_id,imageUrl:prior[0].collage_url},candidates:prior.map((p:any)=>({candidateNumber:p.candidate_number,publicId:p.cloudinary_public_id,imageUrl:p.image_url})),cached:true}});
+    }
+    const claimed=await prisma.$executeRawUnsafe("UPDATE makemymuse.creation_sessions SET status='GENERATING',updated_at=now() WHERE id=$1 AND user_id=$2 AND status<>'GENERATING'",id,uid);
+    if(!claimed) return res.status(409).json({success:false,message:"This session is not ready for generation. Refresh and retry."});
     const brief=parseBrief(req.body); const build=buildEightFacePrompt(brief);
     const referencePublicId=session[0].reference_public_id;
     if(!(await ownsReference(referencePublicId,uid))) return res.status(403).json({success:false,message:"Reference authorization failed."});
@@ -136,7 +143,7 @@ router.post("/sessions/:id/generate-candidates", auth, async (req: AuthRequest, 
     await prisma.$executeRawUnsafe("UPDATE makemymuse.creation_sessions SET status='CANDIDATES_READY', gender_presentation=$2, age_appearance=$3, skin_direction=$4, updated_at=now() WHERE id=$1",id,brief.genderPresentation,brief.apparentAge,brief.skinDirection);
     await history(id,"CANDIDATES_GENERATED",{batchId,provider:PROVIDER,model:MODEL_NAME,endpoint:MODEL_ENDPOINT,promptVersion:build.promptVersion,promptHash:sha256Text(build.prompt),brief,collagePublicId:collageAsset.public_id,candidateAssets:crops});
     return res.status(201).json({success:true,data:{batchId,candidateCount:8,layout:"4x2",collage:{publicId:collageAsset.public_id,imageUrl:privateUrl(collageAsset.public_id),width:meta.width,height:meta.height},candidates:crops,promptVersion:build.promptVersion,promptHash:sha256Text(build.prompt)}});
-  }catch(e:any){console.error("[MakeMyMuse] candidate generation error",e?.message);return res.status(502).json({success:false,message:e?.message||"Candidate generation failed."});}
+  }catch(e:any){console.error("[MakeMyMuse] candidate generation error",e?.message);await prisma.$executeRawUnsafe("UPDATE makemymuse.creation_sessions SET status='GENERATION_FAILED',updated_at=now() WHERE id=$1 AND status='GENERATING'",req.params.id).catch(()=>{});return res.status(502).json({success:false,message:e?.message||"Candidate generation failed."});}
 });
 
 router.post("/sessions/:id/refine-preview", auth, async (req: AuthRequest, res: Response) => {
