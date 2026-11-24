@@ -30,6 +30,7 @@ import mailRoutes from "../mail/mail.routes";
 import publishRoutes from "../publish/publish.routes";
 import publishAiRoutes from "../publish/publishAi.routes";
 import socialRoutes from "../social/social.routes";
+import makeMyMuseRoutes from "../modules/makemymuse/makemymuse.routes";
 
 // QUEUE
 // import { heroQueue } from "./queue/hero.queue";
@@ -169,6 +170,9 @@ app.use(
 // MUSE STUDIO - isolated authenticated reference upload
 app.use("/api/muse", museRoutes);
 app.use("/api/muse", museGenerationRoutes);
+
+// Isolated MakeMyMuse identity transformation product APIs
+app.use("/api/makemymuse", makeMyMuseRoutes);
 
 /* ---------------------------------- */
 /* 🧪 QUEUE TEST */
