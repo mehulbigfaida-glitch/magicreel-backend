@@ -81,11 +81,12 @@ router.post("/reference", auth, upload.single("reference"), async (req: AuthRequ
 
 router.post("/sessions", auth, async (req: AuthRequest, res: Response) => {
   try {
-    const uid=userId(req); const publicId=req.body?.referencePublicId;
+    const uid=userId(req); const publicId=req.body?.referencePublicId; const consent=req.body?.consent;
+    if(consent!==true) return res.status(400).json({success:false,message:"Explicit reference-use consent is required."});
     if (typeof publicId!=="string" || !(await ownsReference(publicId,uid))) return res.status(403).json({success:false,message:"Reference asset not found or not owned by this account."});
     const result=await prisma.$queryRawUnsafe<any[]>("INSERT INTO makemymuse.creation_sessions (user_id, reference_public_id, reference_image_url, status) VALUES ($1, $2, $3, 'REFERENCE_UPLOADED') RETURNING id",uid,publicId,privateUrl(publicId));
     const id=result[0].id;
-    await history(id,"REFERENCE_UPLOADED",{referencePublicId:publicId});
+    await history(id,"REFERENCE_UPLOADED",{referencePublicId:publicId,consentVersion:CONSENT_VERSION,consentText:CONSENT_TEXT});
     await prisma.$executeRawUnsafe("INSERT INTO makemymuse.consent_records (user_id, session_id, consent_type, consent_version, consent_text, reference_public_id) VALUES ($1, $2, 'REFERENCE_USE', $3, $4, $5)",uid,id,CONSENT_VERSION,CONSENT_TEXT,publicId);
     return res.status(201).json({success:true,data:{sessionId:id}});
   } catch(e:any){return res.status(500).json({success:false,message:e?.message||"Session creation failed."});}
