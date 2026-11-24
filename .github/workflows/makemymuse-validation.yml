@@ -1,6 +1,14 @@
 name: MakeMyMuse isolated validation
 
 on:
+  push:
+    branches: [experiment/makemymuse-modular-backend]
+    paths:
+      - "src/modules/makemymuse/**"
+      - "src/magicreel/index.ts"
+      - "package.json"
+      - "package-lock.json"
+      - "prisma/**"
   pull_request:
     branches: [main]
     paths:
