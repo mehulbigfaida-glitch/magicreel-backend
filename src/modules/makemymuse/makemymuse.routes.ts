@@ -183,11 +183,13 @@ router.post("/sessions/:id/approve-face", auth, async (req: AuthRequest, res: Re
 router.post("/sessions/:id/generate-final", auth, async (req: AuthRequest, res: Response) => {
   try {
     const uid=userId(req);const id=req.params.id;const bodyType=String(req.body?.bodyType||"").slice(0,50);
-    if(!bodyType)return res.status(400).json({success:false,message:"Body type required."});
+    if(!["Petite","Slim","Athletic","Curvy"].includes(bodyType))return res.status(400).json({success:false,message:"Choose a valid body type."});
     const existing=await prisma.$queryRawUnsafe<any[]>("SELECT final_model_url,final_model_public_id,selected_body_type FROM makemymuse.creation_sessions WHERE id=$1 AND user_id=$2 AND status='MODEL_GENERATED'",id,uid);
     if(existing.length)return res.json({success:true,data:{imageUrl:existing[0].final_model_url,publicId:existing[0].final_model_public_id,bodyType:existing[0].selected_body_type,cached:true}});
     const rows=await prisma.$queryRawUnsafe<any[]>("SELECT s.id,a.approved_image_url,a.approved_public_id FROM makemymuse.creation_sessions s JOIN makemymuse.face_approvals a ON a.session_id=s.id WHERE s.id=$1 AND s.user_id=$2",id,uid);
     if(!rows.length)return res.status(409).json({success:false,message:"Approve a face before generating the final model."});
+    const claimed=await prisma.$executeRawUnsafe("UPDATE makemymuse.creation_sessions SET status='MODEL_GENERATING',updated_at=now() WHERE id=$1 AND user_id=$2 AND status='FACE_APPROVED'",id,uid);
+    if(!claimed)return res.status(409).json({success:false,message:"Final model generation is already in progress or this session is not ready."});
     const prompt="Create a full-length adult fashion model using the attached approved face identity as the identity reference. Preserve the approved face and broad facial proportions. Body silhouette direction: "+bodyType+". Photorealistic, neutral studio, standing natural fashion pose, simple fitted neutral clothing, full body visible, no text, no logos, no watermark. This is a synthetic fashion model, clearly adult.";
     const final=await generateImage(prompt,privateUrl(rows[0].approved_public_id),{width:1024,height:1536});
     const asset=await uploadPrivateBuffer(final.buffer,"makemymuse/final-models",{owner_id:uid,session_id:id,body_type:bodyType,approved_face_public_id:rows[0].approved_public_id});
@@ -196,7 +198,7 @@ router.post("/sessions/:id/generate-final", auth, async (req: AuthRequest, res: 
     await prisma.$executeRawUnsafe("UPDATE makemymuse.creation_sessions SET selected_body_type=$2,final_model_url=$3,final_model_public_id=$4,status='MODEL_GENERATED',updated_at=now() WHERE id=$1",id,bodyType,url,asset.public_id);
     await history(id,"FINAL_MODEL_GENERATED",{bodyType,finalPublicId:asset.public_id,finalImageSha256:sha256Buffer(final.buffer),promptHash:sha256Text(prompt)});
     return res.status(201).json({success:true,data:{imageUrl:url,publicId:asset.public_id,bodyType}});
-  }catch(e:any){console.error("[MakeMyMuse] final model generation error",e?.message);return res.status(502).json({success:false,message:e?.message||"Final model generation failed."});}
+  }catch(e:any){console.error("[MakeMyMuse] final model generation error",e?.message);await prisma.$executeRawUnsafe("UPDATE makemymuse.creation_sessions SET status='FACE_APPROVED',updated_at=now() WHERE id=$1 AND status='MODEL_GENERATING'",req.params.id).catch(()=>{});return res.status(502).json({success:false,message:e?.message||"Final model generation failed."});}
 });
 
 router.post("/sessions/:id/save", auth, async (req: AuthRequest, res: Response) => {
