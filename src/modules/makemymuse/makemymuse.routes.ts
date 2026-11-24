@@ -65,7 +65,7 @@ async function generateImage(prompt: string, referenceUrl: string, size: {width:
   const image = data.images?.[0];
   if (!image?.url) throw new Error("Generation provider returned no image.");
   const response = await axios.get<ArrayBuffer>(image.url, { responseType: "arraybuffer", timeout: 90000, maxContentLength: 30 * 1024 * 1024 });
-  return { buffer: Buffer.from(response.data), width: image.width || size.width, height: image.height || size.height };
+  return { buffer: Buffer.from(response.data), width: image.width || size.width, height: image.height || size.height, requestId: (result as any).requestId || null };
 }
 async function ownsReference(publicId: string, uid: string) {
   if (!publicId.startsWith("makemymuse/references/")) return false;
@@ -141,7 +141,7 @@ router.post("/sessions/:id/generate-candidates", auth, async (req: AuthRequest, 
     const batchId=batch[0].id;
     for(const candidate of crops) await prisma.$executeRawUnsafe("INSERT INTO makemymuse.face_candidates (batch_id,candidate_number,image_url,cloudinary_public_id) VALUES ($1,$2,$3,$4)",batchId,candidate.candidateNumber,candidate.imageUrl,candidate.publicId);
     await prisma.$executeRawUnsafe("UPDATE makemymuse.creation_sessions SET status='CANDIDATES_READY', gender_presentation=$2, age_appearance=$3, skin_direction=$4, updated_at=now() WHERE id=$1",id,brief.genderPresentation,brief.apparentAge,brief.skinDirection);
-    await history(id,"CANDIDATES_GENERATED",{batchId,provider:PROVIDER,model:MODEL_NAME,endpoint:MODEL_ENDPOINT,promptVersion:build.promptVersion,promptHash:sha256Text(build.prompt),brief,collagePublicId:collageAsset.public_id,candidateAssets:crops});
+    await history(id,"CANDIDATES_GENERATED",{batchId,provider:PROVIDER,model:MODEL_NAME,endpoint:MODEL_ENDPOINT,providerRequestId:collage.requestId,promptVersion:build.promptVersion,promptHash:sha256Text(build.prompt),promptText:build.prompt,brief,requestConfig:{numImages:1,outputFormat:"png",quality:"medium",imageSize:{width:2048,height:1024},layout:"4x2"},collagePublicId:collageAsset.public_id,candidateAssets:crops,automatedQa:{collageDownloadVerified:true,dimensionsVerified:true,eightCropsExtracted:true,visualFaceQa:"NOT_AUTOMATED"}});
     return res.status(201).json({success:true,data:{batchId,candidateCount:8,layout:"4x2",collage:{publicId:collageAsset.public_id,imageUrl:privateUrl(collageAsset.public_id),width:meta.width,height:meta.height},candidates:crops,promptVersion:build.promptVersion,promptHash:sha256Text(build.prompt)}});
   }catch(e:any){console.error("[MakeMyMuse] candidate generation error",e?.message);await prisma.$executeRawUnsafe("UPDATE makemymuse.creation_sessions SET status='GENERATION_FAILED',updated_at=now() WHERE id=$1 AND status='GENERATING'",req.params.id).catch(()=>{});return res.status(502).json({success:false,message:e?.message||"Candidate generation failed."});}
 });
