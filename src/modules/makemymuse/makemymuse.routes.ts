@@ -37,10 +37,16 @@ function auth(req: Request, res: Response, next: NextFunction) {
 function userId(req: AuthRequest) { return req.user?.id || ""; }
 function privateUrl(publicId: string) { return cloudinary.url(publicId, { secure: true, type: "authenticated", sign_url: true }); }
 function parseBrief(body: any): MuseCreativeBrief {
+  const genderPresentation = body.genderPresentation;
+  const apparentAge = Number(body.apparentAge);
+  const skinDirection = body.skinDirection || "reference";
+  if (!["female", "male", "androgynous"].includes(genderPresentation)) throw new Error("Choose Female, Male or Androgynous.");
+  if (!Number.isInteger(apparentAge) || apparentAge < 18 || apparentAge > 60) throw new Error("Apparent age must be between 18 and 60.");
+  if (!["reference", "warm", "cool", "neutral", "explore"].includes(skinDirection)) throw new Error("Invalid skin direction.");
   return {
-    genderPresentation: body.genderPresentation,
-    apparentAge: Number(body.apparentAge),
-    skinDirection: body.skinDirection || "reference",
+    genderPresentation,
+    apparentAge,
+    skinDirection,
     transformationDirection: typeof body.transformationDirection === "string" ? body.transformationDirection.slice(0, 300) : undefined,
     refinement: body.refinement || undefined,
   };
