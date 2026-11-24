@@ -304,7 +304,7 @@ router.get("/sessions/:id/certificate", auth, async (req: AuthRequest, res: Resp
       generationBatches:candidates.length?Array.from(new Set(candidates.map((c:any)=>c.batch_id))).map(batchId=>{
         const rows=candidates.filter((c:any)=>c.batch_id===batchId);
         const event=events.find((e:any)=>e.event_type==="CANDIDATES_GENERATED"&&e.event_data?.batchId===batchId);
-        return {batchId,provider:rows[0]?.provider,model:rows[0]?.model_name,genderPresentation:rows[0]?.gender_presentation,apparentAge:rows[0]?.age_appearance,collageAssetId:rows[0]?.collage_public_id,candidates:rows.map((r:any)=>({number:r.candidate_number,assetId:r.cloudinary_public_id,selected:r.is_selected,sha256:event?.event_data?.candidateAssets?.find((a:any)=>a.candidateNumber===r.candidate_number)?.sha256||null})),promptVersion:event?.event_data?.promptVersion||null,promptHash:event?.event_data?.promptHash||null}))):[],
+        return {batchId,provider:rows[0]?.provider,model:rows[0]?.model_name,genderPresentation:rows[0]?.gender_presentation,apparentAge:rows[0]?.age_appearance,collageAssetId:rows[0]?.collage_public_id,candidates:rows.map((r:any)=>({number:r.candidate_number,assetId:r.cloudinary_public_id,selected:r.is_selected,sha256:event?.event_data?.candidateAssets?.find((a:any)=>a.candidateNumber===r.candidate_number)?.sha256||null})),promptVersion:event?.event_data?.promptVersion||null,promptHash:event?.event_data?.promptHash||null}}):[],
       refinementEvents:events.filter((e:any)=>e.event_type==="REFINEMENT_PREVIEW_GENERATED").map((e:any)=>e.event_data),
       approvalEvents:events.filter((e:any)=>e.event_type==="FACE_APPROVED").map((e:any)=>e.event_data),
       finalAssets:assets,
