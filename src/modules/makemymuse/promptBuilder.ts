@@ -1,7 +1,7 @@
 import { createHash } from "crypto";
 import { MuseCreativeBrief, PromptBuildResult } from "./types";
 
-export const MUSE_PROMPT_VERSION = "makemymuse-adaptive-anchor-demographic-experiment-v3.0.0";
+export const MUSE_PROMPT_VERSION = "makemymuse-age-first-structural-archetype-experiment-v4.0.0";
 
 const genderMap = {
   female: "clearly female-presenting fashion-model faces; keep this presentation consistent in all eight candidates",
@@ -18,14 +18,14 @@ const skinMap = {
 } as const;
 
 const candidateDirections = [
-  "Variation 1 — INDIAN CONTEMPORARY EDITORIAL: contemporary Indian-market fashion campaign direction; sophisticated editorial grooming and commercial versatility. This is a creative-market direction only; do not stereotype or force ethnicity or facial traits. Apply V2 structural transformation.",
-  "Variation 2 — KOREAN CONTEMPORARY EDITORIAL: polished, clean contemporary fashion-campaign styling direction and refined presentation. Do not stereotype or force ethnicity or facial traits. Apply V2 structural transformation.",
-  "Variation 3 — AMERICAN COMMERCIAL EDITORIAL: confident international commercial-campaign character and expressive, approachable presentation. Do not stereotype or force ethnicity or facial traits. Apply V2 structural transformation.",
-  "Variation 4 — AUSTRALIAN NATURAL EDITORIAL: fresh, relaxed, natural editorial presentation and effortless grooming. Do not stereotype or force ethnicity or facial traits. Apply V2 structural transformation.",
-  "Variation 5 — MEDITERRANEAN EDITORIAL: warm, sophisticated editorial mood and expressive campaign presence. Do not stereotype or force ethnicity or facial traits. Apply V2 structural transformation.",
-  "Variation 6 — EUROPEAN HIGH-FASHION EDITORIAL: refined luxury-campaign direction, minimalist grooming and premium designer presentation. Do not stereotype or force ethnicity or facial traits. Apply V2 structural transformation.",
-  "Variation 7 — EAST ASIAN CONTEMPORARY EDITORIAL: modern, elegant editorial direction and sophisticated presentation. Do not stereotype or force ethnicity or facial traits. Apply V2 structural transformation.",
-  "Variation 8 — INTERNATIONAL RUNWAY EDITORIAL: bold, memorable high-fashion/runway creative direction with distinctive campaign character. Do not stereotype or force ethnicity or facial traits. Apply V2 structural transformation.",
+  "Candidate 1 — ADAPTIVE ANCHOR: moderate structural redesign while retaining broad eye/nose/lip character; distinctly youthful face outline and balanced youthful proportions. Editorial direction: Indian contemporary.",
+  "Candidate 2 — ANGULAR STRUCTURE: clearly redesigned jaw angle, cheekbone placement, brow and face width; youthful, defined but natural structure. Editorial direction: Korean contemporary.",
+  "Candidate 3 — SOFT OVAL: softer cheek volume, oval face shape and smoother jaw transitions; unmistakably youthful adult proportions. Editorial direction: American commercial.",
+  "Candidate 4 — ELONGATED: longer facial silhouette, altered midface and vertical balance, redesigned jaw and cheeks; youthful rather than mature. Editorial direction: Australian natural.",
+  "Candidate 5 — COMPACT: shorter compact face, altered cheek volume, midface proportions and jaw; youthful adult appearance. Editorial direction: Mediterranean.",
+  "Candidate 6 — FEATURE REBALANCED: redesign nose bridge/tip, lip proportions, brow, cheeks and feature relationships into a cohesive fictional face; youthful. Editorial direction: European high-fashion.",
+  "Candidate 7 — STRONG TRANSFORMATION: substantially redesign face outline, jaw, cheeks, brow and overall proportions; retain only broad reference inspiration; youthful. Editorial direction: East Asian contemporary, without ethnicity stereotyping.",
+  "Candidate 8 — LUXURY EDITORIAL: distinctive high-fashion facial architecture, memorable face silhouette and cheek/jaw proportions, natural youthful adult appearance. Editorial direction: international runway.",
 ];
 
 function cleanDirection(input?: string): string {
@@ -40,20 +40,22 @@ export function buildEightFacePrompt(brief: MuseCreativeBrief): PromptBuildResul
   const prompt = [
     "MAKEMYMUSE — REFERENCE-INSPIRED FICTIONAL FASHION IDENTITY CREATION.",
     "Use the attached, user-authorized reference image as creative inspiration. Create eight distinct fictional adult fashion-model faces, not a photo edit or direct replica.",
-    "RESEMBLANCE BALANCE: retain broad, user-directed visual influence from the reference, including overall facial character and selected broad feature relationships. Do not claim or invent biometric measurements. Do not reproduce an exact person's face.",
-    "ADAPTIVE IDENTITY ANCHOR EXPERIMENT v2 (BASE RULES RETAINED): reference eyes, nose, and lips are broad creative anchors—not immutable exact copies and not pixel-preserved features. Preserve their general visual character as much as coherent integration allows, while actively redesigning face outline, jaw, cheeks, brow, facial proportions, and balance. Each candidate must change at least THREE facial-structure dimensions beyond styling. Transformation must be visible at first glance, coherent, natural, and non-replicative. Do not claim or invent biometric measurements.",
-    "STRICT ANTI-STYLING-ONLY RULE: hairstyle, grooming, makeup, lighting, accessories, and clothing do not count as facial transformation. Change the face design itself.",
-    "AGE AND ACCESSORY GUARDRAILS: keep apparent age tightly aligned to the requested age (not older); do not add glasses, jewelry, facial hair, or other accessories unless explicitly requested.",
-    "Avoid extreme distortion, artificial symmetry, plastic skin, celebrity likenesses, and stereotyped ethnic/nationality cues.",
+    "V4 PRIORITY HIERARCHY — follow in this order: (1) AGE TRANSFORMATION, (2) FACIAL STRUCTURAL TRANSFORMATION, (3) NATURAL SKIN REALISM, (4) DISTINCT CANDIDATE FACES, (5) BROAD REFERENCE ANCHORS, (6) EDITORIAL DIRECTION, (7) HAIR/GROOMING/STYLING. Lower priorities must not compromise higher priorities.",
+    "AGE-FIRST TRANSFORMATION: create the requested apparent age as a genuine age reconstruction, not wrinkle removal, skin smoothing, grooming, or retouching. Reconstruct age-appropriate facial proportions, cheek volume, eye-area appearance, lower-face contours, jaw, and overall youthful character. Do not interpret the target age as a well-groomed older adult. Avoid mature, middle-aged, or aged facial appearance. Keep all subjects clearly adult.",
+    "STRUCTURAL ARCHETYPE EXPERIMENT V4: assign one different facial-structure archetype to each of the eight cells below. The archetype is the primary design instruction for the face itself. Each candidate must visibly differ in at least THREE structural dimensions such as face outline, jaw shape, cheekbone placement/volume, brow structure, midface proportions, facial width/length balance, or feature relationships. Hair, beard, makeup, clothing, lighting, and accessories do not count as structural differences.",
+    "NATURAL SKIN REALISM: maintain realistic fine skin microtexture and naturally visible pores across cheeks, nose, forehead, and chin. Preserve subtle natural tonal variation. Do not airbrush, blur, over-smooth, or create waxy, plastic, porcelain, doll-like, or beauty-filter skin. Youthful skin must still look like real human skin; pores should be natural and subtle, not exaggerated. Avoid artificial sharpening.",
+    "ADAPTIVE IDENTITY ANCHORS: reference eyes, nose, and lips are broad creative inspiration—not immutable copies or pixel-preserved features. Retain broad visual character only where compatible with the age-first and structural transformation goals. Do not let resemblance override youthful age or the assigned archetype. Do not claim or invent biometric measurements.",
+    "STRICT ANTI-STYLING-ONLY RULE: styling changes do not count as transformation. Change the face design itself. Avoid extreme distortion, artificial symmetry, celebrity likenesses, and stereotyped ethnicity/nationality cues.",
+    "V4 AGE GUARDRAILS: all candidates must convincingly appear approximately the requested age. For a target of 25, do not generate faces that read as 35–50, older, or merely groomed/retouched. No gray hair or gray facial hair unless explicitly requested. Do not make any subject appear under 18.",
     "PRESENTATION: " + genderMap[brief.genderPresentation] + ".",
     "APPARENT AGE: all eight should appear approximately " + brief.apparentAge + " years old. All subjects must clearly be adults and must not appear under 18.",
     "SKIN DIRECTION: " + skinMap[brief.skinDirection] + ".",
     transformation ? "ADDITIONAL CREATIVE DIRECTION: " + transformation + "." : "",
-    "EXPERIMENT V3 — DEMOGRAPHIC/EDITORIAL DIRECTION ADDITION: use the eight market/editorial directions below as separate creative briefs to broaden candidate diversity. These directions describe fashion-market mood and editorial presentation, not ethnicity, nationality, race, or stereotyped facial traits. Do not force a candidate to look ethnically or nationally different. Keep the user-selected skin-tone direction, gender presentation, apparent age, and V2 adaptive-anchor rules consistent across all eight. The V2 structural transformation requirement remains mandatory for every cell; styling direction cannot substitute for facial transformation.",
+    "V4 COMBINED EXPERIMENT: facial-structure archetypes are the primary instruction; the paired V3 editorial directions are secondary styling/mood briefs only. Do not force ethnicity, nationality, race, or stereotyped facial traits. Maintain the selected skin direction and gender presentation consistently. The AGE-FIRST and natural-skin requirements apply to every cell.",
     "CANDIDATE DIVERSITY: generate eight genuinely different fictional faces with variation in facial feature balance, expression, hair/grooming, and editorial character, while maintaining the same selected gender presentation and age direction and a shared broad creative influence from the source. The variation must be in the faces themselves, not just styling.",
-    "V3 DEMOGRAPHIC/EDITORIAL DIRECTIONS (one per cell; do not print these labels):",
+    "V4 FACIAL ARCHETYPES WITH PAIRED EDITORIAL DIRECTIONS (one per cell; do not print labels):",
     ...candidateDirections.map((d, i) => (i + 1) + ". " + d),
-    "COMPOSITION: one frontal head-and-shoulders portrait per cell; eyes toward camera; neutral relaxed expression; consistent portrait scale; simple neutral studio background; natural skin texture; no accessories that obscure the face.",
+    "COMPOSITION: one frontal head-and-shoulders portrait per cell; eyes toward camera; neutral relaxed expression; consistent portrait scale; simple neutral studio background; realistic natural skin pores and microtexture; no accessories that obscure the face.",
     "GRID: exactly eight portraits in a strict 4-column by 2-row grid. Equal cell sizes. Keep each head, chin, and shoulders inside its own cell. Clear separation; no overlaps, merged faces, extra faces, duplicate candidates, or decorative borders. Do not add text, numbers, captions, logos, or watermarks.",
     "QUALITY CHECK: all eight cells contain one complete face; all eight match the selected presentation and adult age direction; the candidates are distinct; none is a replica of the reference; framing is consistent; the grid is clean and extractable.",
   ].filter(Boolean).join("\n");
