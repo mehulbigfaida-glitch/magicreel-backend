@@ -13,7 +13,7 @@ assert.match(result.prompt, /YOUTH RECONSTRUCTION/);
 assert.match(result.prompt, /NATURAL SKIN REALISM/);
 assert.match(result.prompt, /naturally visible pores/);
 assert.match(result.prompt, /V6 FACIAL ARCHITECTURE DIVERSITY/);\nassert.match(result.prompt, /at least FOUR clearly visible structural differences/);\nassert.match(result.prompt, /CLASSIC BALANCED/);\nassert.match(result.prompt, /SOFT OVAL/);\nassert.match(result.prompt, /ELONGATED EDITORIAL/);\nassert.match(result.prompt, /COMPACT PROPORTIONS/);\nassert.match(result.prompt, /STRONG CHEEKBONE \\/ TAPERED JAW/);\nassert.match(result.prompt, /DISTINCTIVE EDITORIAL/);\nassert.match(result.prompt, /RUNWAY CHARACTER/);
-assert.match(result.prompt, /at least THREE structural dimensions/);
+assert.match(result.prompt, /at least FOUR clearly visible structural differences/);
 assert.match(result.prompt, /AGE-CONDITIONED HAIR RULE/);
 assert.match(result.prompt, /below 35/);
 assert.match(result.prompt, /COMMERCIAL FACE-QUALITY GUIDANCE/);
