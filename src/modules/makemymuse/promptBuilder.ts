@@ -1,7 +1,7 @@
 import { createHash } from "crypto";
 import { MuseCreativeBrief, PromptBuildResult } from "./types";
 
-export const MUSE_PROMPT_VERSION = "makemymuse-identity-transformation-v1.0.0";
+export const MUSE_PROMPT_VERSION = "makemymuse-adaptive-anchor-experiment-v2.0.0";
 
 const genderMap = {
   female: "clearly female-presenting fashion-model faces; keep this presentation consistent in all eight candidates",
@@ -18,14 +18,14 @@ const skinMap = {
 } as const;
 
 const candidateDirections = [
-  "Variation A: restrained transformation; emphasize harmonious resemblance anchors and subtle feature evolution.",
-  "Variation B: slightly more defined eye and eyebrow character; preserve broad reference influence.",
-  "Variation C: explore a different cheek and jawline balance while retaining recognizable broad inspiration.",
-  "Variation D: explore nose and lip detailing in a coherent fashion-model design.",
-  "Variation E: explore a softer facial-feature balance and expression.",
-  "Variation F: explore a sharper editorial feature balance, without exaggeration.",
-  "Variation G: explore a different hairstyle and grooming direction while keeping the face design distinctive.",
-  "Variation H: explore a memorable luxury-fashion editorial character with controlled transformation.",
+  "Variation A — ADAPTIVE ANCHORS: retain the broad visual character of the reference eyes, nose, and lips, but redesign face outline, jaw, cheeks, and facial proportions. Cohesive, medium transformation.",
+  "Variation B — ANGULAR STRUCTURE: retain broad eye/nose/lip character as inspiration; substantially redesign jaw angle, cheekbone placement, brow structure, and face width. Clearly different face.",
+  "Variation C — SOFT STRUCTURE: retain broad anchor character; create a softer, rounder cheek and jaw design, with altered facial proportions and eye spacing impression. Avoid copying.",
+  "Variation D — ELONGATED EDITORIAL: retain broad anchor character; create a longer face silhouette, new cheek/jaw proportions, and a different overall vertical balance.",
+  "Variation E — COMPACT BALANCE: retain broad anchor character; create a shorter, more compact face shape, different cheek volume and jaw proportions. Distinct from other cells.",
+  "Variation F — FEATURE REBALANCE: retain only broad visual character from selected anchors; creatively redesign nose bridge/tip, lip shape, brow, and cheek proportions as one coherent fictional face.",
+  "Variation G — DISTINCTIVE FICTIONAL IDENTITY: strong transformation across face outline, jaw, cheeks, brow, and feature balance; keep reference influence broad and non-replicative. Make this face memorable and clearly different.",
+  "Variation H — LUXURY CAMPAIGN: high-fashion editorial fictional face; preserve a broad anchor-inspired character while transforming face shape, jaw, cheekbones, and facial balance substantially. Distinct, adult, polished.",
 ];
 
 function cleanDirection(input?: string): string {
@@ -41,7 +41,10 @@ export function buildEightFacePrompt(brief: MuseCreativeBrief): PromptBuildResul
     "MAKEMYMUSE — REFERENCE-INSPIRED FICTIONAL FASHION IDENTITY CREATION.",
     "Use the attached, user-authorized reference image as creative inspiration. Create eight distinct fictional adult fashion-model faces, not a photo edit or direct replica.",
     "RESEMBLANCE BALANCE: retain broad, user-directed visual influence from the reference, including overall facial character and selected broad feature relationships. Do not claim or invent biometric measurements. Do not reproduce an exact person's face.",
-    "CREATIVE TRANSFORMATION: make meaningful, coherent changes so each output is a distinct fictional face. Do not merely change hairstyle, makeup, lighting, or clothing. Avoid extreme distortion, artificial symmetry, plastic skin, celebrity likenesses, and stereotyped ethnic/nationality cues.",
+    "ADAPTIVE IDENTITY ANCHOR EXPERIMENT v2: reference eyes, nose, and lips are broad creative anchors—not immutable exact copies and not pixel-preserved features. Preserve their general visual character as much as coherent integration allows, while actively redesigning face outline, jaw, cheeks, brow, facial proportions, and balance. Each candidate must change at least THREE facial-structure dimensions beyond styling. Transformation must be visible at first glance, coherent, natural, and non-replicative. Do not claim or invent biometric measurements.",
+    "STRICT ANTI-STYLING-ONLY RULE: hairstyle, grooming, makeup, lighting, accessories, and clothing do not count as facial transformation. Change the face design itself.",
+    "AGE AND ACCESSORY GUARDRAILS: keep apparent age tightly aligned to the requested age (not older); do not add glasses, jewelry, facial hair, or other accessories unless explicitly requested.",
+    "Avoid extreme distortion, artificial symmetry, plastic skin, celebrity likenesses, and stereotyped ethnic/nationality cues.",
     "PRESENTATION: " + genderMap[brief.genderPresentation] + ".",
     "APPARENT AGE: all eight should appear approximately " + brief.apparentAge + " years old. All subjects must clearly be adults and must not appear under 18.",
     "SKIN DIRECTION: " + skinMap[brief.skinDirection] + ".",
