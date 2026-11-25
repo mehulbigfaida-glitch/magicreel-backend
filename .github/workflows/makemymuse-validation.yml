@@ -1,0 +1,41 @@
+name: MakeMyMuse isolated validation
+
+on:
+  push:
+    branches: [experiment/makemymuse-modular-backend]
+    paths:
+      - "src/modules/makemymuse/**"
+      - "src/magicreel/index.ts"
+      - "package.json"
+      - "package-lock.json"
+      - "prisma/**"
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/modules/makemymuse/**"
+      - "src/magicreel/index.ts"
+      - "package.json"
+      - "package-lock.json"
+      - "prisma/**"
+
+jobs:
+  build-and-prompt-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Validate Prisma
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/magicreel
+          DIRECT_URL: postgresql://postgres:postgres@localhost:5432/magicreel
+        run: npx prisma validate --schema prisma/schema.prisma
+      - name: Generate Prisma client
+        run: npx prisma generate --schema prisma/schema.prisma
+      - name: TypeScript build
+        run: npm run build
+      - name: MakeMyMuse prompt tests
+        run: npm run test:makemymuse

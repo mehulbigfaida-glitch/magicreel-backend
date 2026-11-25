@@ -9,7 +9,9 @@
     "build": "tsc",
     "start": "node dist/magicreel/index.js",
     "prisma": "prisma",
-    "myntra:discover": "ts-node --transpile-only scripts/myntra-brand-discovery.ts"
+    "myntra:discover": "ts-node --transpile-only scripts/myntra-brand-discovery.ts",
+    "test:makemymuse": "ts-node --transpile-only src/modules/makemymuse/promptBuilder.test.ts",
+    "start:makemymuse": "node dist/modules/makemymuse/server.js"
   },
   "dependencies": {
     "@fal-ai/client": "^1.10.1",
